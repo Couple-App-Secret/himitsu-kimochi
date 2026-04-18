@@ -15,40 +15,73 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         html, body { 
-            height: 100%; width: 100%; overflow: hidden; position: fixed;
-            background: var(--cream); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text);
+            height: 100%; 
+            width: 100%; 
+            background: var(--cream); 
+            font-family: 'Zen Maru Gothic', sans-serif; 
+            color: var(--text);
+            /* 前回のfixedを解除し、overflow制御でズレを抑止 */
+            overflow: hidden; 
         }
 
-        body { display: flex; align-items: center; justify-content: center; }
+        body { 
+            display: flex; 
+            flex-direction: column;
+            /* iPhoneの上部・下部の余白を考慮 */
+            padding-top: env(safe-area-inset-top); 
+            padding-bottom: env(safe-area-inset-bottom);
+        }
 
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
         .petal { position: absolute; border-radius: 0 50% 50% 50%; opacity: 0; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
         .container { 
-            position: relative; z-index: 1; width: 100%; max-width: 400px; 
-            height: 94vh; display: flex; flex-direction: column; padding: 10px;
+            position: relative; 
+            z-index: 1; 
+            width: 100%; 
+            max-width: 400px; 
+            height: 100%; 
+            margin: 0 auto;
+            display: flex; 
+            flex-direction: column; 
+            padding: 10px;
         }
 
         .card { 
-            background: white; border-radius: 30px; padding: 20px; 
+            background: white; 
+            border-radius: 30px; 
+            padding: 20px; 
             box-shadow: 0 10px 30px rgba(194,88,122,0.1); 
-            flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: relative; 
         }
 
-        h1 { font-size: 1.5rem; color: var(--deep); text-align: center; margin-bottom: 5px; letter-spacing: 0.1em; }
+        /* ヘッダー部分に高さを確保して文字被りを防ぐ */
+        .header {
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        h1 { font-size: 1.4rem; color: var(--deep); letter-spacing: 0.1em; }
         .subtitle { font-size: 0.75rem; color: var(--muted); text-align: center; margin-bottom: 15px; line-height: 1.5; }
 
         .step { display: none; height: 100%; flex-direction: column; justify-content: center; }
         .step.active { display: flex; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 入力枠の修正：幅がはみ出ないように設定 */
         .input-group { margin-bottom: 15px; width: 100%; }
-        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-bottom: 5px; display: block; }
+        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-bottom: 5px; display: block; text-align: left; }
 
         input[type="text"] { 
-            width: 100%; /* 親要素の幅いっぱいに */
+            width: 100%; 
             padding: 15px; 
             border: 2px solid #f0f0f0; 
             border-radius: 15px; 
@@ -58,7 +91,7 @@
             outline: none;
         }
         input.invalid { border-color: var(--error); background: #fff5f5; }
-        .error-msg { color: var(--error); font-size: 0.65rem; margin-top: 5px; display: none; font-weight: bold; }
+        .error-msg { color: var(--error); font-size: 0.65rem; margin-top: 5px; display: none; font-weight: bold; text-align: left; }
 
         .btn { 
             width: 100%; padding: 18px; background: var(--pink); color: white; border: none; 
@@ -81,19 +114,31 @@
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
-        .chat-input-wrap { display: flex; gap: 8px; padding-bottom: env(safe-area-inset-bottom); }
+        .chat-input-wrap { display: flex; gap: 8px; margin-top: 5px; }
         .chat-input { flex-grow: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; }
         .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; flex-shrink: 0; }
 
-        .reset-link { position: absolute; top: 15px; right: 20px; font-size: 0.7rem; color: var(--muted); text-decoration: underline; cursor: pointer; }
+        /* リセットボタンの位置を調整 */
+        .reset-link { 
+            position: absolute; 
+            right: 0; 
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem; 
+            color: var(--muted); 
+            text-decoration: underline; 
+            cursor: pointer; 
+        }
     </style>
 </head>
 <body>
     <div class="petals" id="petals"></div>
     <div class="container">
         <div class="card">
-            <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">縁をリセット</div>
-            <h1>SECRET</h1>
+            <div class="header">
+                <h1>SECRET</h1>
+                <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">縁をリセット</div>
+            </div>
             
             <div class="step active" id="step0">
                 <p class="subtitle">お互いの名前を<b>カタカナ</b>で入力して<br>二人の気持ちを重ねます</p>
@@ -214,24 +259,15 @@
         });
     }
 
-    // チャット送信ロジックの改善（絵文字対応強化）
     window.sendMsg = async function() {
         const i = document.getElementById('chatInput');
         const text = i.value.trim();
         if (!text) return;
-
         try {
-            await push(ref(db, 'chats/' + roomPath), {
-                sender: myFullId,
-                text: text,
-                time: serverTimestamp()
-            });
+            await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: text, time: serverTimestamp() });
             i.value = "";
-            // iPhoneでのフォーカス維持対策
             i.focus();
-        } catch (e) {
-            console.error("送信エラー:", e);
-        }
+        } catch (e) { console.error(e); }
     }
 
     window.fullReset = async function() {
@@ -243,7 +279,6 @@
         }
     }
 
-    // 桜
     const petalEl = document.getElementById('petals');
     for (let i = 0; i < 15; i++) {
         const p = document.createElement('div'); p.className = 'petal';

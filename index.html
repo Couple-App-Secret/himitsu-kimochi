@@ -21,6 +21,7 @@
             --cream: #fff0f5;
             --text: #4a2535;
             --muted: #a38b96;
+            --chat-bg: #e2ece9;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -33,65 +34,64 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 10px;
             overflow: hidden;
         }
 
-        /* 桜の花びらアニメーション */
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-        .petal {
-            position: absolute; border-radius: 0 50% 50% 50%; opacity: 0;
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
+        .petal { position: absolute; border-radius: 0 50% 50% 50%; opacity: 0; animation: fall linear infinite; }
+        @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
-        .container { position: relative; z-index: 1; width: 100%; max-width: 360px; }
+        .container { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 90vh; display: flex; flex-direction: column; }
 
         .card {
             background: white;
             border-radius: 30px;
-            padding: 40px 20px;
+            padding: 25px 20px;
             box-shadow: 0 10px 30px rgba(194,88,122,0.1);
             text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
-        h1 {
-            font-size: 1.8rem;
-            color: var(--deep);
-            margin-bottom: 5px;
-            letter-spacing: 0.1em;
-        }
+        h1 { font-size: 1.6rem; color: var(--deep); margin-bottom: 5px; letter-spacing: 0.1em; }
+        .subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
 
-        .subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 35px; }
+        .step { display: none; height: 100%; flex-direction: column; }
+        .step.active { display: flex; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .label { font-size: 0.9rem; font-weight: 700; display: block; margin-bottom: 8px; text-align: left; padding-left: 5px; }
-
+        .label { font-size: 0.9rem; font-weight: 700; display: block; margin-bottom: 8px; text-align: left; }
         input[type="text"] {
             width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px;
-            font-size: 1rem; margin-bottom: 25px; transition: 0.3s; background: #fafafa;
+            font-size: 1rem; margin-bottom: 20px; transition: 0.3s; background: #fafafa;
         }
-        input:focus { border-color: var(--pink); outline: none; background: white; }
 
         .btn {
             width: 100%; padding: 18px; background: var(--pink); color: white;
             border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700;
             cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
-            transition: 0.3s;
         }
 
-        .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* チャット画面のデザイン */
+        #chat-area {
+            flex-grow: 1; background: var(--chat-bg); border-radius: 20px;
+            margin: 10px 0; overflow-y: auto; padding: 15px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative; }
+        .msg.me { align-self: flex-end; background: #85e249; color: #000; border-top-right-radius: 2px; }
+        .msg.you { align-self: flex-start; background: white; color: #000; border-top-left-radius: 2px; }
 
-        .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
-        .name-chip {
-            display: inline-block; background: var(--cream); color: var(--deep);
-            padding: 5px 15px; border-radius: 20px; font-weight: 700;
+        .chat-input-wrap { display: flex; gap: 8px; }
+        .chat-input { flex-grow: 1; padding: 12px; border: none; border-radius: 25px; background: #f0f0f0; outline: none; }
+        .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; font-weight: bold; }
+
+        .call-btn {
+            background: #4cd964; color: white; border: none; padding: 10px 20px;
+            border-radius: 20px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
         }
     </style>
 </head>
@@ -101,9 +101,9 @@
     <div class="container">
         <div class="card">
             <h1>SECRET</h1>
-            <p class="subtitle">二人の気持ちを重ねます</p>
-
+            
             <div class="step active" id="step0">
+                <p class="subtitle">二人の気持ちを重ねます</p>
                 <span class="label">あなたの氏名（カタカナ）</span>
                 <input type="text" id="myName" placeholder="例：サトウ ハルト" maxlength="40">
                 <span class="label">相手の氏名（カタカナ）</span>
@@ -112,27 +112,29 @@
             </div>
 
             <div class="step" id="step1">
-                <span class="heart-anim">⏳</span>
-                <p style="font-weight:700;">相手を待っています...</p>
-                <p class="subtitle" style="margin-top:10px;">相手も入力すると画面が変わります</p>
+                <div style="margin-top:50px;">
+                    <span style="font-size:4rem;">⏳</span>
+                    <p style="font-weight:700; margin-top:20px;">相手を待っています...</p>
+                    <p class="subtitle">相手も入力すると画面が変わります</p>
+                </div>
             </div>
 
             <div class="step" id="step2">
-                <span class="heart-anim">💖</span>
-                <h2 style="color:var(--deep); margin-bottom:15px;">結ばれました！</h2>
-                <div style="margin-bottom:20px;">
-                    <span class="name-chip" id="resMe"></span>
-                    <span style="margin:0 5px;">&</span>
-                    <span class="name-chip" id="resYou"></span>
+                <button class="call-btn" onclick="startCall()">
+                    <span>📞</span> 本人確認の通話
+                </button>
+                <div id="chat-area"></div>
+                <div class="chat-input-wrap">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージを入力...">
+                    <button class="send-btn" onclick="sendMsg()">▶</button>
                 </div>
-                <p class="subtitle">二人の想いがつながりました</p>
             </div>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -147,7 +149,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 桜のアニメーション作成
+    let myFullId = "";
+    let roomPath = "";
+
+    // 桜
     const petalEl = document.getElementById('petals');
     for (let i = 0; i < 15; i++) {
         const p = document.createElement('div');
@@ -161,40 +166,69 @@
         petalEl.appendChild(p);
     }
 
-    function goTo(n) {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-    }
-
-    function normalize(s) {
-        return s.trim().replace(/\s+/g, '').toLowerCase();
-    }
+    function normalize(s) { return s.trim().replace(/\s+/g, '').toLowerCase(); }
 
     window.submitFeeling = async function() {
         const myName = document.getElementById('myName').value.trim();
         const crushName = document.getElementById('crushName').value.trim();
         if (!myName || !crushName) { alert('氏名を入力してください'); return; }
 
-        const myKey = normalize(myName);
-        const crushKey = normalize(crushName);
+        myFullId = normalize(myName);
+        const crushFullId = normalize(crushName);
+        
+        // チャットルームのIDを二人共通にする（名前をアルファベット順に並べて結合）
+        roomPath = [myFullId, crushFullId].sort().join('_');
 
         try {
-            await set(ref(db, 'feelings/' + myKey), {
+            await set(ref(db, 'feelings/' + myFullId), {
                 name: myName,
-                crushKey: crushKey,
-                timestamp: Date.now()
+                crushKey: crushFullId,
+                timestamp: serverTimestamp()
             });
-            goTo(1);
             
-            const crushRef = ref(db, 'feelings/' + crushKey);
-            onValue(crushRef, (snap) => {
-                if (snap.exists() && snap.val().crushKey === myKey) {
-                    document.getElementById('resMe').innerText = myName;
-                    document.getElementById('resYou').innerText = snap.val().name;
-                    goTo(2);
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step1').classList.add('active');
+
+            onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
+                if (snap.exists() && snap.val().crushKey === myFullId) {
+                    startChat();
                 }
             });
-        } catch(e) { alert('通信エラーが発生しました'); }
+        } catch(e) { alert('エラー'); }
+    }
+
+    function startChat() {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step2').classList.add('active');
+
+        // チャットメッセージの監視
+        onValue(ref(db, 'chats/' + roomPath), (snap) => {
+            const chatArea = document.getElementById('chat-area');
+            chatArea.innerHTML = "";
+            snap.forEach((child) => {
+                const data = child.val();
+                const div = document.createElement('div');
+                div.className = 'msg ' + (data.sender === myFullId ? 'me' : 'you');
+                div.innerText = data.text;
+                chatArea.appendChild(div);
+            });
+            chatArea.scrollTop = chatArea.scrollHeight;
+        });
+    }
+
+    window.sendMsg = function() {
+        const input = document.getElementById('chatInput');
+        if (!input.value.trim()) return;
+        push(ref(db, 'chats/' + roomPath), {
+            sender: myFullId,
+            text: input.value,
+            time: serverTimestamp()
+        });
+        input.value = "";
+    }
+
+    window.startCall = function() {
+        alert("通話機能：相手に呼び出しを送信しました。\n（このデモでは呼び出し通知をシミュレートしています）");
     }
 </script>
 </body>

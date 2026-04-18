@@ -139,7 +139,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -158,43 +158,29 @@
     let crushFullId = "";
     let roomPath = "";
 
-    // 桜
-    const petalEl = document.getElementById('petals');
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.background = '#f4a7b9';
-        const s = 8 + Math.random() * 8;
-        p.style.width = s + 'px'; p.style.height = s + 'px';
-        p.style.animationDuration = (6 + Math.random() * 5) + 's';
-        p.style.animationDelay = (Math.random() * 5) + 's';
-        petalEl.appendChild(p);
-    }
-
     function normalize(s) { return s.trim().replace(/\s+/g, '').toLowerCase(); }
 
     window.submitFeeling = async function() {
-        const myName = document.getElementById('myName').value.trim();
+        const myNameInput = document.getElementById('myName').value.trim();
         const crushNameInput = document.getElementById('crushName').value.trim();
-        if (!myName || !crushNameInput) { alert('氏名を入力してください'); return; }
+        if (!myNameInput || !crushNameInput) { alert('氏名を入力してください'); return; }
 
-        myFullId = normalize(myName);
+        myFullId = normalize(myNameInput);
         crushFullId = normalize(crushNameInput);
         roomPath = [myFullId, crushFullId].sort().join('_');
 
-        // 送信前に古い自分のデータを掃除
+        // 【最重要】新しく始める前に、サーバー上の自分の古いデータを一度完全に消去
         await remove(ref(db, 'feelings/' + myFullId));
 
         await set(ref(db, 'feelings/' + myFullId), {
-            name: myName,
+            name: myNameInput,
             crushKey: crushFullId,
             timestamp: serverTimestamp()
         });
         
         showStep(1);
 
-        // 自分のデータの監視（相手がリセットしたことを検知するため）
+        // 監視のセット
         onValue(ref(db, 'feelings/' + myFullId), (snap) => {
             if (!snap.exists() && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
                 alert("縁がリセットされました。");
@@ -202,7 +188,6 @@
             }
         });
 
-        // 相手のデータの監視
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
                 showStep(2);
@@ -216,8 +201,10 @@
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
     }
 
+    // 【修正】自分を消す時に相手のデータも一緒に消すように強化
     window.cancelWait = async function() {
         if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
+        if(crushFullId) await remove(ref(db, 'feelings/' + crushFullId));
         location.reload();
     }
 
@@ -248,18 +235,29 @@
         input.value = "";
     }
 
+    // 【修正】リセット時に自分、相手、チャットすべてを消し去る
     window.fullReset = async function() {
         if (confirm("二人の縁を完全にリセットしますか？\n（相手の画面もリセットされます）")) {
-            // 相手側の画面を戻すために、まず相手が監視している自分のデータを消す
             await remove(ref(db, 'feelings/' + myFullId));
-            // 念のため相手のデータも消す（自分が許可を持っている場合のみ有効）
             await remove(ref(db, 'feelings/' + crushFullId));
-            // チャット履歴を消す
             await remove(ref(db, 'chats/' + roomPath));
-            
             alert("リセットしました。");
             location.reload();
         }
+    }
+
+    // 桜
+    const petalEl = document.getElementById('petals');
+    for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.background = '#f4a7b9';
+        const s = 8 + Math.random() * 8;
+        p.style.width = s + 'px'; p.style.height = s + 'px';
+        p.style.animationDuration = (6 + Math.random() * 5) + 's';
+        p.style.animationDelay = (Math.random() * 5) + 's';
+        petalEl.appendChild(p);
     }
 </script>
 </body>

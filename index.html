@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ひみつのきもち</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@400;600&display=swap');
+:root {
+  --pink: #f4a7b9; --deep: #c2587a; --cream: #fdf6f0;
+  --soft: #fff0f5; --text: #4a2535; --muted: #a07080;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Zen Maru Gothic', sans-serif;
+  background: var(--cream); color: var(--text);
+  min-height: 100vh; display: flex;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.petal {
+  position: absolute; border-radius: 0 50% 50% 50%; opacity: 0;
+  animation: fall linear infinite;
+}
+@keyframes fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 0.6; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+.container { position: relative; z-index: 1; width: 100%; max-width: 400px; }
+.card {
+  background: white; border-radius: 28px; padding: 36px 28px;
+  box-shadow: 0 8px 40px rgba(194,88,122,0.13);
+  position: relative; overflow: hidden;
+}
+.card::before {
+  content: ''; position: absolute; top: -50px; right: -50px;
+  width: 140px; height: 140px;
+  background: radial-gradient(circle, var(--pink) 0%, transparent 70%);
+  opacity: 0.25;
+}
+h1 {
+  font-family: 'Shippori Mincho', serif; font-size: 1.5rem;
+  text-align: center; color: var(--deep); margin-bottom: 6px;
+}
+.subtitle { text-align: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 24px; }
+.step { display: none; animation: fadeIn 0.4s ease; }
+.step.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.big-label { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px; display: block; }
+.label { font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; display: block; }
+input[type="text"] {
+  width: 100%; padding: 14px 16px;
+  border: 2px solid #f0d8e0; border-radius: 12px;
+  font-family: 'Zen Maru Gothic', sans-serif; font-size: 1rem;
+  color: var(--text); background: var(--soft); outline: none;
+  transition: border-color 0.2s; margin-bottom: 16px;
+}
+input:focus { border-color: var(--pink); }
+input::placeholder { color: #d4a8b8; }
+.btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--pink), var(--deep));
+  color: white; border: none; border-radius: 12px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 16px rgba(194,88,122,0.3); margin-bottom: 10px;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-sub {
+  width: 100%; padding: 12px; background: transparent;
+  color: var(--muted); border: 2px solid #f0d8e0; border-radius: 12px;
+  font-family: 'Zen Maru Gothic', sans-serif; font-size: 0.88rem;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 10px;
+}
+.btn-sub:hover { border-color: var(--pink); color: var(--deep); }
+.hint { font-size: 0.75rem; color: var(--muted); margin-top: -10px; margin-bottom: 16px; }
+hr { border: none; border-top: 1px solid #f0d8e0; margin: 20px 0; }
+.how-box { background: var(--soft); border-radius: 16px; padding: 18px; margin-bottom: 24px; }
+.how-step {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin-bottom: 10px; font-size: 0.85rem; line-height: 1.5;
+}
+.how-step:last-child { margin-bottom: 0; }
+.how-num {
+  background: var(--deep); color: white; border-radius: 50%;
+  width: 22px; height: 22px; display: flex; align-items: center;
+  justify-content: center; font-size: 0.7rem; font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+.waiting-wrap { text-align: center; padding: 20px 0; }
+.pulse { animation: pulse 1.5s ease infinite; display: inline-block; font-size: 2.5rem; margin-bottom: 12px; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+.waiting-title { font-weight: 700; color: var(--deep); margin-bottom: 8px; font-size: 1rem; }
+.waiting-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.8; }
+.result-wrap { text-align: center; padding: 8px 0; }
+.heart-anim { font-size: 4rem; display: block; animation: heartbeat 0.8s ease infinite alternate; margin-bottom: 12px; }
+@keyframes heartbeat { from{transform:scale(1)} to{transform:scale(1.1)} }
+.result-title { font-family: 'Shippori Mincho', serif; font-size: 1.5rem; color: var(--deep); margin-bottom: 8px; }
+.names-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+.name-chip { background: linear-gradient(135deg, var(--pink), var(--deep)); color: white; border-radius: 20px; padding: 7px 18px; font-weight: 700; font-size: 0.95rem; }
+.result-sub { font-size: 0.83rem; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.no-wrap { text-align: center; padding: 8px 0; }
+.no-emoji { font-size: 3rem; display: block; margin-bottom: 12px; }
+.no-title { font-family: 'Shippori Mincho', serif; font-size: 1.3rem; color: var(--muted); margin-bottom: 8px; }
+.no-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.7; margin-bottom: 20px; }
+.submitted-box {
+  background: var(--soft); border: 2px solid var(--pink);
+  border-radius: 16px; padding: 16px; text-align: center; margin-bottom: 20px;
+}
+.submitted-box .icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+.submitted-box .msg { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="petals" id="petals"></div>
+<div class="container">
+<div class="card">
+  <h1>💌 ひみつのきもち</h1>
+  <p class="subtitle">名前を入力するだけ。気持ちが届いたら伝えます</p>
+
+  <!-- STEP 0: 入力画面 -->
+
+  <div class="step active" id="step0">
+    <div class="how-box">
+      <div class="how-step"><span class="how-num">1</span>自分の名前と、好きな人の名前を入力</div>
+      <div class="how-step"><span class="how-num">2</span>相手も同じように入力する</div>
+      <div class="how-step"><span class="how-num">3</span>お互いが入力していたら「両思い」と表示 💖</div>
+    </div>
+    <span class="big-label">あなたの名前</span>
+    <input type="text" id="myName" placeholder="例：山田 太郎" maxlength="20">
+    <span class="big-label">好きな人の名前</span>
+    <span class="label">相手には見えません 🤫</span>
+    <input type="text" id="crushName" placeholder="例：佐藤 花子" maxlength="20">
+    <p class="hint">※ 名前の表記は相手と合わせてください</p>
+    <button class="btn" id="submitBtn" onclick="submitFeeling()">気持ちを送る 💌</button>
+  </div>
+
+  <!-- STEP 1: 送信後・待機 -->
+
+  <div class="step" id="step1">
+    <div class="submitted-box">
+      <span class="icon">✉️</span>
+      <div class="msg">気持ちを送りました！<br>相手が入力したら自動的に結果が表示されます</div>
+    </div>
+    <div class="waiting-wrap">
+      <span class="pulse">⏳</span>
+      <div class="waiting-title" id="waitingTitle">相手の入力を待っています…</div>
+      <p class="waiting-sub" id="waitingSub">
+        このまま画面を開いておいてください<br>
+        相手が入力した瞬間に結果が出ます
+      </p>
+    </div>
+  </div>
+
+  <!-- STEP 2: 結果 -->
+
+  <div class="step" id="step2">
+    <div id="resultInner"></div>
+    <hr>
+    <button class="btn-sub" onclick="resetAll()">🔄 もう一度</button>
+  </div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
+  authDomain: "coupleapp-30f82.firebaseapp.com",
+  databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com",
+  projectId: "coupleapp-30f82",
+  storageBucket: "coupleapp-30f82.firebasestorage.app",
+  messagingSenderId: "205261235219",
+  appId: "1:205261235219:web:38b93dde060e520cdecbe6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// 花びら
+const petalEl = document.getElementById('petals');
+for (let i = 0; i < 16; i++) {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  p.style.left = Math.random() * 100 + 'vw';
+  p.style.background = ['#f4a7b9','#ffd6e0','#ffb3c6'][Math.floor(Math.random()*3)];
+  const s = 6 + Math.random() * 10;
+  p.style.width = s + 'px'; p.style.height = s + 'px';
+  p.style.animationDuration = (5 + Math.random() * 6) + 's';
+  p.style.animationDelay = (Math.random() * 8) + 's';
+  petalEl.appendChild(p);
+}
+
+let state = { myName: '', crushName: '', unsubscribe: null };
+
+function goTo(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+}
+
+// 名前を正規化（ひらがな・カタカナ・全角半角を統一）
+function normalize(s) {
+  return (s || '').trim().replace(/\s+/g, '')
+    .toLowerCase()
+    .replace(/[ａ-ｚＡ-Ｚ０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[ぁ-ん]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
+}
+
+// Firebaseのキーに使えない文字を除去
+function toKey(s) {
+  return normalize(s).replace(/[.#$\[\]/]/g, '_');
+}
+
+window.submitFeeling = async function() {
+  const myName = document.getElementById('myName').value.trim();
+  const crushName = document.getElementById('crushName').value.trim();
+  if (!myName) { alert('あなたの名前を入力してください'); return; }
+  if (!crushName) { alert('好きな人の名前を入力してください'); return; }
+  if (normalize(myName) === normalize(crushName)) { alert('自分自身の名前は入力できません'); return; }
+
+  state.myName = myName;
+  state.crushName = crushName;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+
+  try {
+    // feelings/{自分のキー} に保存
+    // 構造: { name: "山田太郎", crush: "佐藤花子", timestamp: ... }
+    const myKey = toKey(myName);
+    await set(ref(db, 'feelings/' + myKey), {
+      name: myName,
+      crush: crushName,
+      crushKey: toKey(crushName),
+      timestamp: Date.now()
+    });
+
+    goTo(1);
+    listenForMatch(myKey, toKey(crushName));
+  } catch(e) {
+    alert('送信に失敗しました。再度お試しください。');
+    btn.disabled = false;
+    btn.textContent = '気持ちを送る 💌';
+  }
+}
+
+function listenForMatch(myKey, crushKey) {
+  // 相手が自分のことを登録しているか監視
+  const crushRef = ref(db, 'feelings/' + crushKey);
+  state.unsubscribe = onValue(crushRef, (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    // 相手のcrushKeyが自分のkeyと一致 → 両思い
+    if (data.crushKey === myKey) {
+      if (state.unsubscribe) state.unsubscribe();
+      showResult(true, state.myName, data.name);
+    }
+  });
+
+  // すでに相手が入力済みかも確認（初回チェック）
+  get(crushRef).then(snap => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    if (data.crushKey === myKey) {
+      if (state.unsubscribe) state.unsubscribe();
+      showResult(true, state.myName, data.name);
+    }
+  });
+}
+
+function showResult(isMatch, myName, partnerName) {
+  const el = document.getElementById('resultInner');
+  if (isMatch) {
+    el.innerHTML = `
+      <div class="result-wrap">
+        <span class="heart-anim">💖</span>
+        <div class="result-title">両思い！</div>
+        <div class="names-row">
+          <span class="name-chip">${esc(myName)}</span>
+          <span style="font-size:1.3rem">💕</span>
+          <span class="name-chip">${esc(partnerName)}</span>
+        </div>
+        <p class="result-sub">ふたりの気持ちは一致していました！<br>素直に伝えてみて 🌸</p>
+      </div>
+    `;
+  } else {
+    el.innerHTML = `
+      <div class="no-wrap">
+        <span class="no-emoji">🌧️</span>
+        <div class="no-title">まだ相手は入力していません</div>
+        <p class="no-sub">もう少し待ってみてください 🌿</p>
+      </div>
+    `;
+  }
+  goTo(2);
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+window.resetAll = function() {
+  if (state.unsubscribe) state.unsubscribe();
+  state = { myName: '', crushName: '', unsubscribe: null };
+  document.getElementById('myName').value = '';
+  document.getElementById('crushName').value = '';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = false;
+  btn.textContent = '気持ちを送る 💌';
+  goTo(0);
+}
+</script>
+
+</body>
+</html>

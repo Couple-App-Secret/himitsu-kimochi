@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; }
+        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Zen Maru Gothic', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 10px; overflow: hidden; }
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
@@ -24,9 +24,12 @@
         .step.active { display: flex; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .input-group { margin-bottom: 15px; text-align: left; }
-        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-left: 5px; margin-bottom: 5px; display: block; }
-        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; background: #fafafa; }
-        .btn { width: 100%; padding: 18px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-left: 5px; margin-bottom: 3px; display: block; }
+        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; background: #fafafa; transition: 0.3s; }
+        input.invalid { border-color: var(--error); background: #fff5f5; }
+        .error-msg { color: var(--error); font-size: 0.7rem; margin-top: 5px; margin-left: 5px; display: none; }
+        .btn { width: 100%; padding: 18px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn:disabled { background: #ddd; cursor: not-allowed; transform: scale(0.98); opacity: 0.7; }
         #chat-area { flex-grow: 1; background: rgba(255, 240, 245, 0.6); border-radius: 20px; margin: 10px 0; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--pink); }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; text-align: left; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
@@ -44,17 +47,20 @@
             <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">縁をリセット</div>
             <h1>SECRET</h1>
             <div class="step active" id="step0">
-                <p class="subtitle">二人の気持ちを重ねます</p>
+                <p class="subtitle">お互いの氏名を<b>全角カタカナ</b>で入力</p>
                 <div class="input-group">
-                    <label class="input-label">あなたの氏名（カタカナ）</label>
-                    <input type="text" id="myName" placeholder="サトウ ハルト" onblur="toKatakana(this)">
+                    <label class="input-label">あなたの氏名</label>
+                    <input type="text" id="myName" placeholder="サトウ ハルト" autocomplete="off" oninput="validateInput()">
+                    <div id="myNameError" class="error-msg">※全角カタカナのみで入力してください</div>
                 </div>
                 <div class="input-group">
-                    <label class="input-label">相手の氏名（カタカナ）</label>
-                    <input type="text" id="crushName" placeholder="スズキ ユナ" onblur="toKatakana(this)">
+                    <label class="input-label">相手の氏名</label>
+                    <input type="text" id="crushName" placeholder="スズキ ユナ" autocomplete="off" oninput="validateInput()">
+                    <div id="crushNameError" class="error-msg">※全角カタカナのみで入力してください</div>
                 </div>
-                <button class="btn" onclick="submitFeeling()">気持ちをおくる</button>
+                <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>気持ちをおくる</button>
             </div>
+            
             <div class="step" id="step1">
                 <span style="font-size:4rem;">⏳</span>
                 <p style="font-weight:700; margin-top:20px;">相手を待っています...</p>
@@ -92,94 +98,92 @@
 
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
-    // 入力中ではなく、入力が終わった(フォーカスが外れた)時に変換する
-    window.toKatakana = function(el) {
-        let val = el.value.replace(/[ぁ-ん]/g, s => String.fromCharCode(s.charCodeAt(0) + 0x60));
-        el.value = val.replace(/[^ァ-ヶー\s]/g, '');
-    };
-
-    function normalize(s) { return s.trim().replace(/\s+/g, ''); }
-
-    window.submitFeeling = async function() {
+    // 入力チェック用関数
+    window.validateInput = function() {
         const n1 = document.getElementById('myName');
         const n2 = document.getElementById('crushName');
-        toKatakana(n1); toKatakana(n2); // 送信直前にも念のため変換
+        const e1 = document.getElementById('myNameError');
+        const e2 = document.getElementById('crushNameError');
+        const btn = document.getElementById('submitBtn');
 
-        if (!n1.value || !n2.value) { alert('氏名を入力してください'); return; }
+        // カタカナ・長音・スペースのみ許容する正規表現
+        const kanaRegex = /^[ァ-ヶー\s　]+$/;
 
-        myFullId = normalize(n1.value);
-        crushFullId = normalize(n2.value);
-        roomPath = [myFullId, crushFullId].sort().join('_');
+        const isN1Valid = n1.value === "" || kanaRegex.test(n1.value);
+        const isN2Valid = n2.value === "" || kanaRegex.test(n2.value);
 
-        await remove(ref(db, 'feelings/' + myFullId)); // 古いデータを掃除
-        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
+        // エラー表示の切り替え
+        n1.classList.toggle('invalid', !isN1Valid && n1.value !== "");
+        e1.style.display = (!isN1Valid && n1.value !== "") ? "block" : "none";
         
+        n2.classList.toggle('invalid', !isN2Valid && n2.value !== "");
+        e2.style.display = (!isN2Valid && n2.value !== "") ? "block" : "none";
+
+        // 両方正しく入力され、かつ空でない場合のみボタンを有効化
+        btn.disabled = !(isN1Valid && isN2Valid && n1.value.trim() !== "" && n2.value.trim() !== "");
+    };
+
+    window.submitFeeling = async function() {
+        myFullId = document.getElementById('myName').value.trim().replace(/\s+/g, '');
+        crushFullId = document.getElementById('crushName').value.trim().replace(/\s+/g, '');
+
+        roomPath = [myFullId, crushFullId].sort().join('_');
+        await remove(ref(db, 'feelings/' + myFullId));
+        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
         showStep(1);
 
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) showStep(2);
         });
-        
         onValue(ref(db, 'feelings/' + myFullId), (snap) => {
-            if (!snap.exists() && document.getElementById('step3').classList.contains('active')) {
-                alert("リセットされました"); location.reload();
+            if (!snap.exists() && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
+                location.reload();
             }
         });
     }
 
+    // --- 以下、共通の制御ロジック ---
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
     }
-
     window.cancelWait = async function() {
-        await remove(ref(db, 'feelings/' + myFullId));
+        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
         location.reload();
     }
-
     window.goToChat = function() {
         showStep(3);
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
-            const area = document.getElementById('chat-area');
-            area.innerHTML = "";
+            const area = document.getElementById('chat-area'); area.innerHTML = "";
             snap.forEach(c => {
-                const d = c.val();
-                const m = document.createElement('div');
+                const d = c.val(); const m = document.createElement('div');
                 m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                m.innerText = d.text;
-                area.appendChild(m);
+                m.innerText = d.text; area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
         });
     }
-
     window.sendMsg = function() {
-        const i = document.getElementById('chatInput');
-        if (!i.value.trim()) return;
+        const i = document.getElementById('chatInput'); if (!i.value.trim()) return;
         push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: i.value, time: serverTimestamp() });
         i.value = "";
     }
-
     window.fullReset = async function() {
-        if (confirm("全て消去してリセットしますか？")) {
+        if (confirm("リセットしますか？")) {
             await remove(ref(db, 'feelings/' + myFullId));
             await remove(ref(db, 'feelings/' + crushFullId));
             await remove(ref(db, 'chats/' + roomPath));
             location.reload();
         }
     }
-
+    // 桜アニメ
     const petalEl = document.getElementById('petals');
     for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.background = '#f4a7b9';
-        const s = 8 + Math.random() * 8;
-        p.style.width = s + 'px'; p.style.height = s + 'px';
-        p.style.animationDuration = (6 + Math.random() * 5) + 's';
-        p.style.animationDelay = (Math.random() * 5) + 's';
+        const p = document.createElement('div'); p.className = 'petal';
+        p.style.left = Math.random() * 100 + 'vw'; p.style.background = '#f4a7b9';
+        const s = 8 + Math.random() * 8; p.style.width = s + 'px'; p.style.height = s + 'px';
+        p.style.animationDuration = (6 + Math.random() * 5) + 's'; p.style.animationDelay = (Math.random() * 5) + 's';
         petalEl.appendChild(p);
     }
 </script>

@@ -15,21 +15,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         html, body { 
-            height: 100%; 
-            width: 100%; 
-            background: var(--cream); 
-            font-family: 'Zen Maru Gothic', sans-serif; 
-            color: var(--text);
-            /* 前回のfixedを解除し、overflow制御でズレを抑止 */
+            height: 100%; width: 100%; background: var(--cream); 
+            font-family: 'Zen Maru Gothic', sans-serif; color: var(--text);
             overflow: hidden; 
         }
 
         body { 
-            display: flex; 
-            flex-direction: column;
-            /* iPhoneの上部・下部の余白を考慮 */
-            padding-top: env(safe-area-inset-top); 
-            padding-bottom: env(safe-area-inset-bottom);
+            display: flex; flex-direction: column;
+            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;
         }
 
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
@@ -37,40 +30,20 @@
         @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
         .container { 
-            position: relative; 
-            z-index: 1; 
-            width: 100%; 
-            max-width: 400px; 
-            height: 100%; 
-            margin: 0 auto;
-            display: flex; 
-            flex-direction: column; 
-            padding: 10px;
+            position: relative; z-index: 1; width: 100%; max-width: 400px; 
+            height: 100%; margin: 0 auto; display: flex; flex-direction: column; 
         }
 
         .card { 
-            background: white; 
-            border-radius: 30px; 
-            padding: 20px; 
+            background: white; border-radius: 30px; padding: 20px; 
             box-shadow: 0 10px 30px rgba(194,88,122,0.1); 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            position: relative; 
+            flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; 
         }
 
-        /* ヘッダー部分に高さを確保して文字被りを防ぐ */
-        .header {
-            position: relative;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 5px;
-        }
-
+        .header { position: relative; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
         h1 { font-size: 1.4rem; color: var(--deep); letter-spacing: 0.1em; }
+        .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--muted); text-decoration: underline; cursor: pointer; }
+
         .subtitle { font-size: 0.75rem; color: var(--muted); text-align: center; margin-bottom: 15px; line-height: 1.5; }
 
         .step { display: none; height: 100%; flex-direction: column; justify-content: center; }
@@ -81,17 +54,11 @@
         .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-bottom: 5px; display: block; text-align: left; }
 
         input[type="text"] { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid #f0f0f0; 
-            border-radius: 15px; 
-            font-size: 1rem; 
-            background: #fafafa; 
-            -webkit-appearance: none;
-            outline: none;
+            width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; 
+            font-size: 1rem; background: #fafafa; -webkit-appearance: none; outline: none;
         }
         input.invalid { border-color: var(--error); background: #fff5f5; }
-        .error-msg { color: var(--error); font-size: 0.65rem; margin-top: 5px; display: none; font-weight: bold; text-align: left; }
+        .error-msg { color: var(--error); font-size: 0.65rem; margin-top: 5px; display: none; font-weight: bold; }
 
         .btn { 
             width: 100%; padding: 18px; background: var(--pink); color: white; border: none; 
@@ -107,28 +74,13 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        .msg { 
-            max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 1rem; 
-            line-height: 1.4; word-wrap: break-word; text-align: left;
-        }
+        .msg { max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 1rem; line-height: 1.4; word-wrap: break-word; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
-        .chat-input-wrap { display: flex; gap: 8px; margin-top: 5px; }
+        .chat-input-wrap { display: flex; gap: 8px; margin-top: 5px; padding-bottom: 5px; }
         .chat-input { flex-grow: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; }
         .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; flex-shrink: 0; }
-
-        /* リセットボタンの位置を調整 */
-        .reset-link { 
-            position: absolute; 
-            right: 0; 
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.7rem; 
-            color: var(--muted); 
-            text-decoration: underline; 
-            cursor: pointer; 
-        }
     </style>
 </head>
 <body>
@@ -169,17 +121,17 @@
 
             <div class="step" id="step3">
                 <div id="chat-area"></div>
-                <div class="chat-input-wrap">
+                <form class="chat-input-wrap" onsubmit="return false;">
                     <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
-                    <button class="send-btn" onclick="sendMsg()">▶</button>
-                </div>
+                    <button class="send-btn" type="button" onclick="sendMsg()">▶</button>
+                </form>
             </div>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -195,21 +147,16 @@
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
     window.validateInput = function() {
-        const n1 = document.getElementById('myName');
-        const n2 = document.getElementById('crushName');
-        const e1 = document.getElementById('myNameError');
-        const e2 = document.getElementById('crushNameError');
+        const n1 = document.getElementById('myName'); const n2 = document.getElementById('crushName');
+        const e1 = document.getElementById('myNameError'); const e2 = document.getElementById('crushNameError');
         const btn = document.getElementById('submitBtn');
         const kanaRegex = /^[ァ-ヶー\s　]+$/;
-
         const isN1Valid = n1.value === "" || kanaRegex.test(n1.value);
         const isN2Valid = n2.value === "" || kanaRegex.test(n2.value);
-
         n1.classList.toggle('invalid', !isN1Valid && n1.value !== "");
         e1.style.display = (!isN1Valid && n1.value !== "") ? "block" : "none";
         n2.classList.toggle('invalid', !isN2Valid && n2.value !== "");
         e2.style.display = (!isN2Valid && n2.value !== "") ? "block" : "none";
-
         btn.disabled = !(isN1Valid && isN2Valid && n1.value.trim() !== "" && n2.value.trim() !== "");
     };
 
@@ -217,18 +164,13 @@
         myFullId = document.getElementById('myName').value.trim().replace(/\s+/g, '');
         crushFullId = document.getElementById('crushName').value.trim().replace(/\s+/g, '');
         roomPath = [myFullId, crushFullId].sort().join('_');
-
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
         showStep(1);
-
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) showStep(2);
         });
-        
         onValue(ref(db, 'feelings/' + myFullId), (snap) => {
-            if (!snap.exists() && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
-                location.reload();
-            }
+            if (!snap.exists() && document.getElementById('step3').classList.contains('active')) location.reload();
         });
     }
 
@@ -245,7 +187,8 @@
 
     window.goToChat = function() {
         showStep(3);
-        onValue(ref(db, 'chats/' + roomPath), (snap) => {
+        const chatRef = ref(db, 'chats/' + roomPath);
+        onValue(chatRef, (snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
             snap.forEach(c => {
@@ -262,19 +205,26 @@
     window.sendMsg = async function() {
         const i = document.getElementById('chatInput');
         const text = i.value.trim();
-        if (!text) return;
+        if (!text || !roomPath) return;
         try {
-            await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: text, time: serverTimestamp() });
+            const chatRef = ref(db, 'chats/' + roomPath);
+            await push(chatRef, {
+                sender: myFullId,
+                text: text,
+                time: serverTimestamp()
+            });
             i.value = "";
             i.focus();
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Send Error:", e); }
     }
 
     window.fullReset = async function() {
-        if (confirm("全ての記録を消去してリセットしますか？")) {
-            await remove(ref(db, 'feelings/' + myFullId));
-            await remove(ref(db, 'feelings/' + crushFullId));
-            await remove(ref(db, 'chats/' + roomPath));
+        if (confirm("お互いの登録とチャット履歴をすべて削除してリセットしますか？")) {
+            const updates = {};
+            updates['feelings/' + myFullId] = null;
+            updates['feelings/' + crushFullId] = null;
+            updates['chats/' + roomPath] = null;
+            await update(ref(db), updates);
             location.reload();
         }
     }

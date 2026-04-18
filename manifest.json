@@ -1,0 +1,17 @@
+{
+  "name": "ひみつのきもち",
+  "short_name": "ひみつのきもち",
+  "description": "名前を入力するだけで両思いがわかるアプリ",
+  "start_url": "/himitsu-kimochi/",
+  "display": "standalone",
+  "background_color": "#fdf6f0",
+  "theme_color": "#c2587a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

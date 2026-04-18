@@ -21,7 +21,6 @@
             --cream: #fff0f5;
             --text: #4a2535;
             --muted: #a38b96;
-            --chat-bg: #fff0f5; /* チャット背景も桜色に */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -42,7 +41,7 @@
         .petal { position: absolute; border-radius: 0 50% 50% 50%; opacity: 0; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
-        .container { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 90vh; display: flex; flex-direction: column; }
+        .container { position: relative; z-index: 1; width: 100%; max-width: 380px; height: 92vh; display: flex; flex-direction: column; }
 
         .card {
             background: white;
@@ -54,6 +53,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
         }
 
         h1 { font-size: 1.6rem; color: var(--deep); margin-bottom: 5px; letter-spacing: 0.1em; }
@@ -74,17 +74,18 @@
             cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
         }
 
+        /* 祝福画面 */
         .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-        /* チャット画面のデザイン */
+        /* チャット画面 */
         #chat-area {
             flex-grow: 1; background: rgba(255, 240, 245, 0.6); border-radius: 20px;
             margin: 10px 0; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 10px;
             border: 1px solid var(--pink);
         }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
@@ -92,9 +93,10 @@
         .chat-input { flex-grow: 1; padding: 12px; border: 1px solid #f0f0f0; border-radius: 25px; background: #fff; outline: none; }
         .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; }
 
-        .confirm-box {
-            background: var(--cream); padding: 15px; border-radius: 20px; margin-top: 20px;
-            border: 1px dashed var(--deep);
+        /* リセットボタン */
+        .reset-link {
+            position: absolute; top: 15px; right: 20px; font-size: 0.7rem;
+            color: var(--muted); text-decoration: underline; cursor: pointer;
         }
     </style>
 </head>
@@ -103,6 +105,7 @@
 
     <div class="container">
         <div class="card">
+            <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">縁をリセット</div>
             <h1>SECRET</h1>
             
             <div class="step active" id="step0">
@@ -115,22 +118,19 @@
             <div class="step" id="step1">
                 <span style="font-size:4rem;">⏳</span>
                 <p style="font-weight:700; margin-top:20px;">相手を待っています...</p>
-                <p class="subtitle">相手も入力すると画面が変わります</p>
+                <div style="margin-top:30px;">
+                    <button class="btn" style="background:var(--muted); font-size:0.9rem; padding:10px;" onclick="cancelWait()">やっぱりやめる</button>
+                </div>
             </div>
 
             <div class="step" id="step2">
                 <span class="heart-anim">💖</span>
                 <h2 style="color:var(--deep); margin-bottom:10px;">おめでとうございます！</h2>
-                <p style="font-weight:700;">二人の想いが結ばれました</p>
-                
-                <div class="confirm-box">
-                    <p style="font-size:0.8rem; color:var(--deep); margin-bottom:10px;">本人確認のため、お互いに承諾が必要です</p>
-                    <button class="btn" onclick="goToChat()">本人確認してチャットを開始</button>
-                </div>
+                <p style="font-weight:700; margin-bottom:20px;">二人の想いが結ばれました</p>
+                <button class="btn" onclick="goToChat()">本人確認してチャットを開始</button>
             </div>
 
             <div class="step" id="step3">
-                <p class="subtitle" style="margin-bottom:10px;">二人だけの秘密の対話</p>
                 <div id="chat-area"></div>
                 <div class="chat-input-wrap">
                     <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
@@ -142,7 +142,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -158,62 +158,67 @@
     const db = getDatabase(app);
 
     let myFullId = "";
+    let crushFullId = "";
     let roomPath = "";
 
-    // 桜のアニメーション
+    // 桜
     const petalEl = document.getElementById('petals');
-    function createPetals() {
-        petalEl.innerHTML = "";
-        for (let i = 0; i < 15; i++) {
-            const p = document.createElement('div');
-            p.className = 'petal';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.background = '#f4a7b9';
-            const s = 8 + Math.random() * 8;
-            p.style.width = s + 'px'; p.style.height = s + 'px';
-            p.style.animationDuration = (6 + Math.random() * 5) + 's';
-            p.style.animationDelay = (Math.random() * 5) + 's';
-            petalEl.appendChild(p);
-        }
+    for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.background = '#f4a7b9';
+        const s = 8 + Math.random() * 8;
+        p.style.width = s + 'px'; p.style.height = s + 'px';
+        p.style.animationDuration = (6 + Math.random() * 5) + 's';
+        p.style.animationDelay = (Math.random() * 5) + 's';
+        petalEl.appendChild(p);
     }
-    createPetals();
 
     function normalize(s) { return s.trim().replace(/\s+/g, '').toLowerCase(); }
 
     window.submitFeeling = async function() {
         const myName = document.getElementById('myName').value.trim();
-        const crushName = document.getElementById('crushName').value.trim();
-        if (!myName || !crushName) { alert('氏名を入力してください'); return; }
+        const crushNameInput = document.getElementById('crushName').value.trim();
+        if (!myName || !crushNameInput) { alert('氏名を入力してください'); return; }
 
         myFullId = normalize(myName);
-        const crushFullId = normalize(crushName);
+        crushFullId = normalize(crushNameInput);
         roomPath = [myFullId, crushFullId].sort().join('_');
 
-        try {
-            await set(ref(db, 'feelings/' + myFullId), {
-                name: myName,
-                crushKey: crushFullId,
-                timestamp: serverTimestamp()
-            });
-            
-            showStep(1);
+        await set(ref(db, 'feelings/' + myFullId), {
+            name: myName,
+            crushKey: crushFullId,
+            timestamp: serverTimestamp()
+        });
+        
+        showStep(1);
 
-            onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
-                if (snap.exists() && snap.val().crushKey === myFullId) {
-                    showStep(2);
-                }
-            });
-        } catch(e) { alert('通信エラー'); }
+        onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
+            if (snap.exists() && snap.val().crushKey === myFullId) {
+                showStep(2);
+            } else if (!snap.exists() && document.getElementById('step2').classList.contains('active')) {
+                // 相手がリセットした場合
+                alert("相手が関係をリセットしました。");
+                location.reload();
+            }
+        });
     }
 
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
+        // チャット画面ではリセットボタンを表示
+        document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
+    }
+
+    window.cancelWait = async function() {
+        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
+        location.reload();
     }
 
     window.goToChat = function() {
         showStep(3);
-        // チャット監視開始
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const chatArea = document.getElementById('chat-area');
             chatArea.innerHTML = "";
@@ -237,6 +242,15 @@
             time: serverTimestamp()
         });
         input.value = "";
+    }
+
+    window.fullReset = async function() {
+        if (confirm("二人の縁を完全にリセットしますか？\n（チャット履歴もすべて削除されます）")) {
+            await remove(ref(db, 'feelings/' + myFullId));
+            await remove(ref(db, 'chats/' + roomPath));
+            alert("リセットしました。");
+            location.reload();
+        }
     }
 </script>
 </body>

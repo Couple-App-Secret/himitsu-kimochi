@@ -63,15 +63,20 @@
         .step.active { display: flex; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* 入力欄のスタイル */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-left: 5px; margin-bottom: 5px; display: block; }
+        
         input[type="text"] {
             width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px;
-            font-size: 1rem; margin-bottom: 20px; transition: 0.3s; background: #fafafa;
+            font-size: 1rem; transition: 0.3s; background: #fafafa;
         }
+        input[type="text"]:focus { border-color: var(--pink); outline: none; background: #fff; }
 
         .btn {
             width: 100%; padding: 18px; background: var(--pink); color: white;
             border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
+            cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4); margin-top: 10px;
         }
 
         .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
@@ -83,7 +88,7 @@
             display: flex; flex-direction: column; gap: 10px;
             border: 1px solid var(--pink);
         }
-        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; text-align: left; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
@@ -107,8 +112,14 @@
             
             <div class="step active" id="step0">
                 <p class="subtitle">二人の気持ちを重ねます</p>
-                <input type="text" id="myName" placeholder="例：サトウ ハルト" maxlength="40">
-                <input type="text" id="crushName" placeholder="例：スズキ ユナ" maxlength="40">
+                <div class="input-group">
+                    <label class="input-label">あなたの氏名（全角カタカナ）</label>
+                    <input type="text" id="myName" placeholder="サトウ ハルト" maxlength="40" oninput="forceKatakana(this)">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">相手の氏名（全角カタカナ）</label>
+                    <input type="text" id="crushName" placeholder="スズキ ユナ" maxlength="40" oninput="forceKatakana(this)">
+                </div>
                 <button class="btn" onclick="submitFeeling()">気持ちをおくる</button>
             </div>
 
@@ -158,18 +169,28 @@
     let crushFullId = "";
     let roomPath = "";
 
+    // カタカナ強制入力のロジック
+    window.forceKatakana = function(el) {
+        // ひらがなをカタカナに変換
+        let val = el.value.replace(/[ぁ-ん]/g, function(s) {
+            return String.fromCharCode(s.charCodeAt(0) + 0x60);
+        });
+        // カタカナ以外（英数字・記号・スペース等）を除去 ※空白は許可する場合は [^ァ-ヶー\s] にする
+        val = val.replace(/[^ァ-ヶー]/g, '');
+        el.value = val;
+    };
+
     function normalize(s) { return s.trim().replace(/\s+/g, '').toLowerCase(); }
 
     window.submitFeeling = async function() {
         const myNameInput = document.getElementById('myName').value.trim();
         const crushNameInput = document.getElementById('crushName').value.trim();
-        if (!myNameInput || !crushNameInput) { alert('氏名を入力してください'); return; }
+        if (!myNameInput || !crushNameInput) { alert('カタカナで氏名を入力してください'); return; }
 
         myFullId = normalize(myNameInput);
         crushFullId = normalize(crushNameInput);
         roomPath = [myFullId, crushFullId].sort().join('_');
 
-        // 【最重要】新しく始める前に、サーバー上の自分の古いデータを一度完全に消去
         await remove(ref(db, 'feelings/' + myFullId));
 
         await set(ref(db, 'feelings/' + myFullId), {
@@ -180,7 +201,6 @@
         
         showStep(1);
 
-        // 監視のセット
         onValue(ref(db, 'feelings/' + myFullId), (snap) => {
             if (!snap.exists() && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
                 alert("縁がリセットされました。");
@@ -201,7 +221,6 @@
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
     }
 
-    // 【修正】自分を消す時に相手のデータも一緒に消すように強化
     window.cancelWait = async function() {
         if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
         if(crushFullId) await remove(ref(db, 'feelings/' + crushFullId));
@@ -235,9 +254,8 @@
         input.value = "";
     }
 
-    // 【修正】リセット時に自分、相手、チャットすべてを消し去る
     window.fullReset = async function() {
-        if (confirm("二人の縁を完全にリセットしますか？\n（相手の画面もリセットされます）")) {
+        if (confirm("二人の縁を完全にリセットしますか？")) {
             await remove(ref(db, 'feelings/' + myFullId));
             await remove(ref(db, 'feelings/' + crushFullId));
             await remove(ref(db, 'chats/' + roomPath));

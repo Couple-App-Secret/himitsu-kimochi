@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>ひみつのきもち</title>
 
-    <link rel="apple-touch-icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.png">
-    <link rel="icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.png">
+    <link rel="apple-touch-icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.PNG">
+    <link rel="icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.PNG">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -104,10 +104,10 @@
             <p class="subtitle">二人の気持ちを重ねます</p>
 
             <div class="step active" id="step0">
-                <span class="label">あなたの名前（カタカナ）</span>
-                <input type="text" id="myName" placeholder="例：タロウ" maxlength="20">
-                <span class="label">相手の名前（カタカナ）</span>
-                <input type="text" id="crushName" placeholder="例：ハナコ" maxlength="20">
+                <span class="label">あなたの氏名（カタカナ）</span>
+                <input type="text" id="myName" placeholder="例：サトウ ハルト" maxlength="40">
+                <span class="label">相手の氏名（カタカナ）</span>
+                <input type="text" id="crushName" placeholder="例：スズキ ユナ" maxlength="40">
                 <button class="btn" onclick="submitFeeling()">気持ちをおくる</button>
             </div>
 
@@ -167,13 +167,14 @@
     }
 
     function normalize(s) {
+        // スペースを削除し、小文字にして比較を正確にする
         return s.trim().replace(/\s+/g, '').toLowerCase();
     }
 
     window.submitFeeling = async function() {
         const myName = document.getElementById('myName').value.trim();
         const crushName = document.getElementById('crushName').value.trim();
-        if (!myName || !crushName) { alert('名前を入力してください'); return; }
+        if (!myName || !crushName) { alert('氏名を入力してください'); return; }
 
         const myKey = normalize(myName);
         const crushKey = normalize(crushName);

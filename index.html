@@ -5,6 +5,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ひみつのきもち</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c2587a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ひみつのきもち">
+<link rel="apple-touch-icon" href="icon.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@400;600&display=swap');
 :root {
@@ -71,6 +77,7 @@ input::placeholder { color: #d4a8b8; }
   box-shadow: 0 4px 16px rgba(194,88,122,0.3); margin-bottom: 10px;
 }
 .btn:hover { transform: translateY(-2px); }
+.btn:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
 .btn-sub {
   width: 100%; padding: 12px; background: transparent;
   color: var(--muted); border: 2px solid #f0d8e0; border-radius: 12px;
@@ -114,7 +121,22 @@ hr { border: none; border-top: 1px solid #f0d8e0; margin: 20px 0; }
 }
 .submitted-box .icon { font-size: 2rem; margin-bottom: 8px; display: block; }
 .submitted-box .msg { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+/* PWAインストールバナー */
+.install-banner {
+background: linear-gradient(135deg, var(–pink), var(–deep));
+color: white; border-radius: 16px; padding: 14px 16px;
+display: flex; align-items: center; justify-content: space-between;
+margin-bottom: 20px; gap: 10px;
+}
+.install-banner-text { font-size: 0.82rem; line-height: 1.5; flex: 1; }
+.install-banner-btn {
+background: white; color: var(–deep); border: none;
+border-radius: 8px; padding: 8px 12px; font-family: ‘Zen Maru Gothic’, sans-serif;
+font-size: 0.8rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+}
 </style>
+
 </head>
 <body>
 <div class="petals" id="petals"></div>
@@ -122,6 +144,13 @@ hr { border: none; border-top: 1px solid #f0d8e0; margin: 20px 0; }
 <div class="card">
   <h1>💌 ひみつのきもち</h1>
   <p class="subtitle">名前を入力するだけ。気持ちが届いたら伝えます</p>
+
+  <!-- PWAインストールバナー（Safariのみ表示） -->
+
+  <div class="install-banner" id="installBanner" style="display:none">
+    <div class="install-banner-text">📲 ホーム画面に追加するとアプリとして使えます</div>
+    <button class="install-banner-btn" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+  </div>
 
   <!-- STEP 0: 入力画面 -->
 
@@ -149,11 +178,8 @@ hr { border: none; border-top: 1px solid #f0d8e0; margin: 20px 0; }
     </div>
     <div class="waiting-wrap">
       <span class="pulse">⏳</span>
-      <div class="waiting-title" id="waitingTitle">相手の入力を待っています…</div>
-      <p class="waiting-sub" id="waitingSub">
-        このまま画面を開いておいてください<br>
-        相手が入力した瞬間に結果が出ます
-      </p>
+      <div class="waiting-title">相手の入力を待っています…</div>
+      <p class="waiting-sub">このまま画面を開いておいてください<br>相手が入力した瞬間に結果が出ます</p>
     </div>
   </div>
 
@@ -170,7 +196,7 @@ hr { border: none; border-top: 1px solid #f0d8e0; margin: 20px 0; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -199,6 +225,18 @@ for (let i = 0; i < 16; i++) {
   petalEl.appendChild(p);
 }
 
+// SafariのPWAバナー表示
+const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+if (isIos && !isInStandaloneMode) {
+  document.getElementById('installBanner').style.display = 'flex';
+}
+
+// Service Worker登録
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/himitsu-kimochi/sw.js');
+}
+
 let state = { myName: '', crushName: '', unsubscribe: null };
 
 function goTo(n) {
@@ -206,7 +244,6 @@ function goTo(n) {
   document.getElementById('step' + n).classList.add('active');
 }
 
-// 名前を正規化（ひらがな・カタカナ・全角半角を統一）
 function normalize(s) {
   return (s || '').trim().replace(/\s+/g, '')
     .toLowerCase()
@@ -214,7 +251,6 @@ function normalize(s) {
     .replace(/[ぁ-ん]/g, c => String.fromCharCode(c.charCodeAt(0) + 0x60));
 }
 
-// Firebaseのキーに使えない文字を除去
 function toKey(s) {
   return normalize(s).replace(/[.#$\[\]/]/g, '_');
 }
@@ -234,8 +270,6 @@ window.submitFeeling = async function() {
   btn.textContent = '送信中…';
 
   try {
-    // feelings/{自分のキー} に保存
-    // 構造: { name: "山田太郎", crush: "佐藤花子", timestamp: ... }
     const myKey = toKey(myName);
     await set(ref(db, 'feelings/' + myKey), {
       name: myName,
@@ -254,20 +288,18 @@ window.submitFeeling = async function() {
 }
 
 function listenForMatch(myKey, crushKey) {
-  // 相手が自分のことを登録しているか監視
   const crushRef = ref(db, 'feelings/' + crushKey);
-  state.unsubscribe = onValue(crushRef, (snap) => {
+
+  get(crushRef).then(snap => {
     if (!snap.exists()) return;
     const data = snap.val();
-    // 相手のcrushKeyが自分のkeyと一致 → 両思い
     if (data.crushKey === myKey) {
       if (state.unsubscribe) state.unsubscribe();
       showResult(true, state.myName, data.name);
     }
   });
 
-  // すでに相手が入力済みかも確認（初回チェック）
-  get(crushRef).then(snap => {
+  state.unsubscribe = onValue(crushRef, (snap) => {
     if (!snap.exists()) return;
     const data = snap.val();
     if (data.crushKey === myKey) {

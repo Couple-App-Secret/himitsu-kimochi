@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; }
+        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
@@ -29,40 +29,46 @@
         .container { 
             position: relative; z-index: 1; width: 100%; max-width: 400px; 
             height: 100%; margin: 0 auto; display: flex; flex-direction: column; 
-            padding: 10px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+            padding: 8px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
         }
 
         .card { 
-            background: white; border-radius: 30px; padding: 15px; 
+            background: white; border-radius: 25px; padding: 12px; 
             box-shadow: 0 10px 30px rgba(194,88,122,0.1); 
             flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        .header { height: 40px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
-        h1 { font-size: 1.1rem; color: var(--deep); letter-spacing: 0.1em; }
-        .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--muted); cursor: pointer; }
+        .header { height: 35px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+        h1 { font-size: 1rem; color: var(--deep); letter-spacing: 0.1em; }
+        .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.65rem; color: var(--muted); cursor: pointer; }
 
         .step { display: none; height: 100%; flex-direction: column; overflow: hidden; }
         .step.active { display: flex; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+        /* チャット */
         #chat-area { 
-            flex: 1; background: rgba(255, 240, 245, 0.4); border-radius: 20px; 
-            margin: 10px 0; overflow-y: auto; padding: 15px; display: flex; 
-            flex-direction: column; gap: 8px; border: 1px solid var(--pink);
+            flex: 1; background: rgba(255, 240, 245, 0.4); border-radius: 15px; 
+            margin: 8px 0; overflow-y: auto; padding: 12px; display: flex; 
+            flex-direction: column; gap: 6px; border: 1px solid var(--pink);
             -webkit-overflow-scrolling: touch;
         }
 
-        .msg { max-width: 85%; padding: 8px 14px; border-radius: 18px; font-size: 1rem; line-height: 1.4; word-wrap: break-word; }
+        .msg { max-width: 85%; padding: 7px 12px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
-        .chat-input-wrap { display: flex; gap: 8px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
-        .chat-input { flex: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
-        .send-btn { background: var(--pink); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
+        .chat-input-wrap { display: flex; gap: 6px; flex-shrink: 0; background: white; padding-bottom: 3px; align-items: center; }
+        .chat-input { flex: 1; padding: 10px 15px; border: 1px solid #f0f0f0; border-radius: 20px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
+        .send-btn { background: var(--pink); border: none; width: 38px; height: 38px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 0.9rem; }
 
-        .btn { width: 100%; padding: 16px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
-        .btn.sub { background: var(--muted); margin-top: 15px; font-size: 0.9rem; padding: 12px; }
+        /* 入力用スタイル */
+        .error-txt { color: var(--error); font-size: 0.65rem; font-weight: bold; margin-bottom: 5px; display: none; }
+        input.invalid { border-color: var(--error) !important; background: #fff5f5 !important; }
+        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 8px; }
+        .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .btn:disabled { background: #ddd; }
+        .btn-sub { background: var(--muted); margin-top: 10px; font-size: 0.85rem; padding: 10px; }
     </style>
 </head>
 <body>
@@ -76,26 +82,27 @@
             
             <div class="step active" id="step0">
                 <div style="margin: auto 0; text-align: center;">
-                    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">名前をカタカナで入力</p>
-                    <input type="text" id="myName" placeholder="自分" oninput="validateInput()" style="width:100%; padding:15px; border:2px solid #f0f0f0; border-radius:15px; margin-bottom:10px; outline:none;">
-                    <input type="text" id="crushName" placeholder="相手" oninput="validateInput()" style="width:100%; padding:15px; border:2px solid #f0f0f0; border-radius:15px; margin-bottom:15px; outline:none;">
+                    <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px;">名前をカタカナで入力</p>
+                    <div id="warn" class="error-txt">※カタカナで入力してください</div>
+                    <input type="text" id="myName" placeholder="自分" oninput="validateInput()" autocomplete="off">
+                    <input type="text" id="crushName" placeholder="相手" oninput="validateInput()" autocomplete="off">
                     <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
                 </div>
             </div>
             
             <div class="step" id="step1">
                 <div style="margin: auto; text-align:center;">
-                    <span style="font-size:3rem;">⏳</span>
-                    <p style="margin: 15px 0;">相手を待っています...</p>
-                    <button class="btn sub" onclick="cancelWait()">やっぱりやめる</button>
+                    <span style="font-size:2.5rem;">⏳</span>
+                    <p style="margin: 10px 0; font-size:0.9rem;">相手を待っています...</p>
+                    <button class="btn btn-sub" onclick="cancelWait()">やっぱりやめる</button>
                 </div>
             </div>
 
             <div class="step" id="step2">
                 <div style="margin: auto; text-align:center;">
-                    <span style="font-size:3rem;">💖</span>
-                    <h2 style="color:var(--deep); margin-top:10px;">成功！</h2>
-                    <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットへ</button>
+                    <span style="font-size:2.5rem;">💖</span>
+                    <h2 style="color:var(--deep); margin-top:8px; font-size:1.2rem;">成功！</h2>
+                    <button class="btn" style="margin-top:15px;" onclick="goToChat()">チャットへ</button>
                 </div>
             </div>
 
@@ -125,13 +132,11 @@
     const db = getDatabase(app);
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
-    const syncHeight = () => {
-        document.getElementById('main-container').style.height = window.innerHeight + 'px';
-    };
+    const syncHeight = () => { document.getElementById('main-container').style.height = window.innerHeight + 'px'; };
     window.addEventListener('resize', syncHeight);
     syncHeight();
 
-    // 絵文字をコード化して確実に保存する
+    // 絵文字を16進数に完全変換（犬雲対策）
     const toSafeString = (str) => {
         return Array.from(str).map(char => {
             const cp = char.codePointAt(0);
@@ -140,9 +145,19 @@
     };
 
     window.validateInput = () => {
-        const n1 = document.getElementById('myName').value.trim();
-        const n2 = document.getElementById('crushName').value.trim();
-        document.getElementById('submitBtn').disabled = !(n1 && n2);
+        const n1 = document.getElementById('myName');
+        const n2 = document.getElementById('crushName');
+        const warn = document.getElementById('warn');
+        const btn = document.getElementById('submitBtn');
+        const kanaRegex = /^[ァ-ヶー\s　]+$/;
+
+        const isN1Valid = n1.value === "" || kanaRegex.test(n1.value);
+        const isN2Valid = n2.value === "" || kanaRegex.test(n2.value);
+
+        n1.classList.toggle('invalid', !isN1Valid);
+        n2.classList.toggle('invalid', !isN2Valid);
+        warn.style.display = (!isN1Valid || !isN2Valid) ? "block" : "none";
+        btn.disabled = !(isN1Valid && isN2Valid && n1.value.trim() !== "" && n2.value.trim() !== "");
     };
 
     window.submitFeeling = async () => {

@@ -14,27 +14,22 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        /* 画面がはみ出さないための基本設定 */
         html, body { 
             height: 100%; width: 100%; background: var(--cream); 
             font-family: 'Zen Maru Gothic', sans-serif; color: var(--text);
             overflow: hidden; position: fixed;
         }
 
-        body { 
-            display: flex; flex-direction: column;
-            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
-        }
+        body { display: flex; flex-direction: column; }
 
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
         .petal { position: absolute; border-radius: 0 50% 50% 50%; opacity: 0; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
 
-        /* 画面高さを動的に管理するためのコンテナ */
         .container { 
             position: relative; z-index: 1; width: 100%; max-width: 400px; 
             height: 100%; margin: 0 auto; display: flex; flex-direction: column; 
-            padding: 10px; transition: height 0.2s;
+            padding: 10px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
         }
 
         .card { 
@@ -44,16 +39,15 @@
         }
 
         .header { height: 40px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
-        h1 { font-size: 1.2rem; color: var(--deep); letter-spacing: 0.1em; }
+        h1 { font-size: 1.1rem; color: var(--deep); letter-spacing: 0.1em; }
         .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--muted); cursor: pointer; }
 
-        .step { display: none; height: 100%; flex-direction: column; }
-        .step.active { display: flex; animation: fadeIn 0.4s ease; }
+        .step { display: none; height: 100%; flex-direction: column; overflow: hidden; }
+        .step.active { display: flex; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* チャットエリア */
         #chat-area { 
-            flex-grow: 1; background: rgba(255, 240, 245, 0.4); border-radius: 20px; 
+            flex: 1; background: rgba(255, 240, 245, 0.4); border-radius: 20px; 
             margin: 10px 0; overflow-y: auto; padding: 15px; display: flex; 
             flex-direction: column; gap: 8px; border: 1px solid var(--pink);
             -webkit-overflow-scrolling: touch;
@@ -63,14 +57,12 @@
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
-        .chat-input-wrap { display: flex; gap: 8px; flex-shrink: 0; background: white; padding: 5px 0; align-items: center; }
-        .chat-input { flex-grow: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa; }
-        .send-btn { background: var(--pink); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .chat-input-wrap { display: flex; gap: 8px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
+        .chat-input { flex: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
+        .send-btn { background: var(--pink); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
 
-        /* 入力用 */
-        .input-group { margin-bottom: 10px; width: 100%; }
-        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; outline: none; -webkit-appearance: none; }
-        .btn { width: 100%; padding: 18px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .btn { width: 100%; padding: 16px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .btn.sub { background: var(--muted); margin-top: 15px; font-size: 0.9rem; padding: 12px; }
     </style>
 </head>
 <body>
@@ -79,20 +71,33 @@
         <div class="card">
             <div class="header">
                 <h1>SECRET</h1>
-                <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">縁をリセット</div>
+                <div id="reset-trigger" class="reset-link" style="display:none;" onclick="fullReset()">リセット</div>
             </div>
             
             <div class="step active" id="step0">
-                <div style="margin: auto 0;">
-                    <p style="text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:15px;">お互いの名前をカタカナで入力</p>
-                    <div class="input-group"><input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()"></div>
-                    <div class="input-group"><input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()"></div>
-                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>気持ちをおくる</button>
+                <div style="margin: auto 0; text-align: center;">
+                    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">名前をカタカナで入力</p>
+                    <input type="text" id="myName" placeholder="自分" oninput="validateInput()" style="width:100%; padding:15px; border:2px solid #f0f0f0; border-radius:15px; margin-bottom:10px; outline:none;">
+                    <input type="text" id="crushName" placeholder="相手" oninput="validateInput()" style="width:100%; padding:15px; border:2px solid #f0f0f0; border-radius:15px; margin-bottom:15px; outline:none;">
+                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
                 </div>
             </div>
             
-            <div class="step" id="step1"><div style="margin: auto; text-align:center;"><span style="font-size:3rem;">⏳</span><p>相手を待っています...</p></div></div>
-            <div class="step" id="step2"><div style="margin: auto; text-align:center;"><span style="font-size:3rem;">💖</span><h2 style="color:var(--deep);">想いが結ばれました</h2><button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットを開始する</button></div></div>
+            <div class="step" id="step1">
+                <div style="margin: auto; text-align:center;">
+                    <span style="font-size:3rem;">⏳</span>
+                    <p style="margin: 15px 0;">相手を待っています...</p>
+                    <button class="btn sub" onclick="cancelWait()">やっぱりやめる</button>
+                </div>
+            </div>
+
+            <div class="step" id="step2">
+                <div style="margin: auto; text-align:center;">
+                    <span style="font-size:3rem;">💖</span>
+                    <h2 style="color:var(--deep); margin-top:10px;">成功！</h2>
+                    <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットへ</button>
+                </div>
+            </div>
 
             <div class="step" id="step3">
                 <div id="chat-area"></div>
@@ -106,7 +111,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -120,28 +125,18 @@
     const db = getDatabase(app);
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
-    // 画面高さの修正ロジック
-    const fixHeight = () => {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
-        document.getElementById('main-container').style.height = `${window.innerHeight}px`;
+    const syncHeight = () => {
+        document.getElementById('main-container').style.height = window.innerHeight + 'px';
     };
-    window.addEventListener('resize', fixHeight);
-    window.addEventListener('orientationchange', fixHeight);
-    fixHeight();
+    window.addEventListener('resize', syncHeight);
+    syncHeight();
 
-    // 絵文字を安全に（エスケープ）して送信する
-    const escapeEmoji = (str) => {
-        return str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|[\u2600-\u27FF]/g, (char) => {
-            return `[E:${char.codePointAt(0).toString(16)}]`;
-        });
-    };
-
-    // 受信時に絵文字を戻す
-    const unescapeEmoji = (str) => {
-        return str.replace(/\[E:([0-9a-f]+)\]/g, (match, hex) => {
-            return String.fromCodePoint(parseInt(hex, 16));
-        });
+    // 絵文字をコード化して確実に保存する
+    const toSafeString = (str) => {
+        return Array.from(str).map(char => {
+            const cp = char.codePointAt(0);
+            return cp > 127 ? `&#x${cp.toString(16)};` : char;
+        }).join('');
     };
 
     window.validateInput = () => {
@@ -161,11 +156,16 @@
         });
     };
 
+    window.cancelWait = async () => {
+        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
+        location.reload();
+    };
+
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
-        fixHeight();
+        syncHeight();
     }
 
     window.goToChat = () => {
@@ -177,7 +177,7 @@
                 const d = c.val();
                 const m = document.createElement('div');
                 m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                m.innerText = d.isEscaped ? unescapeEmoji(d.text) : d.text;
+                m.innerHTML = d.text;
                 area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
@@ -190,8 +190,7 @@
         if (!text) return;
         await push(ref(db, 'chats/' + roomPath), {
             sender: myFullId,
-            text: escapeEmoji(text),
-            isEscaped: true,
+            text: toSafeString(text),
             time: serverTimestamp()
         });
         i.value = "";
@@ -208,15 +207,6 @@
             location.reload();
         }
     };
-
-    const petalEl = document.getElementById('petals');
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div'); p.className = 'petal';
-        p.style.left = Math.random() * 100 + 'vw'; p.style.background = '#f4a7b9';
-        const s = 8 + Math.random() * 8; p.style.width = s + 'px'; p.style.height = s + 'px';
-        p.style.animationDuration = (6 + Math.random() * 5) + 's'; p.style.animationDelay = (Math.random() * 5) + 's';
-        petalEl.appendChild(p);
-    }
 </script>
 </body>
 </html>

@@ -9,18 +9,18 @@
     <link rel="icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="縁結び">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         
         :root {
-            --main-blue: #1e3a8a; /* 組紐の青 */
-            --main-red: #b91c1c;  /* 組紐の赤 */
-            --cream: #fdfaf7;
-            --text: #2d1a12;
-            --muted: #8c7b75;
+            --pink: #f4a7b9;
+            --deep: #c2587a;
+            --cream: #fff0f5;
+            --text: #4a2535;
+            --muted: #a38b96;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -34,129 +34,93 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            overflow: hidden;
         }
 
-        /* 桜の花びらアニメーション */
-        .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-        .petal {
-            position: absolute; border-radius: 0 50% 50% 50%; opacity: 0;
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; }
-            100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
-        }
-
-        .container { position: relative; z-index: 1; width: 100%; max-width: 380px; }
+        .container { width: 100%; max-width: 360px; }
 
         .card {
             background: white;
-            border-radius: 32px;
-            padding: 40px 24px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 30px;
+            padding: 40px 20px;
+            box-shadow: 0 10px 30px rgba(194,88,122,0.1);
             text-align: center;
         }
 
         h1 {
-            font-family: 'Shippori Mincho', serif;
-            font-size: 1.6rem;
-            color: var(--main-blue);
-            margin-bottom: 8px;
-            letter-spacing: 0.05em;
+            font-size: 1.8rem;
+            color: var(--deep);
+            margin-bottom: 5px;
+            letter-spacing: 0.1em;
         }
 
-        .subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 30px; }
+        .subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 35px; }
 
-        .how-box {
-            background: #f8f9fc;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: left;
-            border: 1px solid #edf2f7;
-        }
-
-        .how-step {
-            display: flex; gap: 12px; margin-bottom: 12px;
-            font-size: 0.85rem; line-height: 1.6; color: var(--text);
-        }
-        .how-num {
-            background: var(--main-blue); color: white; border-radius: 50%;
-            width: 22px; height: 22px; display: flex; align-items: center;
-            justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
-        }
-
-        .label { font-size: 0.9rem; font-weight: 700; display: block; margin-bottom: 8px; text-align: left; padding-left: 4px; }
+        .label { font-size: 0.9rem; font-weight: 700; display: block; margin-bottom: 8px; text-align: left; padding-left: 5px; }
 
         input[type="text"] {
-            width: 100%; padding: 16px; border: 2px solid #eee; border-radius: 16px;
-            font-size: 1rem; margin-bottom: 20px; transition: 0.3s; background: #fafafa;
+            width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px;
+            font-size: 1rem; margin-bottom: 25px; transition: 0.3s; background: #fafafa;
         }
-        input:focus { border-color: var(--main-blue); outline: none; background: white; }
+        input:focus { border-color: var(--pink); outline: none; background: white; }
 
         .btn {
-            width: 100%; padding: 18px;
-            background: linear-gradient(135deg, var(--main-blue), var(--main-red));
-            color: white; border: none; border-radius: 16px;
-            font-size: 1.1rem; font-weight: 700; cursor: pointer;
-            box-shadow: 0 10px 20px rgba(30,58,138,0.2);
+            width: 100%; padding: 18px; background: var(--pink); color: white;
+            border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
+            transition: 0.3s;
         }
-        .btn:disabled { opacity: 0.5; }
+        .btn:active { transform: scale(0.98); }
 
-        /* ステップ管理 */
         .step { display: none; }
-        .step.active { display: block; animation: fadeIn 0.6s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .step.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 結果表示 */
-        .result-wrap { padding: 20px 0; }
-        .heart-anim { font-size: 4.5rem; animation: heartbeat 0.8s infinite alternate; display: block; margin-bottom: 20px; }
-        @keyframes heartbeat { from { transform: scale(1); } to { transform: scale(1.15); } }
+        .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        
         .name-chip {
-            background: white; border: 2px solid var(--main-blue); color: var(--main-blue);
-            padding: 8px 20px; border-radius: 30px; font-weight: 700; font-size: 1rem;
+            display: inline-block; background: var(--cream); color: var(--deep);
+            padding: 5px 15px; border-radius: 20px; font-weight: 700;
         }
     </style>
 </head>
 <body>
-    <div class="petals" id="petals"></div>
+
     <div class="container">
         <div class="card">
             <h1>SECRET</h1>
-            <p class="subtitle">二人の気持ちを、組紐で結びます</p>
+            <p class="subtitle">二人の気持ちを重ねます</p>
 
             <div class="step active" id="step0">
-                <div class="how-box">
-                    <div class="how-step"><span class="how-num">1</span>あなたの名前を入力</div>
-                    <div class="how-step"><span class="how-num">2</span>好きな人の名前を入力</div>
-                    <div class="how-step"><span class="how-num">3</span>お互いが入力していれば「結ばれます」</div>
-                </div>
-                <span class="label">あなたの名前</span>
-                <input type="text" id="myName" placeholder="例：文吾" maxlength="20">
-                <span class="label">好きな人の名前</span>
-                <input type="text" id="crushName" placeholder="例：ハナ" maxlength="20">
-                <button class="btn" id="submitBtn" onclick="submitFeeling()">気持ちを結ぶ 💌</button>
+                <span class="label">あなたの名前（カタカナ）</span>
+                <input type="text" id="myName" placeholder="例：タロウ" maxlength="20">
+                <span class="label">相手の名前（カタカナ）</span>
+                <input type="text" id="crushName" placeholder="例：ハナコ" maxlength="20">
+                <button class="btn" onclick="submitFeeling()">気持ちをおくる</button>
             </div>
 
             <div class="step" id="step1">
-                <div class="result-wrap">
-                    <span class="heart-anim" style="animation: none;">⏳</span>
-                    <p style="font-weight:700; color:var(--main-blue);">相手を待っています...</p>
-                    <p class="subtitle">相手が入力すると、この画面が切り替わります</p>
-                </div>
+                <span class="heart-anim">⏳</span>
+                <p style="font-weight:700;">相手を待っています...</p>
+                <p class="subtitle" style="margin-top:10px;">相手も入力すると画面が変わります</p>
             </div>
 
             <div class="step" id="step2">
-                <div id="resultInner"></div>
+                <span class="heart-anim">💖</span>
+                <h2 style="color:var(--deep); margin-bottom:15px;">結ばれました！</h2>
+                <div style="margin-bottom:20px;">
+                    <span class="name-chip" id="resMe"></span>
+                    <span style="margin:0 5px;">&</span>
+                    <span class="name-chip" id="resYou"></span>
+                </div>
+                <p class="subtitle">二人の想いがつながりました</p>
             </div>
         </div>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -171,29 +135,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 桜
-    const petalEl = document.getElementById('petals');
-    for (let i = 0; i < 16; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.background = ['#f4a7b9','#ffd6e0','#ffb3c6'][Math.floor(Math.random()*3)];
-        const s = 6 + Math.random() * 10;
-        p.style.width = s + 'px'; p.style.height = s + 'px';
-        p.style.animationDuration = (5 + Math.random() * 6) + 's';
-        p.style.animationDelay = (Math.random() * 8) + 's';
-        petalEl.appendChild(p);
-    }
-
-    let state = { myName: '', crushName: '', unsubscribe: null };
-
     function goTo(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
     }
 
     function normalize(s) {
-        return (s || '').trim().replace(/\s+/g, '').toLowerCase();
+        return s.trim().replace(/\s+/g, '').toLowerCase();
     }
 
     window.submitFeeling = async function() {
@@ -201,8 +149,6 @@
         const crushName = document.getElementById('crushName').value.trim();
         if (!myName || !crushName) { alert('名前を入力してください'); return; }
 
-        state.myName = myName;
-        state.crushName = crushName;
         const myKey = normalize(myName);
         const crushKey = normalize(crushName);
 
@@ -213,34 +159,16 @@
                 timestamp: Date.now()
             });
             goTo(1);
-            listenForMatch(myKey, crushKey);
-        } catch(e) { alert('エラーが発生しました'); }
-    }
-
-    function listenForMatch(myKey, crushKey) {
-        const crushRef = ref(db, 'feelings/' + crushKey);
-        onValue(crushRef, (snap) => {
-            if (snap.exists() && snap.val().crushKey === myKey) {
-                showResult(state.myName, snap.val().name);
-            }
-        });
-    }
-
-    function showResult(me, you) {
-        document.getElementById('resultInner').innerHTML = `
-            <div class="result-wrap">
-                <span class="heart-anim">💖</span>
-                <h2 style="font-family:'Shippori Mincho'; color:var(--main-red);">結ばれました</h2>
-                <div style="margin:25px 0; display:flex; align-items:center; justify-content:center; gap:10px;">
-                    <span class="name-chip">${me}</span>
-                    <span>∞</span>
-                    <span class="name-chip">${you}</span>
-                </div>
-                <p class="subtitle">二人の気持ちがつながりました！</p>
-                <button class="btn" onclick="location.reload()" style="background:var(--muted); margin-top:20px;">閉じる</button>
-            </div>
-        `;
-        goTo(2);
+            
+            const crushRef = ref(db, 'feelings/' + crushKey);
+            onValue(crushRef, (snap) => {
+                if (snap.exists() && snap.val().crushKey === myKey) {
+                    document.getElementById('resMe').innerText = myName;
+                    document.getElementById('resYou').innerText = snap.val().name;
+                    goTo(2);
+                }
+            });
+        } catch(e) { alert('通信エラーが発生しました'); }
     }
 </script>
 </body>

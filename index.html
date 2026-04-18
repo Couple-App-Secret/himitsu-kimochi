@@ -10,19 +10,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
+        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         html, body { 
             height: 100%; width: 100%; background: var(--cream); 
             font-family: 'Zen Maru Gothic', sans-serif; color: var(--text);
-            overflow: hidden; 
+            overflow: hidden; position: fixed; /* 画面全体の揺れを防止 */
         }
 
         body { 
             display: flex; flex-direction: column;
-            padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px;
+            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
         }
 
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
@@ -32,55 +32,54 @@
         .container { 
             position: relative; z-index: 1; width: 100%; max-width: 400px; 
             height: 100%; margin: 0 auto; display: flex; flex-direction: column; 
+            padding: 10px;
         }
 
         .card { 
-            background: white; border-radius: 30px; padding: 20px; 
+            background: white; border-radius: 30px; padding: 15px; 
             box-shadow: 0 10px 30px rgba(194,88,122,0.1); 
-            flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; 
+            flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        .header { position: relative; height: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
-        h1 { font-size: 1.4rem; color: var(--deep); letter-spacing: 0.1em; }
-        .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--muted); text-decoration: underline; cursor: pointer; }
+        .header { height: 40px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+        h1 { font-size: 1.2rem; color: var(--deep); letter-spacing: 0.1em; }
+        .reset-link { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--muted); cursor: pointer; }
 
-        .subtitle { font-size: 0.75rem; color: var(--muted); text-align: center; margin-bottom: 15px; line-height: 1.5; }
-
-        .step { display: none; height: 100%; flex-direction: column; justify-content: center; }
+        .step { display: none; height: 100%; flex-direction: column; }
         .step.active { display: flex; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .input-group { margin-bottom: 15px; width: 100%; }
-        .input-label { font-size: 0.75rem; color: var(--deep); font-weight: bold; margin-bottom: 5px; display: block; text-align: left; }
-
-        input[type="text"] { 
-            width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; 
-            font-size: 1rem; background: #fafafa; -webkit-appearance: none; outline: none;
-        }
-        input.invalid { border-color: var(--error); background: #fff5f5; }
-        .error-msg { color: var(--error); font-size: 0.65rem; margin-top: 5px; display: none; font-weight: bold; }
-
-        .btn { 
-            width: 100%; padding: 18px; background: var(--pink); color: white; border: none; 
-            border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; 
-            box-shadow: 0 5px 15px rgba(244,167,185,0.3);
-        }
-        .btn:disabled { background: #ddd; box-shadow: none; opacity: 0.6; }
-
+        /* チャットエリアのレイアウト修正 */
+        #step3 { height: 100%; display: flex; flex-direction: column; }
         #chat-area { 
-            flex-grow: 1; background: rgba(255, 240, 245, 0.6); border-radius: 20px; 
+            flex-grow: 1; background: rgba(255, 240, 245, 0.4); border-radius: 20px; 
             margin: 10px 0; overflow-y: auto; padding: 15px; display: flex; 
-            flex-direction: column; gap: 10px; border: 1px solid var(--pink);
+            flex-direction: column; gap: 8px; border: 1px solid var(--pink);
             -webkit-overflow-scrolling: touch;
         }
 
-        .msg { max-width: 85%; padding: 10px 14px; border-radius: 18px; font-size: 1rem; line-height: 1.4; word-wrap: break-word; }
+        .msg { max-width: 85%; padding: 8px 14px; border-radius: 18px; font-size: 1rem; line-height: 1.4; word-wrap: break-word; position: relative; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
-        .chat-input-wrap { display: flex; gap: 8px; margin-top: 5px; padding-bottom: 5px; }
-        .chat-input { flex-grow: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; }
-        .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; flex-shrink: 0; }
+        .chat-input-wrap { 
+            display: flex; gap: 8px; flex-shrink: 0; background: white; 
+            padding-top: 5px; align-items: center;
+        }
+        .chat-input { 
+            flex-grow: 1; padding: 12px 18px; border: 1px solid #f0f0f0; 
+            border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa;
+        }
+        .send-btn { 
+            background: var(--pink); border: none; width: 42px; height: 42px; 
+            border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* 入力画面用 */
+        .input-group { margin-bottom: 15px; }
+        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; outline: none; }
+        .btn { width: 100%; padding: 18px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .btn:disabled { background: #ddd; }
     </style>
 </head>
 <body>
@@ -93,38 +92,39 @@
             </div>
             
             <div class="step active" id="step0">
-                <p class="subtitle">お互いの名前を<b>カタカナ</b>で入力して<br>二人の気持ちを重ねます</p>
-                <div class="input-group">
-                    <label class="input-label">あなたの名前</label>
-                    <input type="text" id="myName" placeholder="サトウ ハルト" autocomplete="off" oninput="validateInput()">
-                    <div id="myNameError" class="error-msg">※カタカナで入力してください</div>
+                <div style="margin-top:auto; margin-bottom:auto;">
+                    <p style="text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:20px;">お互いの名前をカタカナで入力</p>
+                    <div class="input-group">
+                        <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()">
+                    </div>
+                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>気持ちをおくる</button>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">相手の名前</label>
-                    <input type="text" id="crushName" placeholder="スズキ ユナ" autocomplete="off" oninput="validateInput()">
-                    <div id="crushNameError" class="error-msg">※カタカナで入力してください</div>
-                </div>
-                <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>気持ちをおくる</button>
             </div>
             
             <div class="step" id="step1">
-                <span style="font-size:4rem; text-align:center; display:block;">⏳</span>
-                <p style="font-weight:700; margin-top:20px; text-align:center;">相手もあなたのことを<br>入力するのを待っています...</p>
-                <button class="btn" style="background:var(--muted); margin-top:30px;" onclick="cancelWait()">やっぱりやめる</button>
+                <div style="margin-top:auto; margin-bottom:auto; text-align:center;">
+                    <span style="font-size:3rem;">⏳</span>
+                    <p style="margin-top:20px;">相手の入力を待っています...</p>
+                </div>
             </div>
 
             <div class="step" id="step2">
-                <span style="font-size:4rem; text-align:center; display:block;">💖</span>
-                <h2 style="color:var(--deep); margin-top:10px; text-align:center;">想いが結ばれました</h2>
-                <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットを開始する</button>
+                <div style="margin-top:auto; margin-bottom:auto; text-align:center;">
+                    <span style="font-size:3rem;">💖</span>
+                    <h2 style="color:var(--deep); margin-top:10px;">想いが結ばれました</h2>
+                    <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットを開始する</button>
+                </div>
             </div>
 
             <div class="step" id="step3">
                 <div id="chat-area"></div>
-                <form class="chat-input-wrap" onsubmit="return false;">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
-                    <button class="send-btn" type="button" onclick="sendMsg()">▶</button>
-                </form>
+                <div class="chat-input-wrap">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ..." autocomplete="off">
+                    <button class="send-btn" onclick="sendMsg()">▶</button>
+                </div>
             </div>
         </div>
     </div>
@@ -147,17 +147,9 @@
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
     window.validateInput = function() {
-        const n1 = document.getElementById('myName'); const n2 = document.getElementById('crushName');
-        const e1 = document.getElementById('myNameError'); const e2 = document.getElementById('crushNameError');
-        const btn = document.getElementById('submitBtn');
-        const kanaRegex = /^[ァ-ヶー\s　]+$/;
-        const isN1Valid = n1.value === "" || kanaRegex.test(n1.value);
-        const isN2Valid = n2.value === "" || kanaRegex.test(n2.value);
-        n1.classList.toggle('invalid', !isN1Valid && n1.value !== "");
-        e1.style.display = (!isN1Valid && n1.value !== "") ? "block" : "none";
-        n2.classList.toggle('invalid', !isN2Valid && n2.value !== "");
-        e2.style.display = (!isN2Valid && n2.value !== "") ? "block" : "none";
-        btn.disabled = !(isN1Valid && isN2Valid && n1.value.trim() !== "" && n2.value.trim() !== "");
+        const n1 = document.getElementById('myName').value.trim();
+        const n2 = document.getElementById('crushName').value.trim();
+        document.getElementById('submitBtn').disabled = !(n1 && n2);
     };
 
     window.submitFeeling = async function() {
@@ -169,20 +161,12 @@
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) showStep(2);
         });
-        onValue(ref(db, 'feelings/' + myFullId), (snap) => {
-            if (!snap.exists() && document.getElementById('step3').classList.contains('active')) location.reload();
-        });
     }
 
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
-    }
-
-    window.cancelWait = async function() {
-        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
-        location.reload();
     }
 
     window.goToChat = function() {
@@ -195,7 +179,7 @@
                 const d = c.val();
                 const m = document.createElement('div');
                 m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                m.innerText = d.text;
+                m.innerText = d.text; // 結合文字もそのまま表示
                 area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
@@ -205,21 +189,20 @@
     window.sendMsg = async function() {
         const i = document.getElementById('chatInput');
         const text = i.value.trim();
-        if (!text || !roomPath) return;
-        try {
-            const chatRef = ref(db, 'chats/' + roomPath);
-            await push(chatRef, {
-                sender: myFullId,
-                text: text,
-                time: serverTimestamp()
-            });
-            i.value = "";
-            i.focus();
-        } catch (e) { console.error("Send Error:", e); }
+        if (!text) return;
+        
+        const chatRef = ref(db, 'chats/' + roomPath);
+        await push(chatRef, {
+            sender: myFullId,
+            text: text, // 文字列としてそのまま送信
+            time: serverTimestamp()
+        });
+        i.value = "";
+        i.focus();
     }
 
     window.fullReset = async function() {
-        if (confirm("お互いの登録とチャット履歴をすべて削除してリセットしますか？")) {
+        if (confirm("履歴をすべて削除してリセットしますか？")) {
             const updates = {};
             updates['feelings/' + myFullId] = null;
             updates['feelings/' + crushFullId] = null;
@@ -229,6 +212,7 @@
         }
     }
 
+    // 桜吹雪
     const petalEl = document.getElementById('petals');
     for (let i = 0; i < 15; i++) {
         const p = document.createElement('div'); p.className = 'petal';

@@ -74,11 +74,9 @@
             cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
         }
 
-        /* 祝福画面 */
         .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-        /* チャット画面 */
         #chat-area {
             flex-grow: 1; background: rgba(255, 240, 245, 0.6); border-radius: 20px;
             margin: 10px 0; overflow-y: auto; padding: 15px;
@@ -93,7 +91,6 @@
         .chat-input { flex-grow: 1; padding: 12px; border: 1px solid #f0f0f0; border-radius: 25px; background: #fff; outline: none; }
         .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; }
 
-        /* リセットボタン */
         .reset-link {
             position: absolute; top: 15px; right: 20px; font-size: 0.7rem;
             color: var(--muted); text-decoration: underline; cursor: pointer;
@@ -142,7 +139,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
@@ -186,6 +183,9 @@
         crushFullId = normalize(crushNameInput);
         roomPath = [myFullId, crushFullId].sort().join('_');
 
+        // 送信前に古い自分のデータを掃除
+        await remove(ref(db, 'feelings/' + myFullId));
+
         await set(ref(db, 'feelings/' + myFullId), {
             name: myName,
             crushKey: crushFullId,
@@ -194,13 +194,18 @@
         
         showStep(1);
 
+        // 自分のデータの監視（相手がリセットしたことを検知するため）
+        onValue(ref(db, 'feelings/' + myFullId), (snap) => {
+            if (!snap.exists() && (document.getElementById('step2').classList.contains('active') || document.getElementById('step3').classList.contains('active'))) {
+                alert("縁がリセットされました。");
+                location.reload();
+            }
+        });
+
+        // 相手のデータの監視
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
                 showStep(2);
-            } else if (!snap.exists() && document.getElementById('step2').classList.contains('active')) {
-                // 相手がリセットした場合
-                alert("相手が関係をリセットしました。");
-                location.reload();
             }
         });
     }
@@ -208,7 +213,6 @@
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
-        // チャット画面ではリセットボタンを表示
         document.getElementById('reset-trigger').style.display = (n === 3) ? 'block' : 'none';
     }
 
@@ -245,9 +249,14 @@
     }
 
     window.fullReset = async function() {
-        if (confirm("二人の縁を完全にリセットしますか？\n（チャット履歴もすべて削除されます）")) {
+        if (confirm("二人の縁を完全にリセットしますか？\n（相手の画面もリセットされます）")) {
+            // 相手側の画面を戻すために、まず相手が監視している自分のデータを消す
             await remove(ref(db, 'feelings/' + myFullId));
+            // 念のため相手のデータも消す（自分が許可を持っている場合のみ有効）
+            await remove(ref(db, 'feelings/' + crushFullId));
+            // チャット履歴を消す
             await remove(ref(db, 'chats/' + roomPath));
+            
             alert("リセットしました。");
             location.reload();
         }

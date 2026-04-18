@@ -21,7 +21,7 @@
             --cream: #fff0f5;
             --text: #4a2535;
             --muted: #a38b96;
-            --chat-bg: #e2ece9;
+            --chat-bg: #fff0f5; /* チャット背景も桜色に */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -59,11 +59,10 @@
         h1 { font-size: 1.6rem; color: var(--deep); margin-bottom: 5px; letter-spacing: 0.1em; }
         .subtitle { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
 
-        .step { display: none; height: 100%; flex-direction: column; }
+        .step { display: none; height: 100%; flex-direction: column; justify-content: center; }
         .step.active { display: flex; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .label { font-size: 0.9rem; font-weight: 700; display: block; margin-bottom: 8px; text-align: left; }
         input[type="text"] {
             width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px;
             font-size: 1rem; margin-bottom: 20px; transition: 0.3s; background: #fafafa;
@@ -75,23 +74,27 @@
             cursor: pointer; box-shadow: 0 5px 15px rgba(244,167,185,0.4);
         }
 
+        .heart-anim { font-size: 4rem; display: block; margin-bottom: 20px; animation: heartbeat 1.2s infinite; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
         /* チャット画面のデザイン */
         #chat-area {
-            flex-grow: 1; background: var(--chat-bg); border-radius: 20px;
+            flex-grow: 1; background: rgba(255, 240, 245, 0.6); border-radius: 20px;
             margin: 10px 0; overflow-y: auto; padding: 15px;
             display: flex; flex-direction: column; gap: 10px;
+            border: 1px solid var(--pink);
         }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; position: relative; }
-        .msg.me { align-self: flex-end; background: #85e249; color: #000; border-top-right-radius: 2px; }
-        .msg.you { align-self: flex-start; background: white; color: #000; border-top-left-radius: 2px; }
+        .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
+        .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
 
         .chat-input-wrap { display: flex; gap: 8px; }
-        .chat-input { flex-grow: 1; padding: 12px; border: none; border-radius: 25px; background: #f0f0f0; outline: none; }
-        .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; font-weight: bold; }
+        .chat-input { flex-grow: 1; padding: 12px; border: 1px solid #f0f0f0; border-radius: 25px; background: #fff; outline: none; }
+        .send-btn { background: var(--pink); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; }
 
-        .call-btn {
-            background: #4cd964; color: white; border: none; padding: 10px 20px;
-            border-radius: 20px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
+        .confirm-box {
+            background: var(--cream); padding: 15px; border-radius: 20px; margin-top: 20px;
+            border: 1px dashed var(--deep);
         }
     </style>
 </head>
@@ -104,28 +107,33 @@
             
             <div class="step active" id="step0">
                 <p class="subtitle">二人の気持ちを重ねます</p>
-                <span class="label">あなたの氏名（カタカナ）</span>
                 <input type="text" id="myName" placeholder="例：サトウ ハルト" maxlength="40">
-                <span class="label">相手の氏名（カタカナ）</span>
                 <input type="text" id="crushName" placeholder="例：スズキ ユナ" maxlength="40">
                 <button class="btn" onclick="submitFeeling()">気持ちをおくる</button>
             </div>
 
             <div class="step" id="step1">
-                <div style="margin-top:50px;">
-                    <span style="font-size:4rem;">⏳</span>
-                    <p style="font-weight:700; margin-top:20px;">相手を待っています...</p>
-                    <p class="subtitle">相手も入力すると画面が変わります</p>
-                </div>
+                <span style="font-size:4rem;">⏳</span>
+                <p style="font-weight:700; margin-top:20px;">相手を待っています...</p>
+                <p class="subtitle">相手も入力すると画面が変わります</p>
             </div>
 
             <div class="step" id="step2">
-                <button class="call-btn" onclick="startCall()">
-                    <span>📞</span> 本人確認の通話
-                </button>
+                <span class="heart-anim">💖</span>
+                <h2 style="color:var(--deep); margin-bottom:10px;">おめでとうございます！</h2>
+                <p style="font-weight:700;">二人の想いが結ばれました</p>
+                
+                <div class="confirm-box">
+                    <p style="font-size:0.8rem; color:var(--deep); margin-bottom:10px;">本人確認のため、お互いに承諾が必要です</p>
+                    <button class="btn" onclick="goToChat()">本人確認してチャットを開始</button>
+                </div>
+            </div>
+
+            <div class="step" id="step3">
+                <p class="subtitle" style="margin-bottom:10px;">二人だけの秘密の対話</p>
                 <div id="chat-area"></div>
                 <div class="chat-input-wrap">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージを入力...">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
                     <button class="send-btn" onclick="sendMsg()">▶</button>
                 </div>
             </div>
@@ -152,19 +160,23 @@
     let myFullId = "";
     let roomPath = "";
 
-    // 桜
+    // 桜のアニメーション
     const petalEl = document.getElementById('petals');
-    for (let i = 0; i < 15; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.background = '#f4a7b9';
-        const s = 8 + Math.random() * 8;
-        p.style.width = s + 'px'; p.style.height = s + 'px';
-        p.style.animationDuration = (6 + Math.random() * 5) + 's';
-        p.style.animationDelay = (Math.random() * 5) + 's';
-        petalEl.appendChild(p);
+    function createPetals() {
+        petalEl.innerHTML = "";
+        for (let i = 0; i < 15; i++) {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.background = '#f4a7b9';
+            const s = 8 + Math.random() * 8;
+            p.style.width = s + 'px'; p.style.height = s + 'px';
+            p.style.animationDuration = (6 + Math.random() * 5) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            petalEl.appendChild(p);
+        }
     }
+    createPetals();
 
     function normalize(s) { return s.trim().replace(/\s+/g, '').toLowerCase(); }
 
@@ -175,8 +187,6 @@
 
         myFullId = normalize(myName);
         const crushFullId = normalize(crushName);
-        
-        // チャットルームのIDを二人共通にする（名前をアルファベット順に並べて結合）
         roomPath = [myFullId, crushFullId].sort().join('_');
 
         try {
@@ -186,22 +196,24 @@
                 timestamp: serverTimestamp()
             });
             
-            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById('step1').classList.add('active');
+            showStep(1);
 
             onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
                 if (snap.exists() && snap.val().crushKey === myFullId) {
-                    startChat();
+                    showStep(2);
                 }
             });
-        } catch(e) { alert('エラー'); }
+        } catch(e) { alert('通信エラー'); }
     }
 
-    function startChat() {
+    function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step2').classList.add('active');
+        document.getElementById('step' + n).classList.add('active');
+    }
 
-        // チャットメッセージの監視
+    window.goToChat = function() {
+        showStep(3);
+        // チャット監視開始
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const chatArea = document.getElementById('chat-area');
             chatArea.innerHTML = "";
@@ -225,10 +237,6 @@
             time: serverTimestamp()
         });
         input.value = "";
-    }
-
-    window.startCall = function() {
-        alert("通話機能：相手に呼び出しを送信しました。\n（このデモでは呼び出し通知をシミュレートしています）");
     }
 </script>
 </body>

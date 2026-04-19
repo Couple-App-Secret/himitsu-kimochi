@@ -27,19 +27,30 @@
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
         input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .btn:disabled { background: #ddd; }
+        .btn-sub { background: #666; font-size: 0.8rem; padding: 10px; margin-top: 5px; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 280px; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="settingsModal" class="modal" onclick="closeModal()"><div class="modal-content" onclick="event.stopPropagation()"><h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3><button class="reset-btn" style="background:var(--error); color:white; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold;" onclick="fullReset()">完全にリセット</button><p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p></div></div>
+    <div id="settingsModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom: 15px;">設定</h3>
+            <div id="lockSection">
+                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">次回のログインから必要な<br>「合言葉」を設定します。</p>
+                <input type="password" id="newRoomPass" placeholder="新しい合言葉">
+                <button class="btn" style="margin-top: 0; margin-bottom: 20px;" onclick="saveNewPass()">合言葉を保存する</button>
+            </div>
+            <button class="btn" style="background:var(--error); padding:10px; font-size:0.8rem;" onclick="fullReset()">履歴と合言葉を全消去</button>
+            <p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p>
+        </div>
+    </div>
 
     <div class="container">
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-21:35</span>
+                <span class="update-tag">Ver. 2026-0419-21:55</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -62,11 +73,10 @@
 
             <div class="step" id="step2">
                 <div style="margin: auto 0; text-align:center;">
-                    <span id="lock-icon" style="font-size:2.5rem;">🔒</span>
-                    <h2 id="step2-title" style="color:var(--deep); margin-top:8px; font-size: 1.1rem;">二人の合言葉</h2>
-                    <p id="step2-msg" style="font-size:0.75rem; color:var(--muted); margin: 10px 0;">合言葉を決めて入力してください</p>
-                    <input type="password" id="passInput" placeholder="合言葉">
-                    <button id="passBtn" class="btn" onclick="handlePass()">決定</button>
+                    <span style="font-size:2.5rem;">🔒</span>
+                    <h2 style="color:var(--deep); margin-top:8px; font-size: 1.1rem;">合言葉を入力</h2>
+                    <input type="password" id="checkPass" placeholder="合言葉">
+                    <button class="btn" onclick="verifyPass()">チャットに入る</button>
                     <p id="errorMsg" style="color:var(--error); font-size:0.7rem; margin-top:5px; visibility:hidden;">合言葉が違います</p>
                 </div>
             </div>
@@ -88,7 +98,7 @@
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myFullId = ""; let crushFullId = ""; let roomPath = ""; let savedPass = "";
+    let myFullId = ""; let crushFullId = ""; let roomPath = ""; let correctPass = "";
 
     window.validateInput = () => {
         const v1 = document.getElementById('myName').value.trim();
@@ -106,58 +116,33 @@
 
         onValue(ref(db, 'feelings/' + crushFullId), async (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
-                // 既に部屋に合言葉があるか確認
                 const roomSnap = await get(ref(db, 'rooms/' + roomPath));
-                if (roomSnap.exists()) {
-                    savedPass = roomSnap.val().pass;
-                    setupPassInputMode(false); // 入力モード
+                if (roomSnap.exists() && roomSnap.val().pass) {
+                    correctPass = roomSnap.val().pass;
+                    showStep(2); // 合言葉入力へ
                 } else {
-                    setupPassInputMode(true); // 初回設定モード
+                    goToChat(); // 合言葉がないなら即チャット
                 }
-                showStep(2);
             }
         });
     };
 
-    function setupPassInputMode(isFirstTime) {
-        document.getElementById('lock-icon').innerText = isFirstTime ? "✨" : "🔒";
-        document.getElementById('step2-title').innerText = isFirstTime ? "合言葉を決めよう" : "合言葉を入力";
-        document.getElementById('step2-msg').innerText = isFirstTime ? "二人で同じ合言葉を入力してね" : "決めた合言葉を入れてください";
-        document.getElementById('passBtn').onclick = isFirstTime ? setRoomPass : verifyPass;
-    }
-
-    async function setRoomPass() {
-        const pass = document.getElementById('passInput').value.trim();
-        if (!pass) return;
-        // 自分の合言葉を一時保存
-        await set(ref(db, 'temp_pass/' + roomPath + '/' + myFullId), pass);
-        
-        // 相手も入力したか監視
-        onValue(ref(db, 'temp_pass/' + roomPath), async (snap) => {
-            if (snap.numChildren() === 2) {
-                const data = snap.val();
-                const passes = Object.values(data);
-                if (passes[0] === passes[1]) {
-                    await set(ref(db, 'rooms/' + roomPath), { pass: passes[0] });
-                    savedPass = passes[0];
-                    goToChat();
-                } else {
-                    document.getElementById('errorMsg').innerText = "二人の合言葉が一致しません";
-                    document.getElementById('errorMsg').style.visibility = "visible";
-                }
-            }
-        });
-    }
-
-    function verifyPass() {
-        const input = document.getElementById('passInput').value.trim();
-        if (input === savedPass) {
+    window.verifyPass = () => {
+        const input = document.getElementById('checkPass').value.trim();
+        if (input === correctPass) {
             goToChat();
         } else {
-            document.getElementById('errorMsg').innerText = "合言葉が違います";
             document.getElementById('errorMsg').style.visibility = "visible";
         }
-    }
+    };
+
+    window.saveNewPass = async () => {
+        const pass = document.getElementById('newRoomPass').value.trim();
+        if (!pass) return alert("合言葉を入力してください");
+        await set(ref(db, 'rooms/' + roomPath), { pass: pass });
+        alert("合言葉を保存しました。次回から必要になります。");
+        closeModal();
+    };
 
     window.goToChat = () => {
         showStep(3);
@@ -166,12 +151,10 @@
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                if(d.text){
-                    const m = document.createElement('div');
-                    m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                    m.innerHTML = d.text;
-                    area.appendChild(m);
-                }
+                const m = document.createElement('div');
+                m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
+                m.innerHTML = d.text || "";
+                area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
         });
@@ -185,9 +168,10 @@
     };
 
     window.fullReset = async () => {
+        if(!confirm("履歴と合言葉をすべて消去しますか？")) return;
         await update(ref(db), { 
             ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, 
-            ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null, ['temp_pass/'+roomPath]:null 
+            ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null 
         });
         location.reload();
     };

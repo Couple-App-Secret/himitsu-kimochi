@@ -47,7 +47,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 0419-10:00</span>
+                <span class="update-tag">Ver. 0419-10:03</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -89,7 +89,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -123,19 +123,21 @@
         myFullId = document.getElementById('myName').value.trim();
         crushFullId = document.getElementById('crushName').value.trim();
         if(!myFullId || !crushFullId) return;
-        
         roomPath = [myFullId, crushFullId].sort().join('_');
         
-        // まず待機画面へ
         showStep(1);
-
-        // データを送信
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
-        
-        // 相手の状態を監視（自分自身の送信でリロードされないよう配慮）
+
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
                 showStep(2);
+            }
+        });
+
+        // 相手がリセットした際、待機画面から戻るための監視
+        onValue(ref(db, 'feelings/' + myFullId), (snap) => {
+            if (!snap.exists() && !document.getElementById('step0').classList.contains('active')) {
+                location.reload();
             }
         });
     };
@@ -152,10 +154,12 @@
 
     window.goToChat = () => {
         showStep(3);
-        onValue(ref(db, 'chats/' + roomPath), (snap) => {
-            if (!snap.exists() && myFullId && document.getElementById('step3').classList.contains('active')) { 
-                // チャット中かつデータが消えた場合のみリロード
-                return; 
+        const chatRef = ref(db, 'chats/' + roomPath);
+        onValue(chatRef, (snap) => {
+            // チャットルームが消去されたら強制リロード（相手のリセットを検知）
+            if (!snap.exists() && document.getElementById('step3').classList.contains('active')) {
+                location.reload();
+                return;
             }
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
@@ -185,7 +189,7 @@
         updates['feelings/' + crushFullId] = null;
         updates['chats/' + roomPath] = null;
         await update(ref(db), updates);
-        location.reload();
+        setTimeout(() => location.reload(), 300);
     };
 </script>
 </body>

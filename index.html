@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ひみつのきもち</title>
+    <link rel="apple-touch-icon" href="icon.PNG">
+    <link rel="icon" href="icon.PNG">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ひみつのきもち">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
@@ -37,11 +42,11 @@
     <div id="settingsModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="margin-bottom: 15px;">設定</h3>
-            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">合言葉を新しく設定・変更します。</p>
+            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">次回のログインから必要な<br>「合言葉」を設定・変更します。</p>
             <input type="password" id="newRoomPass" placeholder="新しい合言葉">
-            <button class="btn" onclick="saveNewPass()">合言葉を保存</button>
+            <button class="btn" onclick="saveNewPass()">合言葉を保存する</button>
             <hr style="margin: 20px 0; border: none; border-top: 1px dashed #eee;">
-            <button class="btn" style="background:var(--error); font-size:0.8rem; margin-top:0;" onclick="fullReset()">全部消去してリセット</button>
+            <button class="btn" style="background:var(--error); font-size:0.8rem; margin-top:0;" onclick="fullReset()">履歴と合言葉を全消去</button>
             <p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p>
         </div>
     </div>
@@ -50,7 +55,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-22:45</span>
+                <span class="update-tag">Ver. 2026-0419-23:15</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -124,7 +129,7 @@
 
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
-                showStep('matched'); // マッチング画面へ
+                showStep('matched');
             }
         });
     };
@@ -138,9 +143,9 @@
         const roomSnap = await get(ref(db, 'rooms/' + roomPath));
         if (roomSnap.exists() && roomSnap.val().pass) {
             correctPass = roomSnap.val().pass;
-            showStep('pass'); // 合言葉入力へ
+            showStep('pass');
         } else {
-            goToChat(); // 合言葉なしならチャットへ
+            goToChat();
         }
     };
 
@@ -184,7 +189,7 @@
     };
 
     window.fullReset = async () => {
-        if(!confirm("すべて消去して最初の画面に戻ります。よろしいですか？")) return;
+        if(!confirm("すべて消去してリセットしますか？")) return;
         await update(ref(db), { ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null });
         location.reload();
     };

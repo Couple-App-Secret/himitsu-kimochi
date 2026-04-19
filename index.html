@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ひみつのきもち</title>
-    <link rel="apple-touch-icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.PNG">
-    <link rel="icon" href="https://Couple-App-Secret.github.io/himitsu-kimochi/icon.PNG">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
@@ -30,24 +26,21 @@
         .chat-input { flex: 1; padding: 10px 15px; border: 1px solid #f0f0f0; border-radius: 20px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
         .error-msg { color: var(--error); font-size: 0.65rem; font-weight: bold; min-height: 1.2em; margin-bottom: 2px; visibility: hidden; }
-        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
-        input[type="text"].invalid { border-color: var(--error); background: #fff5f5; }
+        input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn:disabled { background: #ddd; }
-        .btn-cancel { background: #bbb; margin-top: 10px; font-size: 0.85rem; padding: 10px; border-radius: 40px; color: white; border: none; width: 100%; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 280px; text-align: center; }
-        .reset-btn { background: var(--error); color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; width: 100%; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="settingsModal" class="modal" onclick="closeModal()"><div class="modal-content" onclick="event.stopPropagation()"><h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3><p style="font-size: 0.8rem; color: var(--muted);">二人とのつながりと履歴を<br>完全に消去します。</p><button class="reset-btn" onclick="fullReset()">完全にリセット</button><p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p></div></div>
+    <div id="settingsModal" class="modal" onclick="closeModal()"><div class="modal-content" onclick="event.stopPropagation()"><h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3><button class="reset-btn" style="background:var(--error); color:white; border:none; padding:12px; border-radius:10px; width:100%; font-weight:bold;" onclick="fullReset()">完全にリセット</button><p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p></div></div>
 
-    <div class="container" id="main-container">
+    <div class="container">
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-20:55</span>
+                <span class="update-tag">Ver. 2026-0419-21:15</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -55,32 +48,36 @@
                 <div style="margin: auto 0; text-align: center;">
                     <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px;">お互いの名前をカタカナで入力</p>
                     <div id="warn" class="error-msg">※カタカナで入力してください</div>
-                    <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()" autocomplete="off">
-                    <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()" autocomplete="off">
+                    <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()">
+                    <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()">
+                    <input type="password" id="myPass" placeholder="二人の合言葉（自由に決めて）" style="margin-top:10px;">
                     <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
                 </div>
             </div>
             
             <div class="step" id="step1">
-                <div style="margin: auto; text-align:center; width: 100%;">
+                <div style="margin: auto; text-align:center;">
                     <span style="font-size:2.5rem;">⏳</span>
                     <p style="margin: 10px 0; font-size: 0.9rem;">相手を待っています...</p>
-                    <button class="btn-cancel" onclick="cancelWait()">やっぱりやめる</button>
+                    <button class="btn" style="background:#bbb;" onclick="location.reload()">キャンセル</button>
                 </div>
             </div>
 
             <div class="step" id="step2">
-                <div style="margin: auto; text-align:center;">
+                <div style="margin: auto 0; text-align:center;">
                     <span style="font-size:2.5rem;">💖</span>
                     <h2 style="color:var(--deep); margin-top:8px; font-size: 1.2rem;">想いが結ばれました</h2>
-                    <button class="btn" style="margin-top:15px;" onclick="goToChat()">チャットをはじめる</button>
+                    <p style="font-size:0.75rem; color:var(--muted); margin: 15px 0 5px;">相手が決めた合言葉を入力してください</p>
+                    <div id="passWarn" class="error-msg">合言葉が違います</div>
+                    <input type="password" id="checkPass" placeholder="合言葉を入力">
+                    <button class="btn" onclick="verifyPassword()">チャットをはじめる</button>
                 </div>
             </div>
 
             <div class="step" id="step3">
                 <div id="chat-area"></div>
                 <div class="chat-input-wrap">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ..." autocomplete="off">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
                     <button class="send-btn" onclick="sendMsg()">▶</button>
                 </div>
             </div>
@@ -89,88 +86,58 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myFullId = ""; let crushFullId = ""; let roomPath = "";
-
-    const toSafeHtml = (str) => {
-        let res = "";
-        for (let char of str) {
-            const cp = char.codePointAt(0);
-            res += cp > 127 ? `&#x${cp.toString(16)};` : char;
-        }
-        return res;
-    };
+    let myFullId = ""; let crushFullId = ""; let roomPath = ""; let targetPass = "";
 
     window.validateInput = () => {
         const n1 = document.getElementById('myName');
         const n2 = document.getElementById('crushName');
+        const v1 = n1.value.trim(); const v2 = n2.value.trim();
         const kanaRegex = /^[ァ-ヶー\s　]+$/;
-        const v1 = n1.value.trim();
-        const v2 = n2.value.trim();
-        const isV1Ok = v1 === "" || kanaRegex.test(v1);
-        const isV2Ok = v2 === "" || kanaRegex.test(v2);
-        n1.classList.toggle('invalid', !isV1Ok);
-        n2.classList.toggle('invalid', !isV2Ok);
-        document.getElementById('warn').style.visibility = (!isV1Ok || !isV2Ok) ? "visible" : "hidden";
-        document.getElementById('submitBtn').disabled = !(isV1Ok && isV2Ok && v1.length >= 2 && v2.length >= 2);
+        const isOk = (v1===""||kanaRegex.test(v1)) && (v2===""||kanaRegex.test(v2));
+        document.getElementById('warn').style.visibility = isOk ? "hidden" : "visible";
+        document.getElementById('submitBtn').disabled = !(isOk && v1.length>=2 && v2.length>=2);
     };
 
     window.submitFeeling = async () => {
         myFullId = document.getElementById('myName').value.trim();
         crushFullId = document.getElementById('crushName').value.trim();
-        if(!myFullId || !crushFullId) return;
+        const pass = document.getElementById('myPass').value.trim();
         roomPath = [myFullId, crushFullId].sort().join('_');
-        
         showStep(1);
-        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
-
-        // 相手が自分を登録しているかチェック
+        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId, pass: pass });
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
+                targetPass = snap.val().pass; // 相手が設定した合言葉を取得
                 showStep(2);
-            }
-        });
-
-        // 自分のデータが消えたらリロード（相手によるリセット監視）
-        onValue(ref(db, 'feelings/' + myFullId), (snap) => {
-            if (!snap.exists() && !document.getElementById('step0').classList.contains('active') && !document.getElementById('step1').classList.contains('active')) {
-                location.reload();
             }
         });
     };
 
-    window.cancelWait = async () => { if(myFullId) await remove(ref(db, 'feelings/' + myFullId)); location.reload(); };
-    window.openModal = () => document.getElementById('settingsModal').style.display = 'flex';
-    window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
-
-    function showStep(n) {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-        document.getElementById('gear').style.display = (n === 3) ? 'block' : 'none';
-    }
+    window.verifyPassword = () => {
+        const input = document.getElementById('checkPass').value.trim();
+        if (input === targetPass) {
+            goToChat();
+        } else {
+            document.getElementById('passWarn').style.visibility = "visible";
+        }
+    };
 
     window.goToChat = () => {
         showStep(3);
-        const chatRef = ref(db, 'chats/' + roomPath);
-        onValue(chatRef, (snap) => {
-            if (!snap.exists() && document.getElementById('step3').classList.contains('active')) {
-                // ここで自動リロードしないように調整
-                return;
-            }
+        onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                if (d && d.text) {
-                    const m = document.createElement('div');
-                    m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                    m.innerHTML = d.text;
-                    area.appendChild(m);
-                }
+                const m = document.createElement('div');
+                m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
+                m.innerHTML = d.text;
+                area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
         });
@@ -178,21 +145,23 @@
 
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');
-        const text = i.value.trim();
-        if (!text) return;
-        i.value = ""; i.focus();
-        const safeText = toSafeHtml(text);
-        await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: safeText, time: serverTimestamp() });
+        if (!i.value.trim()) return;
+        await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: i.value, time: serverTimestamp() });
+        i.value = "";
     };
 
     window.fullReset = async () => {
-        const updates = {};
-        updates['feelings/' + myFullId] = null;
-        updates['feelings/' + crushFullId] = null;
-        updates['chats/' + roomPath] = null;
-        await update(ref(db), updates);
-        setTimeout(() => location.reload(), 300);
+        await update(ref(db), { ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, ['chats/'+roomPath]:null });
+        location.reload();
     };
+
+    function showStep(n) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + n).classList.add('active');
+        document.getElementById('gear').style.display = (n === 3) ? 'block' : 'none';
+    }
+    window.openModal = () => document.getElementById('settingsModal').style.display='flex';
+    window.closeModal = () => document.getElementById('settingsModal').style.display='none';
 </script>
 </body>
 </html>

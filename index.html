@@ -11,65 +11,31 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        html, body { 
-            height: 100%; width: 100%; background: var(--cream); 
-            font-family: 'Zen Maru Gothic', sans-serif; color: var(--text);
-            overflow: hidden; position: fixed;
-        }
-
+        html, body { height: 100%; width: 100%; background: var(--cream); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; }
         body { display: flex; flex-direction: column; }
-
         .petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
         .petal { position: absolute; border-radius: 0 50% 50% 50%; opacity: 0; animation: fall linear infinite; }
         @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 0.6; } 100% { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
-
-        .container { 
-            position: relative; z-index: 1; width: 100%; max-width: 400px; 
-            height: 100%; margin: 0 auto; display: flex; flex-direction: column; 
-            padding: 8px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .card { 
-            background: white; border-radius: 25px; padding: 12px; 
-            box-shadow: 0 10px 30px rgba(194,88,122,0.1); 
-            flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;
-        }
-
+        .container { position: relative; z-index: 1; width: 100%; max-width: 400px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; padding: 10px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        .card { background: white; border-radius: 25px; padding: 15px; box-shadow: 0 10px 30px rgba(194,88,122,0.1); flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
         .header { text-align: center; margin-bottom: 5px; flex-shrink: 0; position: relative; }
         h1 { font-size: 1rem; color: var(--deep); letter-spacing: 0.1em; }
-        .update-tag { font-size: 0.55rem; color: var(--muted); display: block; }
+        .update-tag { font-size: 0.6rem; color: var(--muted); display: block; font-family: monospace; letter-spacing: 0.05em; }
         .settings-btn { position: absolute; right: 0; top: 0; font-size: 1.1rem; cursor: pointer; color: var(--muted); padding: 5px; }
-
         .step { display: none; height: 100%; flex-direction: column; overflow: hidden; }
         .step.active { display: flex; }
-
-        #chat-area { 
-            flex: 1; background: rgba(255, 240, 245, 0.4); border-radius: 15px; 
-            margin: 5px 0; overflow-y: auto; padding: 10px; display: flex; 
-            flex-direction: column; gap: 6px; border: 1px solid var(--pink);
-            -webkit-overflow-scrolling: touch;
-        }
-
+        #chat-area { flex: 1; background: rgba(255, 240, 245, 0.4); border-radius: 15px; margin: 5px 0; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--pink); -webkit-overflow-scrolling: touch; }
         .msg { max-width: 85%; padding: 7px 12px; border-radius: 15px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
         .msg.me { align-self: flex-end; background: var(--pink); color: white; border-top-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; color: var(--text); border-top-left-radius: 2px; border: 1px solid #f0f0f0; }
-
         .chat-input-wrap { display: flex; gap: 6px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
         .chat-input { flex: 1; padding: 10px 15px; border: 1px solid #f0f0f0; border-radius: 20px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
-
-        /* 入力エリア */
         .error-msg { color: var(--error); font-size: 0.65rem; font-weight: bold; min-height: 1.2em; margin-bottom: 2px; visibility: hidden; }
         input[type="text"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         input[type="text"].invalid { border-color: var(--error); background: #fff5f5; }
-        .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-        .btn:disabled { background: #ddd; }
         .btn-cancel { background: #bbb; margin-top: 10px; font-size: 0.85rem; padding: 10px; border-radius: 40px; color: white; border: none; width: 100%; }
-
-        /* 設定画面 */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 280px; text-align: center; }
         .reset-btn { background: var(--error); color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 15px; width: 100%; font-weight: bold; }
@@ -77,21 +43,13 @@
 </head>
 <body>
     <div class="petals" id="petals"></div>
-    
-    <div id="settingsModal" class="modal" onclick="closeModal()">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3>
-            <p style="font-size: 0.8rem; color: var(--muted);">これまでのチャット履歴と<br>つながりをすべて消去します。</p>
-            <button class="reset-btn" onclick="fullReset()">リセットする</button>
-            <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text); cursor: pointer;" onclick="closeModal()">キャンセル</p>
-        </div>
-    </div>
+    <div id="settingsModal" class="modal" onclick="closeModal()"><div class="modal-content" onclick="event.stopPropagation()"><h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3><p style="font-size: 0.8rem; color: var(--muted);">履歴とつながりをリセットします。</p><button class="reset-btn" onclick="fullReset()">リセット実行</button><p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p></div></div>
 
     <div class="container" id="main-container">
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag" id="update-tag">Ver. 0419-10:55:00</span>
+                <span class="update-tag" id="update-tag">Ver. --:--:--</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -101,7 +59,7 @@
                     <div id="warn" class="error-msg">※カタカナで入力してください</div>
                     <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()" autocomplete="off">
                     <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()" autocomplete="off">
-                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
+                    <p style="font-size: 0.65rem; color: var(--muted); margin-top: 5px;">入力完了で自動おくり</p>
                 </div>
             </div>
             
@@ -117,7 +75,7 @@
                 <div style="margin: auto; text-align:center;">
                     <span style="font-size:2.5rem;">💖</span>
                     <h2 style="color:var(--deep); margin-top:8px; font-size: 1.2rem;">想いが結ばれました</h2>
-                    <button class="btn" style="margin-top:15px;" onclick="goToChat()">チャットをはじめる</button>
+                    <button class="btn-cancel" style="background: var(--pink); margin-top:15px; font-size: 1rem;" onclick="goToChat()">チャットをはじめる</button>
                 </div>
             </div>
 
@@ -135,50 +93,38 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8",
-        authDomain: "coupleapp-30f82.firebaseapp.com",
-        databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com",
-        projectId: "coupleapp-30f82",
-        appId: "1:205261235219:web:38b93dde060e520cdecbe6"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     let myFullId = ""; let crushFullId = ""; let roomPath = "";
 
-    const syncHeight = () => { document.getElementById('main-container').style.height = window.innerHeight + 'px'; };
-    window.addEventListener('resize', syncHeight);
-    syncHeight();
-
     const toSafeHtml = (str) => {
-        return Array.from(str).map(char => {
+        let res = "";
+        for (let char of str) {
             const cp = char.codePointAt(0);
-            return cp > 127 ? `&#x${cp.toString(16)};` : char;
-        }).join('');
+            res += cp > 127 ? `&#x${cp.toString(16)};` : char;
+        }
+        return res;
     };
 
     window.validateInput = () => {
         const n1 = document.getElementById('myName');
         const n2 = document.getElementById('crushName');
-        const warn = document.getElementById('warn');
-        const btn = document.getElementById('submitBtn');
         const kanaRegex = /^[ァ-ヶー\s　]+$/;
-
         const v1 = n1.value.trim();
         const v2 = n2.value.trim();
         const isV1Ok = v1 === "" || kanaRegex.test(v1);
         const isV2Ok = v2 === "" || kanaRegex.test(v2);
-
         n1.classList.toggle('invalid', !isV1Ok);
         n2.classList.toggle('invalid', !isV2Ok);
-        warn.style.visibility = (!isV1Ok || !isV2Ok) ? "visible" : "hidden";
-        btn.disabled = !(isV1Ok && isV2Ok && v1 !== "" && v2 !== "");
+        document.getElementById('warn').style.visibility = (!isV1Ok || !isV2Ok) ? "visible" : "hidden";
+        if (isV1Ok && isV2Ok && v1.length >= 2 && v2.length >= 2) submitFeeling();
     };
 
     window.submitFeeling = async () => {
         myFullId = document.getElementById('myName').value.trim();
         crushFullId = document.getElementById('crushName').value.trim();
+        if(!myFullId || !crushFullId) return;
         roomPath = [myFullId, crushFullId].sort().join('_');
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
         showStep(1);
@@ -187,19 +133,15 @@
         });
     };
 
-    window.cancelWait = async () => {
-        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
-        location.reload();
-    };
-
-    window.openModal = () => { document.getElementById('settingsModal').style.display = 'flex'; };
-    window.closeModal = () => { document.getElementById('settingsModal').style.display = 'none'; };
+    window.cancelWait = async () => { if(myFullId) await remove(ref(db, 'feelings/' + myFullId)); location.reload(); };
+    window.openModal = () => document.getElementById('settingsModal').style.display = 'flex';
+    window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
 
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
         document.getElementById('gear').style.display = (n === 3) ? 'block' : 'none';
-        syncHeight();
+        document.getElementById('main-container').style.height = window.innerHeight + 'px';
     }
 
     window.goToChat = () => {
@@ -220,15 +162,11 @@
 
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');
-        if (!i.value.trim()) return;
-        const safeText = toSafeHtml(i.value.trim());
-        await push(ref(db, 'chats/' + roomPath), {
-            sender: myFullId,
-            text: safeText,
-            time: serverTimestamp()
-        });
-        i.value = "";
-        i.focus();
+        const text = i.value.trim();
+        if (!text) return;
+        i.value = ""; i.focus();
+        const safeText = toSafeHtml(text);
+        await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: safeText, time: serverTimestamp() });
     };
 
     window.fullReset = async () => {
@@ -239,6 +177,15 @@
         await update(ref(db), updates);
         location.reload();
     };
+
+    // 正確なリアルタイム時計
+    function tick() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ja-JP', { hour12: false });
+        document.getElementById('update-tag').innerText = `Ver. 0419-${timeStr}`;
+    }
+    setInterval(tick, 1000);
+    tick();
 </script>
 </body>
 </html>

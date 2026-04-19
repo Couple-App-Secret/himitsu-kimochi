@@ -32,8 +32,8 @@
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
         input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 280px; text-align: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 10px; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 300px; text-align: center; position: relative; top: -10%; }
         @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .heart-anim { display: inline-block; animation: heartBeat 0.8s infinite; font-size: 3rem; }
     </style>
@@ -41,13 +41,13 @@
 <body>
     <div id="settingsModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom: 15px;">設定</h3>
-            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">次回のログインから必要な<br>「合言葉」を設定・変更します。</p>
+            <h3 style="margin-bottom: 10px; font-size: 1.1rem;">設定</h3>
+            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">次回のログインに必要な合言葉</p>
             <input type="password" id="newRoomPass" placeholder="新しい合言葉">
             <button class="btn" onclick="saveNewPass()">合言葉を保存する</button>
-            <hr style="margin: 20px 0; border: none; border-top: 1px dashed #eee;">
-            <button class="btn" style="background:var(--error); font-size:0.8rem; margin-top:0;" onclick="fullReset()">履歴と合言葉を全消去</button>
-            <p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p>
+            <div style="margin: 15px 0; border-top: 1px dashed #eee;"></div>
+            <button class="btn" style="background:var(--error); font-size:0.8rem; margin-top:0; padding:10px;" onclick="fullReset()">履歴と合言葉を全消去</button>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: var(--deep); cursor: pointer; font-weight: bold;" onclick="closeModal()">とじる</p>
         </div>
     </div>
 
@@ -55,7 +55,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-23:15</span>
+                <span class="update-tag">Ver. 2026-0419-22:05</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -127,6 +127,15 @@
         showStep(1);
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
 
+        // 部屋の存在（リセット）を常に監視
+        onValue(ref(db, 'rooms/' + roomPath), (snap) => {
+            // もしマッチング済み（Step3やStepMatched）なのに部屋データが消えたら、強制リロード
+            const currentStep = document.querySelector('.step.active').id;
+            if (!snap.exists() && (currentStep === 'step3' || currentStep === 'step-matched' || currentStep === 'step-pass')) {
+                location.reload();
+            }
+        });
+
         onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
                 showStep('matched');
@@ -140,8 +149,12 @@
     };
 
     window.checkRoomPass = async () => {
+        // 部屋がなければ新しく作成（監視用）
         const roomSnap = await get(ref(db, 'rooms/' + roomPath));
-        if (roomSnap.exists() && roomSnap.val().pass) {
+        if (!roomSnap.exists()) {
+            await set(ref(db, 'rooms/' + roomPath), { active: true });
+            goToChat();
+        } else if (roomSnap.val().pass) {
             correctPass = roomSnap.val().pass;
             showStep('pass');
         } else {
@@ -160,8 +173,8 @@
     window.saveNewPass = async () => {
         const pass = document.getElementById('newRoomPass').value.trim();
         if (!pass) return alert("合言葉を入力してください");
-        await set(ref(db, 'rooms/' + roomPath), { pass: pass });
-        alert("合言葉を保存しました。次回から必要になります。");
+        await update(ref(db, 'rooms/' + roomPath), { pass: pass });
+        alert("合言葉を保存しました");
         closeModal();
     };
 
@@ -181,16 +194,13 @@
         });
     };
 
-    window.sendMsg = async () => {
-        const i = document.getElementById('chatInput');
-        if (!i.value.trim()) return;
-        await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: i.value, time: serverTimestamp() });
-        i.value = "";
-    };
-
     window.fullReset = async () => {
-        if(!confirm("すべて消去してリセットしますか？")) return;
-        await update(ref(db), { ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null });
+        if(!confirm("すべて消去してリセットしますか？\n相手の画面もリセットされます。")) return;
+        // 部屋データ、足跡、チャットすべてを削除
+        await remove(ref(db, 'rooms/' + roomPath));
+        await remove(ref(db, 'chats/' + roomPath));
+        await remove(ref(db, 'feelings/' + myFullId));
+        await remove(ref(db, 'feelings/' + crushFullId));
         location.reload();
     };
 
@@ -201,7 +211,10 @@
         document.getElementById('gear').style.display = (id === 3) ? 'block' : 'none';
     }
     window.openModal = () => document.getElementById('settingsModal').style.display='flex';
-    window.closeModal = () => document.getElementById('settingsModal').style.display='none';
+    window.closeModal = () => {
+        document.getElementById('settingsModal').style.display='none';
+        document.activeElement.blur();
+    };
 </script>
 </body>
 </html>

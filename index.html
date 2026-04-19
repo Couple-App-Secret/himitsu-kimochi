@@ -25,7 +25,6 @@
         .chat-input-wrap { display: flex; gap: 6px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
         .chat-input { flex: 1; padding: 10px 15px; border: 1px solid #f0f0f0; border-radius: 20px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
-        .error-msg { color: var(--error); font-size: 0.65rem; font-weight: bold; min-height: 1.2em; margin-bottom: 2px; visibility: hidden; }
         input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .btn:disabled { background: #ddd; }
@@ -40,17 +39,15 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-21:15</span>
+                <span class="update-tag">Ver. 2026-0419-21:35</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
             <div class="step active" id="step0">
                 <div style="margin: auto 0; text-align: center;">
                     <p style="font-size:0.75rem; color:var(--muted); margin-bottom:10px;">お互いの名前をカタカナで入力</p>
-                    <div id="warn" class="error-msg">※カタカナで入力してください</div>
                     <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()">
                     <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()">
-                    <input type="password" id="myPass" placeholder="二人の合言葉（自由に決めて）" style="margin-top:10px;">
                     <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
                 </div>
             </div>
@@ -65,12 +62,12 @@
 
             <div class="step" id="step2">
                 <div style="margin: auto 0; text-align:center;">
-                    <span style="font-size:2.5rem;">💖</span>
-                    <h2 style="color:var(--deep); margin-top:8px; font-size: 1.2rem;">想いが結ばれました</h2>
-                    <p style="font-size:0.75rem; color:var(--muted); margin: 15px 0 5px;">相手が決めた合言葉を入力してください</p>
-                    <div id="passWarn" class="error-msg">合言葉が違います</div>
-                    <input type="password" id="checkPass" placeholder="合言葉を入力">
-                    <button class="btn" onclick="verifyPassword()">チャットをはじめる</button>
+                    <span id="lock-icon" style="font-size:2.5rem;">🔒</span>
+                    <h2 id="step2-title" style="color:var(--deep); margin-top:8px; font-size: 1.1rem;">二人の合言葉</h2>
+                    <p id="step2-msg" style="font-size:0.75rem; color:var(--muted); margin: 10px 0;">合言葉を決めて入力してください</p>
+                    <input type="password" id="passInput" placeholder="合言葉">
+                    <button id="passBtn" class="btn" onclick="handlePass()">決定</button>
+                    <p id="errorMsg" style="color:var(--error); font-size:0.7rem; margin-top:5px; visibility:hidden;">合言葉が違います</p>
                 </div>
             </div>
 
@@ -86,46 +83,81 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let myFullId = ""; let crushFullId = ""; let roomPath = ""; let targetPass = "";
+    let myFullId = ""; let crushFullId = ""; let roomPath = ""; let savedPass = "";
 
     window.validateInput = () => {
-        const n1 = document.getElementById('myName');
-        const n2 = document.getElementById('crushName');
-        const v1 = n1.value.trim(); const v2 = n2.value.trim();
-        const kanaRegex = /^[ァ-ヶー\s　]+$/;
-        const isOk = (v1===""||kanaRegex.test(v1)) && (v2===""||kanaRegex.test(v2));
-        document.getElementById('warn').style.visibility = isOk ? "hidden" : "visible";
-        document.getElementById('submitBtn').disabled = !(isOk && v1.length>=2 && v2.length>=2);
+        const v1 = document.getElementById('myName').value.trim();
+        const v2 = document.getElementById('crushName').value.trim();
+        document.getElementById('submitBtn').disabled = !(v1.length>=2 && v2.length>=2);
     };
 
     window.submitFeeling = async () => {
         myFullId = document.getElementById('myName').value.trim();
         crushFullId = document.getElementById('crushName').value.trim();
-        const pass = document.getElementById('myPass').value.trim();
         roomPath = [myFullId, crushFullId].sort().join('_');
+        
         showStep(1);
-        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId, pass: pass });
-        onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
+        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
+
+        onValue(ref(db, 'feelings/' + crushFullId), async (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
-                targetPass = snap.val().pass; // 相手が設定した合言葉を取得
+                // 既に部屋に合言葉があるか確認
+                const roomSnap = await get(ref(db, 'rooms/' + roomPath));
+                if (roomSnap.exists()) {
+                    savedPass = roomSnap.val().pass;
+                    setupPassInputMode(false); // 入力モード
+                } else {
+                    setupPassInputMode(true); // 初回設定モード
+                }
                 showStep(2);
             }
         });
     };
 
-    window.verifyPassword = () => {
-        const input = document.getElementById('checkPass').value.trim();
-        if (input === targetPass) {
+    function setupPassInputMode(isFirstTime) {
+        document.getElementById('lock-icon').innerText = isFirstTime ? "✨" : "🔒";
+        document.getElementById('step2-title').innerText = isFirstTime ? "合言葉を決めよう" : "合言葉を入力";
+        document.getElementById('step2-msg').innerText = isFirstTime ? "二人で同じ合言葉を入力してね" : "決めた合言葉を入れてください";
+        document.getElementById('passBtn').onclick = isFirstTime ? setRoomPass : verifyPass;
+    }
+
+    async function setRoomPass() {
+        const pass = document.getElementById('passInput').value.trim();
+        if (!pass) return;
+        // 自分の合言葉を一時保存
+        await set(ref(db, 'temp_pass/' + roomPath + '/' + myFullId), pass);
+        
+        // 相手も入力したか監視
+        onValue(ref(db, 'temp_pass/' + roomPath), async (snap) => {
+            if (snap.numChildren() === 2) {
+                const data = snap.val();
+                const passes = Object.values(data);
+                if (passes[0] === passes[1]) {
+                    await set(ref(db, 'rooms/' + roomPath), { pass: passes[0] });
+                    savedPass = passes[0];
+                    goToChat();
+                } else {
+                    document.getElementById('errorMsg').innerText = "二人の合言葉が一致しません";
+                    document.getElementById('errorMsg').style.visibility = "visible";
+                }
+            }
+        });
+    }
+
+    function verifyPass() {
+        const input = document.getElementById('passInput').value.trim();
+        if (input === savedPass) {
             goToChat();
         } else {
-            document.getElementById('passWarn').style.visibility = "visible";
+            document.getElementById('errorMsg').innerText = "合言葉が違います";
+            document.getElementById('errorMsg').style.visibility = "visible";
         }
-    };
+    }
 
     window.goToChat = () => {
         showStep(3);
@@ -134,10 +166,12 @@
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                const m = document.createElement('div');
-                m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
-                m.innerHTML = d.text;
-                area.appendChild(m);
+                if(d.text){
+                    const m = document.createElement('div');
+                    m.className = 'msg ' + (d.sender === myFullId ? 'me' : 'you');
+                    m.innerHTML = d.text;
+                    area.appendChild(m);
+                }
             });
             area.scrollTop = area.scrollHeight;
         });
@@ -151,7 +185,10 @@
     };
 
     window.fullReset = async () => {
-        await update(ref(db), { ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, ['chats/'+roomPath]:null });
+        await update(ref(db), { 
+            ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, 
+            ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null, ['temp_pass/'+roomPath]:null 
+        });
         location.reload();
     };
 

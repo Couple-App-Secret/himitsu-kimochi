@@ -36,6 +36,7 @@
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 300px; text-align: center; position: relative; top: -10%; }
         @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .heart-anim { display: inline-block; animation: heartBeat 0.8s infinite; font-size: 3rem; }
+        .guide-box { font-size: 0.75rem; color: var(--deep); text-align: center; margin: 5px 0 10px 0; padding: 10px; border: 1px dashed var(--pink); border-radius: 15px; background: white; line-height: 1.5; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -55,7 +56,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-22:15</span>
+                <span class="update-tag">Ver. 2026-0419-22:30</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -96,6 +97,11 @@
             </div>
 
             <div class="step" id="step3">
+                <div class="guide-box">
+                    ✨ 想いが結ばれました！<br>
+                    本人確認ができたら、右上の⚙から<br>
+                    <b>二人の合言葉</b>を設定しましょう。
+                </div>
                 <div id="chat-area"></div>
                 <div class="chat-input-wrap">
                     <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
@@ -191,23 +197,25 @@
         });
     };
 
+    window.sendMsg = async () => {
+        const i = document.getElementById('chatInput');
+        if (!i.value.trim()) return;
+        await push(ref(db, 'chats/' + roomPath), { sender: myFullId, text: i.value, time: serverTimestamp() });
+        i.value = "";
+    };
+
     window.fullReset = async () => {
         if(!confirm("すべて消去してリセットしますか？\n相手の画面もリセットされます。")) return;
-        
-        // 監視をすべて解除
         off(ref(db, 'rooms/' + roomPath));
         off(ref(db, 'chats/' + roomPath));
         off(ref(db, 'feelings/' + myFullId));
         off(ref(db, 'feelings/' + crushFullId));
-
-        // サーバー上の全データを一括削除
         const updates = {};
         updates['rooms/' + roomPath] = null;
         updates['chats/' + roomPath] = null;
         updates['feelings/' + myFullId] = null;
         updates['feelings/' + crushFullId] = null;
         await update(ref(db), updates);
-
         location.reload();
     };
 

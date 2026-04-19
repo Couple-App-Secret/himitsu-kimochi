@@ -27,21 +27,21 @@
         .send-btn { background: var(--pink); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1rem; }
         input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
         .btn { width: 100%; padding: 14px; background: var(--pink); color: white; border: none; border-radius: 40px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
-        .btn-sub { background: #666; font-size: 0.8rem; padding: 10px; margin-top: 5px; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 280px; text-align: center; }
+        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .heart-anim { display: inline-block; animation: heartBeat 0.8s infinite; font-size: 3rem; }
     </style>
 </head>
 <body>
     <div id="settingsModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="margin-bottom: 15px;">設定</h3>
-            <div id="lockSection">
-                <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">次回のログインから必要な<br>「合言葉」を設定します。</p>
-                <input type="password" id="newRoomPass" placeholder="新しい合言葉">
-                <button class="btn" style="margin-top: 0; margin-bottom: 20px;" onclick="saveNewPass()">合言葉を保存する</button>
-            </div>
-            <button class="btn" style="background:var(--error); padding:10px; font-size:0.8rem;" onclick="fullReset()">履歴と合言葉を全消去</button>
+            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 10px;">合言葉を新しく設定・変更します。</p>
+            <input type="password" id="newRoomPass" placeholder="新しい合言葉">
+            <button class="btn" onclick="saveNewPass()">合言葉を保存</button>
+            <hr style="margin: 20px 0; border: none; border-top: 1px dashed #eee;">
+            <button class="btn" style="background:var(--error); font-size:0.8rem; margin-top:0;" onclick="fullReset()">全部消去してリセット</button>
             <p style="margin-top: 15px; font-size: 0.8rem; cursor: pointer;" onclick="closeModal()">キャンセル</p>
         </div>
     </div>
@@ -50,7 +50,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-21:55</span>
+                <span class="update-tag">Ver. 2026-0419-22:45</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -67,16 +67,25 @@
                 <div style="margin: auto; text-align:center;">
                     <span style="font-size:2.5rem;">⏳</span>
                     <p style="margin: 10px 0; font-size: 0.9rem;">相手を待っています...</p>
-                    <button class="btn" style="background:#bbb;" onclick="location.reload()">キャンセル</button>
+                    <button class="btn" style="background:#bbb;" onclick="cancelWait()">やっぱりやめる</button>
                 </div>
             </div>
 
-            <div class="step" id="step2">
+            <div class="step" id="step-matched">
+                <div style="margin: auto; text-align:center;">
+                    <span class="heart-anim">💖</span>
+                    <h2 style="color:var(--deep); margin-top:10px; font-size: 1.2rem;">想いが結ばれました！</h2>
+                    <p style="font-size:0.8rem; color:var(--muted); margin-top:5px;">おめでとうございます</p>
+                    <button class="btn" style="margin-top:20px;" onclick="checkRoomPass()">チャットをはじめる</button>
+                </div>
+            </div>
+
+            <div class="step" id="step-pass">
                 <div style="margin: auto 0; text-align:center;">
                     <span style="font-size:2.5rem;">🔒</span>
                     <h2 style="color:var(--deep); margin-top:8px; font-size: 1.1rem;">合言葉を入力</h2>
                     <input type="password" id="checkPass" placeholder="合言葉">
-                    <button class="btn" onclick="verifyPass()">チャットに入る</button>
+                    <button class="btn" onclick="verifyPass()">確認</button>
                     <p id="errorMsg" style="color:var(--error); font-size:0.7rem; margin-top:5px; visibility:hidden;">合言葉が違います</p>
                 </div>
             </div>
@@ -110,26 +119,33 @@
         myFullId = document.getElementById('myName').value.trim();
         crushFullId = document.getElementById('crushName').value.trim();
         roomPath = [myFullId, crushFullId].sort().join('_');
-        
         showStep(1);
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
 
-        onValue(ref(db, 'feelings/' + crushFullId), async (snap) => {
+        onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
             if (snap.exists() && snap.val().crushKey === myFullId) {
-                const roomSnap = await get(ref(db, 'rooms/' + roomPath));
-                if (roomSnap.exists() && roomSnap.val().pass) {
-                    correctPass = roomSnap.val().pass;
-                    showStep(2); // 合言葉入力へ
-                } else {
-                    goToChat(); // 合言葉がないなら即チャット
-                }
+                showStep('matched'); // マッチング画面へ
             }
         });
     };
 
+    window.cancelWait = async () => {
+        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
+        location.reload();
+    };
+
+    window.checkRoomPass = async () => {
+        const roomSnap = await get(ref(db, 'rooms/' + roomPath));
+        if (roomSnap.exists() && roomSnap.val().pass) {
+            correctPass = roomSnap.val().pass;
+            showStep('pass'); // 合言葉入力へ
+        } else {
+            goToChat(); // 合言葉なしならチャットへ
+        }
+    };
+
     window.verifyPass = () => {
-        const input = document.getElementById('checkPass').value.trim();
-        if (input === correctPass) {
+        if (document.getElementById('checkPass').value.trim() === correctPass) {
             goToChat();
         } else {
             document.getElementById('errorMsg').style.visibility = "visible";
@@ -168,18 +184,16 @@
     };
 
     window.fullReset = async () => {
-        if(!confirm("履歴と合言葉をすべて消去しますか？")) return;
-        await update(ref(db), { 
-            ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, 
-            ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null 
-        });
+        if(!confirm("すべて消去して最初の画面に戻ります。よろしいですか？")) return;
+        await update(ref(db), { ['feelings/'+myFullId]:null, ['feelings/'+crushFullId]:null, ['rooms/'+roomPath]:null, ['chats/'+roomPath]:null });
         location.reload();
     };
 
-    function showStep(n) {
+    function showStep(id) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step' + n).classList.add('active');
-        document.getElementById('gear').style.display = (n === 3) ? 'block' : 'none';
+        const target = (typeof id === 'number') ? 'step' + id : 'step-' + id;
+        document.getElementById(target).classList.add('active');
+        document.getElementById('gear').style.display = (id === 3) ? 'block' : 'none';
     }
     window.openModal = () => document.getElementById('settingsModal').style.display='flex';
     window.closeModal = () => document.getElementById('settingsModal').style.display='none';

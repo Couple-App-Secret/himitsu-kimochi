@@ -55,7 +55,7 @@
         <div class="card">
             <div class="header">
                 <h1>ひみつのきもち</h1>
-                <span class="update-tag">Ver. 2026-0419-22:05</span>
+                <span class="update-tag">Ver. 2026-0419-22:15</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
@@ -107,7 +107,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -127,9 +127,7 @@
         showStep(1);
         await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
 
-        // 部屋の存在（リセット）を常に監視
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
-            // もしマッチング済み（Step3やStepMatched）なのに部屋データが消えたら、強制リロード
             const currentStep = document.querySelector('.step.active').id;
             if (!snap.exists() && (currentStep === 'step3' || currentStep === 'step-matched' || currentStep === 'step-pass')) {
                 location.reload();
@@ -149,7 +147,6 @@
     };
 
     window.checkRoomPass = async () => {
-        // 部屋がなければ新しく作成（監視用）
         const roomSnap = await get(ref(db, 'rooms/' + roomPath));
         if (!roomSnap.exists()) {
             await set(ref(db, 'rooms/' + roomPath), { active: true });
@@ -196,11 +193,21 @@
 
     window.fullReset = async () => {
         if(!confirm("すべて消去してリセットしますか？\n相手の画面もリセットされます。")) return;
-        // 部屋データ、足跡、チャットすべてを削除
-        await remove(ref(db, 'rooms/' + roomPath));
-        await remove(ref(db, 'chats/' + roomPath));
-        await remove(ref(db, 'feelings/' + myFullId));
-        await remove(ref(db, 'feelings/' + crushFullId));
+        
+        // 監視をすべて解除
+        off(ref(db, 'rooms/' + roomPath));
+        off(ref(db, 'chats/' + roomPath));
+        off(ref(db, 'feelings/' + myFullId));
+        off(ref(db, 'feelings/' + crushFullId));
+
+        // サーバー上の全データを一括削除
+        const updates = {};
+        updates['rooms/' + roomPath] = null;
+        updates['chats/' + roomPath] = null;
+        updates['feelings/' + myFullId] = null;
+        updates['feelings/' + crushFullId] = null;
+        await update(ref(db), updates);
+
         location.reload();
     };
 

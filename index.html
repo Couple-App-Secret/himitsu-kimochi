@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; }
+        :root { --pink: #f4a7b9; --deep: #c2587a; --cream: #fff0f5; --text: #4a2535; --muted: #a38b96; --error: #ff4d4d; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
@@ -38,9 +38,10 @@
             flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        .header { text-align: center; margin-bottom: 10px; flex-shrink: 0; }
+        .header { text-align: center; margin-bottom: 10px; flex-shrink: 0; position: relative; }
         h1 { font-size: 1.1rem; color: var(--deep); letter-spacing: 0.1em; }
-        .update-tag { font-size: 0.6rem; color: white; background: var(--muted); padding: 2px 8px; border-radius: 10px; display: inline-block; margin-top: 4px; }
+        .update-tag { font-size: 0.6rem; color: var(--muted); display: block; margin-top: 2px; }
+        .settings-btn { position: absolute; right: 0; top: 0; font-size: 1.2rem; cursor: pointer; color: var(--muted); }
 
         .step { display: none; height: 100%; flex-direction: column; overflow: hidden; }
         .step.active { display: flex; }
@@ -58,37 +59,56 @@
 
         .chat-input-wrap { display: flex; gap: 8px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
         .chat-input { flex: 1; padding: 12px 18px; border: 1px solid #f0f0f0; border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa; -webkit-appearance: none; }
-        .send-btn { background: var(--pink); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1.2rem; cursor: pointer; }
+        .send-btn { background: var(--pink); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; flex-shrink: 0; font-size: 1.2rem; }
 
-        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; outline: none; margin-bottom: 10px; -webkit-appearance: none; }
+        /* 入力エリア */
+        .error-msg { color: var(--error); font-size: 0.7rem; font-weight: bold; min-height: 1em; margin-bottom: 5px; visibility: hidden; }
+        input[type="text"] { width: 100%; padding: 15px; border: 2px solid #f0f0f0; border-radius: 15px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; }
+        input[type="text"].invalid { border-color: var(--error); background: #fff5f5; }
         .btn { width: 100%; padding: 16px; background: var(--pink); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
         .btn:disabled { background: #ddd; }
-        .btn-cancel { background: #ccc; margin-top: 15px; font-size: 0.9rem; padding: 12px; border-radius: 50px; color: white; border: none; width: 100%; }
-        .reset-link { font-size: 0.65rem; color: var(--muted); margin-top: 10px; cursor: pointer; text-decoration: underline; text-align: center; }
+        .btn-cancel { background: #bbb; margin-top: 15px; font-size: 0.9rem; padding: 12px; border-radius: 50px; color: white; border: none; width: 100%; }
+
+        /* モーダル（設定画面） */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 300px; text-align: center; }
+        .reset-btn { background: var(--error); color: white; border: none; padding: 10px 20px; border-radius: 10px; margin-top: 15px; width: 100%; }
     </style>
 </head>
 <body>
     <div class="petals" id="petals"></div>
+    
+    <div id="settingsModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">設定</h3>
+            <p style="font-size: 0.8rem; color: var(--muted);">現在のつながりを解消しますか？</p>
+            <button class="reset-btn" onclick="fullReset()">縁をリセットする</button>
+            <p style="margin-top: 15px; font-size: 0.8rem; color: var(--text); cursor: pointer;" onclick="closeModal()">とじる</p>
+        </div>
+    </div>
+
     <div class="container" id="main-container">
         <div class="card">
             <div class="header">
-                <h1>SECRET</h1>
-                <div class="update-tag">Ver. 0419-0910</div>
+                <h1>ひみつのきもち</h1>
+                <span class="update-tag">Ver. 0419-1030</span>
+                <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
             </div>
             
             <div class="step active" id="step0">
                 <div style="margin: auto 0; text-align: center;">
-                    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">お互いの名前を入力</p>
-                    <input type="text" id="myName" placeholder="自分" oninput="validateInput()" autocomplete="off">
-                    <input type="text" id="crushName" placeholder="相手" oninput="validateInput()" autocomplete="off">
-                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>おくる</button>
+                    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">お互いの名前をカタカナで入力してください</p>
+                    <div id="warn" class="error-msg">※カタカナで入力してください</div>
+                    <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()" autocomplete="off">
+                    <input type="text" id="crushName" placeholder="相手の名前" oninput="validateInput()" autocomplete="off">
+                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>気持ちをおくる</button>
                 </div>
             </div>
             
             <div class="step" id="step1">
                 <div style="margin: auto; text-align:center; width: 100%;">
                     <span style="font-size:3rem;">⏳</span>
-                    <p style="margin: 15px 0;">相手を待っています...</p>
+                    <p style="margin: 15px 0;">相手の入力を待っています...</p>
                     <button class="btn-cancel" onclick="cancelWait()">やっぱりやめる</button>
                 </div>
             </div>
@@ -96,18 +116,17 @@
             <div class="step" id="step2">
                 <div style="margin: auto; text-align:center;">
                     <span style="font-size:3rem;">💖</span>
-                    <h2 style="color:var(--deep); margin-top:10px;">準備完了！</h2>
-                    <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットをはじめる</button>
+                    <h2 style="color:var(--deep); margin-top:10px;">想いが結ばれました</h2>
+                    <button class="btn" style="margin-top:20px;" onclick="goToChat()">チャットを開始する</button>
                 </div>
             </div>
 
             <div class="step" id="step3">
                 <div id="chat-area"></div>
                 <div class="chat-input-wrap">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ..." autocomplete="off">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージを送る..." autocomplete="off">
                     <button class="send-btn" onclick="sendMsg()">▶</button>
                 </div>
-                <div class="reset-link" onclick="fullReset()">縁をリセット</div>
             </div>
         </div>
     </div>
@@ -132,7 +151,6 @@
     window.addEventListener('resize', syncHeight);
     syncHeight();
 
-    // 文字列を安全なHTMLエンティティに変換（犬雲・絵文字対策）
     const toSafeHtml = (str) => {
         return Array.from(str).map(char => {
             const cp = char.codePointAt(0);
@@ -141,9 +159,21 @@
     };
 
     window.validateInput = () => {
-        const n1 = document.getElementById('myName').value.trim();
-        const n2 = document.getElementById('crushName').value.trim();
-        document.getElementById('submitBtn').disabled = !(n1 && n2);
+        const n1 = document.getElementById('myName');
+        const n2 = document.getElementById('crushName');
+        const warn = document.getElementById('warn');
+        const btn = document.getElementById('submitBtn');
+        const kanaRegex = /^[ァ-ヶー\s　]+$/;
+
+        const v1 = n1.value.trim();
+        const v2 = n2.value.trim();
+        const isV1Ok = v1 === "" || kanaRegex.test(v1);
+        const isV2Ok = v2 === "" || kanaRegex.test(v2);
+
+        n1.classList.toggle('invalid', !isV1Ok);
+        n2.classList.toggle('invalid', !isV2Ok);
+        warn.style.visibility = (!isV1Ok || !isV2Ok) ? "visible" : "hidden";
+        btn.disabled = !(isV1Ok && isV2Ok && v1 !== "" && v2 !== "");
     };
 
     window.submitFeeling = async () => {
@@ -162,9 +192,13 @@
         location.reload();
     };
 
+    window.openModal = () => { document.getElementById('settingsModal').style.display = 'flex'; };
+    window.closeModal = () => { document.getElementById('settingsModal').style.display = 'none'; };
+
     function showStep(n) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step' + n).classList.add('active');
+        document.getElementById('gear').style.display = (n === 3) ? 'block' : 'none';
         syncHeight();
     }
 
@@ -198,7 +232,7 @@
     };
 
     window.fullReset = async () => {
-        if (confirm("リセットしますか？")) {
+        if (confirm("本当にリセットしますか？チャット履歴も消去されます。")) {
             const updates = {};
             updates['feelings/' + myFullId] = null;
             updates['feelings/' + crushFullId] = null;

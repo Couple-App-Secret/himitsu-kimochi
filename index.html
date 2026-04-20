@@ -48,6 +48,13 @@
 
         .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; }
 
+        /* お祝い画面のフェードイン演出 */
+        @keyframes congratsFade {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .congrats-content { animation: congratsFade 1s ease-out forwards; text-align: center; }
+
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
         .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
@@ -61,11 +68,11 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 00:20</span>
+        <span class="update-tag">更新: 2026-04-21 00:30</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
-    <div id="setup-view" class="view">
+    <div id="setup-view" class="view active">
         <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px;">※お名前をカタカナで入力してください</p>
         <input type="text" id="myName" placeholder="あなた" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')">
         <input type="text" id="crushName" placeholder="お相手" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')">
@@ -76,6 +83,15 @@
         <div style="font-size:3.5rem; margin-bottom:25px;">💌</div>
         <p style="color:#999; font-size:0.95rem; margin-bottom:8px; letter-spacing: 0.05em;">お相手を待っています...</p>
         <p style="color:#bbb; font-size:0.85rem; line-height:1.6;">二人の想いが重なると、<br>ご縁が結ばれます。</p>
+    </div>
+
+    <div id="congrats-view" class="view" style="align-items:center; justify-content:center; text-align:center; background:white;">
+        <div class="congrats-content">
+            <div style="font-size:4rem; margin-bottom:30px;">💖✨💖</div>
+            <p style="font-size:1.1rem; font-weight:bold; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.1em;">おめでとうございます！</p>
+            <p style="font-size:0.9rem; color:var(--text); line-height:1.8; margin-bottom:30px;">二人の想いが、<br>いま静かに重なりました。</p>
+            <button class="btn" onclick="proceedToMatch()">二人の場所へ</button>
+        </div>
     </div>
 
     <div id="match-view" class="view" style="align-items:center; justify-content:center; text-align:center;">
@@ -109,7 +125,7 @@
         <p style="font-size:0.8rem; color:#888; margin-top:10px;">入室の合言葉</p>
         <input type="text" id="newPass" placeholder="合言葉を決める">
         <button class="btn" onclick="saveSettings()">保存</button>
-        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">二人のご縁の履歴をすべて消去</button>
+        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁の履歴をすべて清める</button>
         <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
@@ -153,13 +169,31 @@
             const data = snap.val() || {};
             correctPass = (data.pass || "").trim();
             if (data[myN] && data[partnerN]) {
+                // 両方アクティブになった！
                 document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
-                if (localStorage.getItem('en_chatActive')) { showView('chat-view'); initChat(); }
-                else showView('match-view');
-            } else if (data[myN]) showView('waiting-view');
-            else showView('setup-view');
+                if (localStorage.getItem('en_chatActive')) { 
+                    // チャット中ならチャットへ
+                    showView('chat-view'); initChat(); 
+                } else if (localStorage.getItem('en_congratsSeen')) {
+                    // すでにお祝いを見たならマッチ画面へ
+                    showView('match-view');
+                } else {
+                    // まだお祝いを見ていないなら、お祝い画面へ！（後から登録した人もここを通る）
+                    showView('congrats-view');
+                }
+            } else if (data[myN]) {
+                showView('waiting-view');
+            } else {
+                showView('setup-view');
+            }
         });
     }
+
+    // お祝いを見て「二人の場所へ」進む
+    window.proceedToMatch = () => {
+        localStorage.setItem('en_congratsSeen', 'true');
+        showView('match-view');
+    };
 
     window.attemptEntry = () => {
         if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }

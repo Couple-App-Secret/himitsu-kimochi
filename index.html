@@ -2,47 +2,50 @@
 <html lang="ja">
 <head>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>縁結び</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --sakura: #f4a7b9; --sky: #8fcbe5; --text: #4a2535; --bg: #fffafb; }
+        :root { --sakura: #f4a7b9; --text: #4a2535; --bg: #fffafb; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
 
         .app-container { display: flex; flex-direction: column; height: 100%; }
         .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; }
-        h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; }
+        h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .ver { font-size: 0.6rem; color: #ccc; }
 
         .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; }
         .view.active { display: flex; }
 
-        /* 名前入力 */
+        /* 入力画面 */
         #setup-view { align-items: center; justify-content: center; padding: 40px; }
         input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; }
         
-        /* 待機画面 (ご希望のデザイン) */
+        /* 待機画面 */
         #waiting-view { align-items: center; justify-content: center; text-align: center; background: white; }
         .mail-icon { font-size: 2.5rem; margin-bottom: 20px; }
         .wait-txt { font-size: 0.9rem; color: #999; line-height: 1.8; }
-        .cancel-btn { margin-top: 30px; font-size: 0.8rem; color: #ccc; text-decoration: underline; cursor: pointer; }
 
-        /* チャット */
+        /* 成功画面 (マッチング画面) */
+        #match-view { align-items: center; justify-content: center; text-align: center; background: white; }
+        .heart-icon { font-size: 3rem; color: var(--sakura); margin-bottom: 20px; animation: heartbeat 1.5s infinite; }
+        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        /* チャット画面 */
         #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 75%; padding: 10px 15px; border-radius: 18px; font-size: 0.9rem; position: relative; }
+        .msg { max-width: 75%; padding: 10px 15px; border-radius: 18px; font-size: 0.9rem; }
         .msg.me { align-self: flex-end; background: var(--sakura); color: white; border-bottom-right-radius: 2px; }
         .msg.you { align-self: flex-start; background: white; border: 2px solid var(--sakura); border-bottom-left-radius: 2px; }
 
         .input-wrap { padding: 10px 15px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); background: white; display: flex; gap: 8px; border-top: 1px solid #f0f0f0; }
         #chatInput { flex: 1; padding: 12px; border: none; border-radius: 20px; background: #f5f5f5; font-size: 16px; outline: none; }
-        .send-btn { background: var(--sakura); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; }
+        .send-btn { background: var(--sakura); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.2rem; }
 
-        .btn { width: 100%; max-width: 280px; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 25px; font-weight: bold; }
+        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .cancel-link { margin-top: 20px; color: #ccc; font-size: 0.8rem; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -50,7 +53,7 @@
 <div class="app-container">
     <div class="header">
         <h1>縁 結 び</h1>
-        <span class="ver">Ver. 2026-0421-22:45</span>
+        <span class="ver">Ver. 2026-0421-22:55</span>
     </div>
 
     <div id="setup-view" class="view">
@@ -66,7 +69,13 @@
             お相手を待っています...<br>
             二人の想いが重なると、ご縁が結ばれます。
         </div>
-        <div class="cancel-btn" onclick="resetApp()">一度とりけす</div>
+        <div class="cancel-link" onclick="resetApp()">一度やりなおす</div>
+    </div>
+
+    <div id="match-view" class="view">
+        <div class="heart-icon">💖</div>
+        <p style="font-weight:bold; margin-bottom:20px;">ご縁が結ばれました！</p>
+        <button class="btn" onclick="goToChat()">チャットをはじめる</button>
     </div>
 
     <div id="chat-view" class="view">
@@ -80,7 +89,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -97,7 +106,7 @@
 
     window.onload = () => {
         if (myN && partnerN) {
-            checkMatch();
+            checkStatus();
         } else {
             showView('setup-view');
         }
@@ -107,30 +116,36 @@
         const n1 = document.getElementById('myName').value.trim();
         const n2 = document.getElementById('crushName').value.trim();
         if (!n1 || !n2) return;
-
         myN = n1; partnerN = n2;
         localStorage.setItem('en_me', myN);
         localStorage.setItem('en_partner', partnerN);
-        
         room = [myN, partnerN].sort().join('_');
         await set(ref(db, `matching/${room}/${myN}`), true);
-        checkMatch();
+        checkStatus();
     };
 
-    function checkMatch() {
+    function checkStatus() {
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             if (data[myN] && data[partnerN]) {
-                // 両方揃ったらチャット開始
-                showView('chat-view');
-                initChat();
+                if (localStorage.getItem('en_chatActive')) {
+                    showView('chat-view');
+                    initChat();
+                } else {
+                    showView('match-view');
+                }
             } else {
-                // 片方だけなら待機画面
                 showView('waiting-view');
             }
         });
     }
+
+    window.goToChat = () => {
+        localStorage.setItem('en_chatActive', 'true');
+        showView('chat-view');
+        initChat();
+    };
 
     function initChat() {
         onValue(ref(db, 'chats/' + room), (snap) => {
@@ -157,7 +172,7 @@
 
     window.resetApp = () => {
         localStorage.clear();
-        location.reload(true);
+        location.reload();
     };
 </script>
 </body>

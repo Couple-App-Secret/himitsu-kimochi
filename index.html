@@ -8,9 +8,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
 
-        :root { --sakura: #f4a7b9; --gold: #d4af37; --text: #4a2535; --muted: #a38b96; }
+        :root { --sakura: #f4a7b9; --gold: #d4af37; --text: #4a2535; --muted: #a38b96; --bg: #fffafb; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background: #fffafb; font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        body { background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
         .container { flex: 1; display: flex; flex-direction: column; padding: 15px; padding-top: env(safe-area-inset-top); max-width: 450px; margin: 0 auto; width: 100%; }
         .card { background: white; border-radius: 30px; flex: 1; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); position: relative; overflow: hidden; border: 1px solid #fdf0f3; }
@@ -26,7 +26,7 @@
         .btn { width: 100%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; }
         .btn:disabled { background: #eee; color: #ccc; }
 
-        /* 成就 */
+        /* 成就演出 */
         .shoji-text { font-family: 'Yuji Syuku', serif; font-size: 4rem; color: var(--gold); text-align: center; animation: zoomIn 1.5s ease-out; }
         @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
@@ -37,12 +37,20 @@
         /* チャット */
         #chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
         .msg { max-width: 80%; padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; }
-        .msg.me { align-self: flex-end; background: var(--sakura); color: white; border-bottom-right-radius: 2px; }
-        .msg.you { align-self: flex-start; background: #f0f0f0; border-bottom-left-radius: 2px; }
+        .msg.me { align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg.you { align-self: flex-start; border-bottom-left-radius: 2px; }
+
+        /* 色バリエーション */
+        .color-sakura { background: #f4a7b9; color: white; }
+        .color-blue { background: #8ecae6; color: white; }
+        .color-gold { background: #d4af37; color: white; }
+        .color-white { background: white; color: var(--text); border: 1px solid #eee; }
 
         .settings-btn { position: absolute; top: 20px; right: 20px; font-size: 1.2rem; cursor: pointer; color: #ddd; z-index: 20; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; text-align: center; }
+        
+        .color-dot { width: 30px; height: 30px; border-radius: 50%; display: inline-block; margin: 5px; cursor: pointer; border: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -50,6 +58,14 @@
     <div id="settingsModal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="margin-bottom:15px; font-size:0.9rem;">設定</h3>
+            <p style="font-size:0.7rem; color:var(--muted); margin-bottom:10px;">吹き出しの色</p>
+            <div onclick="updateColor('sakura')" class="color-dot" style="background:#f4a7b9;"></div>
+            <div onclick="updateColor('blue')" class="color-dot" style="background:#8ecae6;"></div>
+            <div onclick="updateColor('gold')" class="color-dot" style="background:#d4af37;"></div>
+            <div onclick="updateColor('white')" class="color-dot" style="background:#ffffff;"></div>
+            <div style="margin:15px 0; border-top:1px solid #eee;"></div>
+            <input type="text" id="newPass" placeholder="新しい合言葉">
+            <button class="btn" onclick="savePass()" style="margin-bottom:10px;">合言葉を保存</button>
             <button class="btn" style="background:#ff9999;" onclick="fullReset()">ご縁をリセットする</button>
         </div>
     </div>
@@ -59,7 +75,7 @@
             <div id="sakura-container" class="sakura-fall"></div>
             <div class="header">
                 <h1>縁結び</h1>
-                <span class="update-tag">Ver. 2026-0421-00:10</span>
+                <span class="update-tag">Ver. 2026-0421-00:20</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
@@ -80,7 +96,15 @@
             <div id="step-achieved" class="step">
                 <div class="shoji-text">成就</div>
                 <p style="text-align:center; color:var(--muted); margin-bottom:30px;">ご縁が結ばれました</p>
-                <button class="btn" onclick="startChat()">二人の場所へ</button>
+                <button class="btn" onclick="checkPassNeeded()">二人の場所へ</button>
+            </div>
+
+            <div id="step-verify" class="step">
+                <div style="text-align:center;">
+                    <p style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">合言葉を入力してください</p>
+                    <input type="text" id="passInput" placeholder="合言葉">
+                    <button class="btn" onclick="verifyPass()">確認</button>
+                </div>
             </div>
 
             <div id="step-chat" class="step">
@@ -101,13 +125,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myName = "";
-    let crushName = "";
-    let roomPath = "";
+    let myName = localStorage.getItem('enmusubi_myName') || "";
+    let partnerName = localStorage.getItem('enmusubi_partnerName') || "";
+    let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
+    let roomInfo = {};
+
+    window.onload = () => {
+        if (roomPath) {
+            checkStatus();
+        }
+    };
 
     function showStep(id) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+    }
+
+    async function checkStatus() {
+        const snap = await get(ref(db, 'rooms/' + roomPath));
+        if (snap.exists() && snap.val().status === 'achieved') {
+            roomInfo = snap.val();
+            showStep('step-achieved');
+            startSakura();
+        }
     }
 
     window.checkInput = () => {
@@ -118,17 +158,16 @@
 
     window.sendFeeling = async () => {
         myName = document.getElementById('myName').value.trim();
-        crushName = document.getElementById('crushName').value.trim();
-        roomPath = [myName, crushName].sort().join('_');
-
-        // まず待機画面へ
-        showStep('step-waiting');
-
-        // 自分の想いを登録
-        await set(ref(db, 'feelings/' + myName), { crush: crushName });
+        partnerName = document.getElementById('crushName').value.trim();
+        roomPath = [myName, partnerName].sort().join('_');
         
-        // お相手を監視
-        onValue(ref(db, 'feelings/' + crushName), (snap) => {
+        localStorage.setItem('enmusubi_myName', myName);
+        localStorage.setItem('enmusubi_partnerName', partnerName);
+
+        showStep('step-waiting');
+        await set(ref(db, 'feelings/' + myName), { crush: partnerName });
+        
+        onValue(ref(db, 'feelings/' + partnerName), (snap) => {
             if (snap.exists() && snap.val().crush === myName) {
                 achieve();
             }
@@ -138,31 +177,31 @@
     async function achieve() {
         await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
         await remove(ref(db, 'feelings/' + myName));
-        
-        showStep('step-achieved');
-        // 桜吹雪
-        const container = document.getElementById('sakura-container');
-        for (let i = 0; i < 40; i++) {
-            const p = document.createElement('div');
-            p.className = 'petal';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.width = p.style.height = (Math.random() * 10 + 5) + 'px';
-            p.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            p.style.animationDelay = (Math.random() * 2) + 's';
-            container.appendChild(p);
-        }
+        checkStatus();
     }
+
+    window.checkPassNeeded = () => {
+        if (roomInfo.pass) showStep('step-verify');
+        else startChat();
+    };
+
+    window.verifyPass = () => {
+        if (document.getElementById('passInput').value === roomInfo.pass) startChat();
+        else alert("合言葉が違います");
+    };
 
     window.startChat = () => {
         showStep('step-chat');
         document.getElementById('gear').style.display = 'block';
+        onValue(ref(db, 'rooms/' + roomPath), s => { roomInfo = s.val() || {}; });
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
+                const col = roomInfo[d.sender] || 'white';
                 const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
+                m.className = `msg ${d.sender === myName ? 'me' : 'you'} color-${col}`;
                 m.innerText = d.text;
                 area.appendChild(m);
             });
@@ -177,13 +216,40 @@
         i.value = "";
     };
 
+    window.updateColor = async (c) => {
+        await update(ref(db, 'rooms/' + roomPath), { [myName]: c });
+        document.getElementById('settingsModal').style.display = 'none';
+    };
+
+    window.savePass = async () => {
+        const p = document.getElementById('newPass').value.trim();
+        if (p) {
+            await update(ref(db, 'rooms/' + roomPath), { pass: p });
+            alert("合言葉を保存しました");
+        }
+    };
+
     window.fullReset = async () => {
-        if(confirm("ご縁をリセットしますか？")){
+        if(confirm("すべてをリセットしてよろしいですか？")){
             await remove(ref(db, 'rooms/' + roomPath));
             await remove(ref(db, 'chats/' + roomPath));
+            localStorage.clear();
             location.reload();
         }
     };
+
+    function startSakura() {
+        const container = document.getElementById('sakura-container');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = p.style.height = (Math.random() * 8 + 5) + 'px';
+            p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            p.style.animationDelay = (Math.random() * 2) + 's';
+            container.appendChild(p);
+        }
+    }
 </script>
 </body>
 </html>

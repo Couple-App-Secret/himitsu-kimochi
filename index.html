@@ -33,7 +33,7 @@
         .msg-row.me { align-self: flex-end; align-items: flex-end; }
         .msg-row.you { align-self: flex-start; align-items: flex-start; }
 
-        .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; transition: background 0.3s ease; }
+        .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; transition: background 0.4s ease; }
         .msg.me { border-bottom-right-radius: 4px; }
         .msg.you { border-bottom-left-radius: 4px; }
 
@@ -56,7 +56,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="tempExit()">退出</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-20 23:20</span>
+        <span class="update-tag">更新: 2026-04-20 23:25</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -172,19 +172,19 @@
     };
 
     function initChat() {
-        // ルーム全体のメタデータ（色・合言葉）をリアルタイム監視
+        // メタデータ（色情報など）の変更をリアルタイムに受け取る
         onValue(ref(db, `matching/${room}`), (mSnap) => {
             const mData = mSnap.val() || {};
             const guide = document.getElementById('guide-msg');
             guide.style.display = mData.pass ? 'none' : 'block';
 
-            // チャットメッセージを監視（ルームデータが更新されるたびに再描画され、色が即座に変わる）
+            // チャット履歴を監視。mDataが変わったときもこの再描画が走るため、色が即座に変わる
             onValue(ref(db, 'chats/' + room), (snap) => {
                 const area = document.getElementById('chat-area');
                 area.innerHTML = ""; area.appendChild(guide);
                 snap.forEach(c => {
                     const d = c.val(), isMe = (d.s === myN);
-                    // 投稿者(d.s)の現在の色をメタデータから取得
+                    // 送信者(d.s)の最新の色をmDataから取得して適用
                     const sColor = mData[d.s]?.color || '--sakura';
                     const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
                     const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
@@ -212,19 +212,28 @@
         const updates = {};
         if (p) updates['pass'] = p;
         updates[`${myN}/color`] = myColor;
-        // Firebaseを更新。これによりinitChat内のonValueがトリガーされ、全員の色が変わる
+        // Firebaseに最新の色を書き込む
         await update(ref(db, `matching/${room}`), updates);
         closeModal();
     };
 
-    window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
+    window.selectColor = (c) => { 
+        myColor = c; 
+        localStorage.setItem('en_color', c); 
+        updateColorUI(); 
+    };
+
     function updateColorUI() { 
         document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById('c-' + myColor.replace('--', ''));
         if(activeBtn) activeBtn.classList.add('active');
     }
 
-    window.openModal = () => document.getElementById('settingsModal').style.display = 'flex';
+    window.openModal = () => {
+        // 設定を開いた時に現在の合言葉を表示
+        document.getElementById('newPass').value = correctPass;
+        document.getElementById('settingsModal').style.display = 'flex';
+    };
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
     
     window.fullReset = async () => {

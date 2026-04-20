@@ -8,14 +8,13 @@
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --sakura: #f4a7b9; --sky: #8fcbe5; --canary: #f9d057; --text: #4a2535; --bg: #fffafb; --muted: #888; }
         
-        /* クイック操作・コピーを徹底排除 */
         * { 
             box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent; 
             -webkit-user-select: none; user-select: none;
             -webkit-touch-callout: none !important;
         }
-        input { -webkit-user-select: text !important; user-select: text !important; pointer-events: auto; }
+        input { -webkit-user-select: text !important; user-select: text !important; }
 
         html, body { 
             height: 100%; width: 100%; overflow: hidden; 
@@ -50,7 +49,7 @@
             background: white; padding: 12px 15px;
             padding-bottom: calc(15px + env(safe-area-inset-bottom));
             border-top: 1px solid #f0f0f0; display: flex; gap: 10px; flex-shrink: 0;
-            z-index: 1100;
+            z-index: 1100; transition: transform 0.1s ease;
         }
         #chatInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #f5f5f5; font-size: 16px; outline: none; }
         .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
@@ -71,7 +70,7 @@
     <div class="app-container">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0421-23:45</span>
+            <span class="update-tag">Ver. 2026-0421-23:55</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
@@ -139,17 +138,14 @@
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
     let myColor = localStorage.getItem('en_myColor') || '--sakura';
 
-    // Googleアプリ用・ウェブブラウザ用の高さ補正
-    const setView = () => {
-        if (!window.visualViewport) return;
-        const vh = window.visualViewport.height;
-        const offset = window.innerHeight - vh;
-        document.getElementById('inputWrap').style.transform = `translateY(-${offset}px)`;
-        window.scrollTo(0, 0);
-    };
+    // Googleアプリ・iOSキーボード干渉対策
     if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', setView);
-        window.visualViewport.addEventListener('scroll', setView);
+        const resizeHandler = () => {
+            const vh = window.visualViewport.height;
+            const offset = window.innerHeight - vh;
+            document.getElementById('inputWrap').style.transform = `translateY(-${offset}px)`;
+        };
+        window.visualViewport.addEventListener('resize', resizeHandler);
     }
 
     window.onload = () => { if (roomPath) sync(); else showStep('step0'); };
@@ -168,7 +164,7 @@
     function sync() {
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
             const data = snap.val();
-            if (!data) { if(localStorage.getItem('isChatting')) location.reload(); return; }
+            if (!data) return;
             if (data.status === 'achieved') {
                 if (data.pass) document.getElementById('welcome-msg').style.display = 'none';
                 if (data.pass && !sessionStorage.getItem('unlocked')) showStep('step-gate');
@@ -189,15 +185,15 @@
         const snap = await get(ref(db, `feelings/${roomPath}`));
         if (snap.exists() && Object.keys(snap.val()).length >= 2) {
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
-        } else { alert("想いをおくりました。"); }
+        } else { alert("想いをおくりました。相手の登録を待っています。"); }
         sync();
     };
 
     window.startChat = () => { localStorage.setItem('isChatting', 'true'); showStep(null); render(); };
 
     function render() {
-        // 相手の色をリアルタイム取得するためのリスナー
-        onValue(ref(db, `feelings/${roomPath}`), (fSnap) => {
+        // 相手の色情報を一度だけ読み込み、その後チャットを監視
+        get(ref(db, `feelings/${roomPath}`)).then((fSnap) => {
             const colors = fSnap.val() || {};
             onValue(ref(db, 'chats/' + roomPath), (snap) => {
                 const area = document.getElementById('chat-area');
@@ -206,9 +202,9 @@
                 area.appendChild(welcome);
                 snap.forEach(c => {
                     const d = c.val();
-                    const senderColor = colors[d.sender]?.color || d.color || '--sakura';
                     const m = document.createElement('div');
                     m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
+                    const senderColor = colors[d.sender]?.color || d.color || '--sakura';
                     if(d.sender === myName) {
                         m.style.background = `var(${senderColor})`;
                     } else {
@@ -244,6 +240,7 @@
         if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
         await update(ref(db, `feelings/${roomPath}/${myName}`), { color: myColor });
         closeSettings();
+        render(); // 設定変更後に色を再反映
     };
 
     window.checkGate = async () => {

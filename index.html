@@ -48,7 +48,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 02:15</span>
+        <span class="update-tag">更新: 2026-04-21 02:25</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -136,22 +136,21 @@
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             correctPass = (data.pass || "").trim();
-            
-            // 確実なマッチ判定：二人分のキーが存在し、かつ active であること
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
-            if (isMatch) {
-                // すでに「はじめる」済みの場合は直接チャット、そうでなければマッチ画面
-                if (localStorage.getItem('en_chatActive')) {
-                    showView('chat-view'); initChat();
-                } else {
+            // 重要：en_chatActive フラグがない限り、マッチしていても必ず match-view で止める
+            if (localStorage.getItem('en_chatActive')) {
+                if (isMatch) { showView('chat-view'); initChat(); }
+                else { localStorage.removeItem('en_chatActive'); showView('waiting-view'); }
+            } else {
+                if (isMatch) {
                     document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                     showView('match-view');
+                } else if (data[myN] && data[myN].active) {
+                    showView('waiting-view');
+                } else {
+                    showView('setup-view');
                 }
-            } else if (data[myN] && data[myN].active) {
-                showView('waiting-view');
-            } else {
-                showView('setup-view');
             }
         });
     }

@@ -13,47 +13,47 @@
         body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
 
         .app-container { display: flex; flex-direction: column; height: 100%; }
-        .header { height: 60px; display: flex; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
+        .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
         h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
+        .update-tag { font-size: 0.6rem; color: #ccc; margin-top: 2px; }
         .settings-trigger { position: absolute; right: 15px; font-size: 1.2rem; color: #ccc; padding: 10px; cursor: pointer; }
 
         .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; }
         .view.active { display: flex; }
 
-        /* 入力画面 */
+        /* 入力 */
         #setup-view { align-items: center; justify-content: center; padding: 40px; }
         input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; }
         
-        /* 待機・マッチング */
-        .status-screen { align-items: center; justify-content: center; text-align: center; background: white; }
-        .icon-lg { font-size: 3rem; margin-bottom: 20px; }
+        /* システムメッセージ */
+        .system-msg {
+            background: #fff5f7; border-radius: 15px; padding: 15px; font-size: 0.8rem; 
+            text-align: center; margin: 10px 15px; border: 1px dashed var(--sakura); line-height: 1.6;
+        }
 
         /* チャットエリア */
-        #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-        .msg-row { display: flex; flex-direction: column; max-width: 80%; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
+        .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 12px; }
         .msg-row.me { align-self: flex-end; align-items: flex-end; }
         .msg-row.you { align-self: flex-start; align-items: flex-start; }
 
-        /* 吹き出し（両方塗りつぶし） */
         .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; }
         .msg.me { border-bottom-right-radius: 4px; }
         .msg.you { border-bottom-left-radius: 4px; }
-        
         .time { font-size: 0.65rem; color: #ccc; margin-top: 4px; padding: 0 5px; }
 
         .input-wrap { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: white; display: flex; gap: 10px; border-top: 1px solid #f0f0f0; }
         #chatInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #f5f5f5; font-size: 16px; outline: none; }
-        .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; }
+        .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
 
         .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; }
 
-        /* 設定モーダル */
+        /* モーダル */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
-        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .c-btn { width: 40px; height: 40px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-        .c-btn.active { border-color: #4a2535; transform: scale(1.1); }
-        .reset-btn { background: #ff7675; margin-top: 15px; font-size: 0.8rem; padding: 12px; }
+        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
+        .c-btn { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; }
+        .c-btn.active { border-color: var(--text); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -61,6 +61,7 @@
 <div class="app-container">
     <div class="header">
         <h1>縁 結 び</h1>
+        <span class="update-tag">更新: 2026-04-20 22:45</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -71,19 +72,24 @@
         <button class="btn" onclick="startMatching()">想いをおくる</button>
     </div>
 
-    <div id="waiting-view" class="view status-screen">
-        <div class="icon-lg">💌</div>
+    <div id="waiting-view" class="view" style="align-items:center; justify-content:center; text-align:center; background:white;">
+        <div style="font-size:3rem; margin-bottom:20px;">💌</div>
         <p style="color:#999; font-size:0.9rem;">お相手を待っています...<br>想いが重なると、ご縁が結ばれます。</p>
     </div>
 
-    <div id="match-view" class="view status-screen">
-        <div class="icon-lg">✨</div>
+    <div id="match-view" class="view" style="align-items:center; justify-content:center; text-align:center; background:white;">
+        <div style="font-size:3rem; margin-bottom:20px;">✨</div>
         <p style="font-weight:bold; margin-bottom:20px; color:var(--sakura);">ご縁が結ばれました！</p>
         <button class="btn" onclick="goToChat()">チャットをはじめる</button>
     </div>
 
     <div id="chat-view" class="view">
-        <div id="chat-area"></div>
+        <div id="chat-area">
+            <div id="guide-msg" class="system-msg" style="display:none;">
+                ご縁が結ばれました。<br>
+                右上の⚙から、<b>二人の合言葉</b>を決めて保存してくださいね。
+            </div>
+        </div>
         <div class="input-wrap">
             <input type="text" id="chatInput" placeholder="メッセージ..." autocomplete="off">
             <button class="send-btn" onclick="sendMsg()">▶</button>
@@ -94,14 +100,16 @@
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-bottom:10px;">設定</h3>
-        <p style="font-size:0.8rem; color:#888;">あなたの吹き出しの色</p>
+        <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
             <div class="c-btn" id="c-sky" style="background:#8fcbe5;" onclick="selectColor('--sky')"></div>
             <div class="c-btn" id="c-canary" style="background:#f9d057;" onclick="selectColor('--canary')"></div>
         </div>
-        <button class="btn reset-btn" onclick="fullReset()">全ての履歴を消去</button>
-        <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">とじる</p>
+        <input type="text" id="newPass" placeholder="二人の合言葉" style="width:100%; padding:12px; border:1px solid #eee; border-radius:15px; text-align:center; margin-bottom:15px;">
+        <button class="btn" onclick="saveSettings()">保存する</button>
+        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">全ての履歴を消去</button>
+        <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem; cursor:pointer;">とじる</p>
     </div>
 </div>
 
@@ -113,31 +121,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myN = localStorage.getItem('en_me');
-    let partnerN = localStorage.getItem('en_partner');
-    let myColor = localStorage.getItem('en_color') || '--sakura';
-    let room = "";
+    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "";
 
     function showView(id) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        document.getElementById('gear').style.display = (id === 'setup-view' || id === 'waiting-view') ? 'none' : 'block';
+        document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
-    window.onload = () => {
-        updateColorUI();
-        if (myN && partnerN) checkStatus();
-        else showView('setup-view');
-    };
+    window.onload = () => { if (myN && partnerN) checkStatus(); else showView('setup-view'); updateColorUI(); };
 
     window.startMatching = async () => {
-        const n1 = document.getElementById('myName').value.trim();
-        const n2 = document.getElementById('crushName').value.trim();
+        const n1 = document.getElementById('myName').value.trim(), n2 = document.getElementById('crushName').value.trim();
         if (!n1 || !n2) return;
-        myN = n1; partnerN = n2;
-        localStorage.setItem('en_me', myN);
-        localStorage.setItem('en_partner', partnerN);
-        room = [myN, partnerN].sort().join('_');
+        myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
+        localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
         await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
         checkStatus();
     };
@@ -148,48 +146,29 @@
             const data = snap.val() || {};
             if (data[myN] && data[partnerN]) {
                 if (localStorage.getItem('en_chatActive')) { showView('chat-view'); initChat(); }
-                else { showView('match-view'); }
-            } else { showView('waiting-view'); }
+                else showView('match-view');
+            } else showView('waiting-view');
         });
     }
 
-    window.goToChat = () => {
-        localStorage.setItem('en_chatActive', 'true');
-        showView('chat-view');
-        initChat();
-    };
+    window.goToChat = () => { localStorage.setItem('en_chatActive', 'true'); showView('chat-view'); initChat(); };
 
     function initChat() {
-        // 色設定をリアルタイム監視（自分と相手の色を常に同期）
         onValue(ref(db, `matching/${room}`), (mSnap) => {
             const mData = mSnap.val() || {};
-            
+            const guide = document.getElementById('guide-msg');
+            guide.style.display = mData.pass ? 'none' : 'block';
+
             onValue(ref(db, 'chats/' + room), (snap) => {
                 const area = document.getElementById('chat-area');
-                area.innerHTML = "";
+                area.innerHTML = ""; area.appendChild(guide);
                 snap.forEach(c => {
-                    const d = c.val();
-                    const isMe = (d.s === myN);
-                    // 送信者が設定している色を取得（なければデフォルト）
-                    const senderColor = mData[d.s]?.color || '--sakura';
-                    
-                    const row = document.createElement('div');
-                    row.className = `msg-row ${isMe ? 'me' : 'you'}`;
-                    
-                    const m = document.createElement('div');
-                    m.className = `msg ${isMe ? 'me' : 'you'}`;
-                    // 相手の吹き出しも枠線ではなく、背景色で塗りつぶす
-                    m.style.background = `var(${senderColor})`;
-                    
-                    m.innerText = d.t;
-                    
-                    const t = document.createElement('div');
-                    t.className = 'time';
-                    t.innerText = d.time || "";
-
-                    row.appendChild(m);
-                    row.appendChild(t);
-                    area.appendChild(row);
+                    const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--sakura';
+                    const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
+                    const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
+                    m.style.background = `var(${sColor})`; m.innerText = d.t;
+                    const t = document.createElement('div'); t.className = 'time'; t.innerText = d.time || "";
+                    row.appendChild(m); row.appendChild(t); area.appendChild(row);
                 });
                 area.scrollTop = area.scrollHeight;
             });
@@ -197,24 +176,21 @@
     }
 
     window.sendMsg = () => {
-        const i = document.getElementById('chatInput');
-        if (!i.value.trim()) return;
-        const now = new Date();
-        const timeStr = now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
+        const i = document.getElementById('chatInput'); if (!i.value.trim()) return;
+        const now = new Date(), timeStr = now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
         push(ref(db, 'chats/' + room), { s: myN, t: i.value, time: timeStr });
         i.value = "";
     };
 
-    window.selectColor = async (c) => {
-        myColor = c;
-        localStorage.setItem('en_color', c);
-        updateColorUI();
-        if(room && myN) {
-            await update(ref(db, `matching/${room}/${myN}`), { color: c });
-        }
+    window.saveSettings = async () => {
+        const p = document.getElementById('newPass').value.trim();
+        if (p) await update(ref(db, `matching/${room}`), { pass: p });
+        await update(ref(db, `matching/${room}/${myN}`), { color: myColor });
+        closeModal();
     };
 
-    function updateColorUI() {
+    window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
+    function updateColorUI() { 
         document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById('c-' + myColor.replace('--', ''));
         if(activeBtn) activeBtn.classList.add('active');
@@ -222,15 +198,10 @@
 
     window.openModal = () => document.getElementById('settingsModal').style.display = 'flex';
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
-
     window.fullReset = async () => {
-        if(confirm("全てのデータを消去して初期画面に戻ります。よろしいですか？")) {
-            if(room) {
-                await remove(ref(db, `matching/${room}`));
-                await remove(ref(db, `chats/${room}`));
-            }
-            localStorage.clear();
-            location.reload(true);
+        if(confirm("全てのデータを消去しますか？")) {
+            if(room) { await remove(ref(db, `matching/${room}`)); await remove(ref(db, `chats/${room}`)); }
+            localStorage.clear(); location.reload(true);
         }
     };
 </script>

@@ -25,22 +25,19 @@
         .btn { width: 90%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-delete { background: #ff9f9f; margin-top: 10px; }
 
-        /* チャット案内 */
         .info-banner { background: #fdfdfd; border: 1px dashed #eee; border-radius: 15px; padding: 15px; margin-bottom: 15px; font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
 
-        /* チャット */
         #chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; width: 100%; }
-        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; }
+        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; position: relative; }
         .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; background: #f9f9f9; }
+        .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; }
 
-        /* カラーバリエーション */
-        .color-pink { background: #f4a7b9; color: white; }
-        .color-blue { background: #a2d2ff; color: white; }
-        .color-yellow { background: #f9d057; color: white; }
-        .color-white { background: #ffffff; color: var(--text); border: 1px solid #eee; }
+        /* カラー定義 */
+        .color-pink { background: #f4a7b9 !important; color: white !important; border: none; }
+        .color-blue { background: #a2d2ff !important; color: white !important; border: none; }
+        .color-yellow { background: #f9d057 !important; color: white !important; border: none; }
+        .color-white { background: #ffffff !important; color: var(--text) !important; border: 1px solid #eee !important; }
 
-        /* 設定モーダル */
         .settings-btn { position: absolute; top: 25px; right: 25px; font-size: 1.3rem; cursor: pointer; color: #bbb; z-index: 20; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-content { background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 320px; text-align: center; }
@@ -73,7 +70,7 @@
         <div class="card">
             <div class="header">
                 <h1>縁 結 び</h1>
-                <span class="update-tag">Ver. 2026-0420-21:00</span>
+                <span class="update-tag">Ver. 2026-0420-21:15</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
@@ -99,15 +96,13 @@
             </div>
 
             <div id="step-verify" class="step">
-                <p style="font-size:0.8rem; color:var(--muted); margin-bottom:20px;">合言葉を入力してください</p>
-                <input type="text" id="passInput" placeholder="合言葉">
+                <input type="text" id="passInput" placeholder="合言葉を入力">
                 <button class="btn" onclick="verifyPass()">確認</button>
             </div>
 
             <div id="step-chat" class="step" style="justify-content: flex-start;">
-                <div class="info-banner">
-                    ご縁が結ばれました。<br>
-                    右上の⚙から、<b>次回の入室に必要な合言葉</b>を二人で決めて保存してくださいね。
+                <div class="info-banner" id="chatInfo">
+                    ご縁が結ばれました。<br>右上の⚙から、<b>次回の入室に必要な合言葉</b>を二人で決めて保存してくださいね。
                 </div>
                 <div id="chat-area"></div>
                 <div style="display:flex; gap:10px; width:100%; padding-top:10px;">
@@ -120,7 +115,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, update, remove, get, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, update, remove, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -146,7 +141,11 @@
                 return;
             }
             roomInfo = snap.val();
-            if (roomInfo.status === 'achieved' && !isChatting) showStep('step-achieved');
+            if (roomInfo.status === 'achieved') {
+                if (roomInfo.pass) document.getElementById('chatInfo').style.display = 'none';
+                if (!isChatting) showStep('step-achieved');
+                else renderMessages(); // チャット中なら再描画して色を同期
+            }
         });
     }
 
@@ -189,21 +188,25 @@
         isChatting = true;
         showStep('step-chat');
         document.getElementById('gear').style.display = 'block';
-        onValue(ref(db, 'chats/' + roomPath), (snap) => {
+        onValue(ref(db, 'chats/' + roomPath), () => renderMessages());
+    };
+
+    function renderMessages() {
+        const chatRef = ref(db, 'chats/' + roomPath);
+        get(chatRef).then((snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                const myCol = roomInfo[myName] || 'pink';
-                const pCol = roomInfo[partnerName] || 'white';
+                const senderColor = roomInfo[d.sender] || 'pink'; // 送信者が設定した色を取得
                 const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me color-' + myCol : 'you color-' + pCol}`;
+                m.className = `msg ${d.sender === myName ? 'me' : 'you'} color-${senderColor}`;
                 m.innerText = d.text;
                 area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
         });
-    };
+    }
 
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');

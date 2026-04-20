@@ -4,8 +4,6 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-title" content="縁結び">
-    
     <title>縁結び</title>
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
@@ -13,43 +11,30 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --sakura: #f4a7b9; --sky: #8fcbe5; --canary: #f9d057; --text: #4a2535; --bg: #fffafb; }
-        
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
-
         .app-container { display: flex; flex-direction: column; height: 100%; }
         .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
         h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .update-tag { font-size: 0.6rem; color: #ccc; margin-top: 2px; }
-        
         .exit-btn { position: absolute; left: 15px; font-size: 0.8rem; color: #aaa; padding: 10px; cursor: pointer; }
         .settings-trigger { position: absolute; right: 15px; font-size: 1.2rem; color: #ccc; padding: 10px; cursor: pointer; }
-
         .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; }
         .view.active { display: flex; }
-
         input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; }
-        
-        #setup-view { align-items: center; justify-content: center; padding: 40px; }
-        #waiting-view, #match-view { align-items: center; justify-content: center; text-align: center; padding: 0 40px; }
-
+        #setup-view, #waiting-view, #match-view { align-items: center; justify-content: center; text-align: center; padding: 0 40px; }
         .system-msg { background: #fffafb; border-radius: 15px; padding: 20px; font-size: 0.85rem; text-align: center; margin: 15px; border: 1px dashed var(--sakura); line-height: 1.8; color: var(--text); }
-
         #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 8px; }
         .msg-row.me { align-self: flex-end; align-items: flex-end; }
         .msg-row.you { align-self: flex-start; align-items: flex-start; }
-
-        .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; transition: background 0.4s ease; }
+        .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; }
         .msg.me { border-bottom-right-radius: 4px; }
         .msg.you { border-bottom-left-radius: 4px; }
-
         .input-wrap { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: white; display: flex; gap: 10px; border-top: 1px solid #f0f0f0; }
         #chatInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #f5f5f5; font-size: 16px; outline: none; }
         .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
-
         .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; }
-
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
         .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
@@ -63,14 +48,14 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 02:05</span>
+        <span class="update-tag">更新: 2026-04-21 02:15</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
     <div id="setup-view" class="view active">
         <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px;">※お名前をカタカナで入力してください</p>
-        <input type="text" id="myName" placeholder="あなた" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')">
-        <input type="text" id="crushName" placeholder="お相手" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')">
+        <input type="text" id="myName" placeholder="あなた">
+        <input type="text" id="crushName" placeholder="お相手">
         <button class="btn" onclick="startMatching()">想いをおくる</button>
     </div>
 
@@ -100,7 +85,7 @@
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-bottom:10px;">設定</h3>
+        <h3>設定</h3>
         <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
@@ -117,7 +102,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -130,14 +115,12 @@
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         const exitBtn = document.getElementById('exit');
-        if (id === 'waiting-view' || id === 'chat-view' || id === 'match-view') {
-            exitBtn.style.display = 'block';
-            exitBtn.innerText = (id === 'chat-view') ? '退出' : '戻る';
-        } else { exitBtn.style.display = 'none'; }
+        exitBtn.style.display = (id === 'setup-view') ? 'none' : 'block';
+        exitBtn.innerText = (id === 'chat-view') ? '退出' : '戻る';
         document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
-    window.onload = () => { if (myN && partnerN) startListening(); else showView('setup-view'); updateColorUI(); };
+    window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); updateColorUI(); };
 
     window.startMatching = async () => {
         const n1 = document.getElementById('myName').value.trim(), n2 = document.getElementById('crushName').value.trim();
@@ -145,32 +128,29 @@
         myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
         await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
-        startListening();
+        startSync();
     };
 
-    function startListening() {
+    function startSync() {
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             correctPass = (data.pass || "").trim();
             
-            // 重要：お互いの active フラグをチェック
-            const meActive = data[myN] && data[myN].active;
-            const youActive = data[partnerN] && data[partnerN].active;
+            // 確実なマッチ判定：二人分のキーが存在し、かつ active であること
+            const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
-            if (meActive && youActive) {
-                // 二人とも揃った
-                document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
-                if (localStorage.getItem('en_chatActive')) { 
-                    showView('chat-view'); initChat(); 
+            if (isMatch) {
+                // すでに「はじめる」済みの場合は直接チャット、そうでなければマッチ画面
+                if (localStorage.getItem('en_chatActive')) {
+                    showView('chat-view'); initChat();
                 } else {
+                    document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                     showView('match-view');
                 }
-            } else if (meActive) {
-                // 自分だけ登録済み
+            } else if (data[myN] && data[myN].active) {
                 showView('waiting-view');
             } else {
-                // データがない、または消去された
                 showView('setup-view');
             }
         });
@@ -178,8 +158,8 @@
 
     window.attemptEntry = () => {
         if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }
-        localStorage.setItem('en_chatActive', 'true'); 
-        showView('chat-view'); 
+        localStorage.setItem('en_chatActive', 'true');
+        showView('chat-view');
         initChat();
     };
 
@@ -213,24 +193,24 @@
     };
 
     window.handleExit = () => {
-        if (currentViewId === 'waiting-view' || currentViewId === 'match-view') { 
-            localStorage.removeItem('en_me'); localStorage.removeItem('en_partner'); 
-        } else if (currentViewId === 'chat-view') { 
-            localStorage.removeItem('en_chatActive'); 
+        if (currentViewId === 'waiting-view' || currentViewId === 'match-view') {
+            localStorage.removeItem('en_me'); localStorage.removeItem('en_partner');
+        } else if (currentViewId === 'chat-view') {
+            localStorage.removeItem('en_chatActive');
         }
-        location.reload(); 
+        location.reload();
     };
 
     window.saveSettings = async () => {
         const updates = {}; const p = document.getElementById('newPass').value.trim();
         if (p) updates['pass'] = p;
-        updates[`${myN}/color`] = myColor; 
-        await update(ref(db, `matching/${room}`), updates); 
+        updates[`${myN}/color`] = myColor;
+        await update(ref(db, `matching/${room}`), updates);
         closeModal();
     };
 
     window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
-    function updateColorUI() { 
+    function updateColorUI() {
         document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
         const activeBtn = document.getElementById('c-' + myColor.replace('--', ''));
         if(activeBtn) activeBtn.classList.add('active');

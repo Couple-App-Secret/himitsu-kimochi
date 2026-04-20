@@ -8,14 +8,14 @@
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --sakura: #f4a7b9; --sky: #8fcbe5; --canary: #f9d057; --text: #4a2535; --bg: #fffafb; --muted: #888; }
         
-        /* クイック操作・コピー・メニューを完全排除 */
+        /* クイック操作・コピーを徹底排除 */
         * { 
             box-sizing: border-box; margin: 0; padding: 0; 
             -webkit-tap-highlight-color: transparent; 
             -webkit-user-select: none; user-select: none;
             -webkit-touch-callout: none !important;
         }
-        input { -webkit-user-select: text !important; user-select: text !important; }
+        input { -webkit-user-select: text !important; user-select: text !important; pointer-events: auto; }
 
         html, body { 
             height: 100%; width: 100%; overflow: hidden; 
@@ -32,25 +32,20 @@
         }
         h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .update-tag { font-size: 0.65rem; color: var(--muted); }
-        
         .settings-btn { position: absolute; right: 20px; color: #ccc; font-size: 1.2rem; cursor: pointer; padding: 10px; }
 
         #main-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-
         #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
 
         .system-msg {
-            background: #fff5f7; border-radius: 15px; padding: 12px;
-            font-size: 0.75rem; color: var(--text); text-align: center; margin-bottom: 10px;
-            line-height: 1.5; border: 1px dashed var(--sakura);
+            background: #fff5f7; border-radius: 15px; padding: 12px; font-size: 0.75rem; 
+            text-align: center; margin-bottom: 10px; border: 1px dashed var(--sakura);
         }
 
-        /* 吹き出し：自分は塗りつぶし、相手は枠線 */
         .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; }
         .msg.me { align-self: flex-end; color: white; border-bottom-right-radius: 4px; }
         .msg.you { align-self: flex-start; background: white; border-bottom-left-radius: 4px; border: 2px solid; }
 
-        /* 入力エリア：Googleアプリのツールバー被り対策を最大化 */
         .input-wrap {
             background: white; padding: 12px 15px;
             padding-bottom: calc(15px + env(safe-area-inset-bottom));
@@ -76,7 +71,7 @@
     <div class="app-container">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0421-23:10</span>
+            <span class="update-tag">Ver. 2026-0421-23:45</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
@@ -118,7 +113,7 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content">
             <h3 style="text-align:center; margin-bottom:10px;">設定</h3>
-            <p style="font-size:0.8rem; text-align:center; color:#888;">自分の吹き出しの色</p>
+            <p style="font-size:0.8rem; text-align:center; color:#888;">吹き出しの色選択</p>
             <div class="color-pnl">
                 <div class="c-btn active" id="c-sakura" style="background:var(--sakura);" onclick="selectColor('--sakura', this)"></div>
                 <div class="c-btn" id="c-sky" style="background:var(--sky);" onclick="selectColor('--sky', this)"></div>
@@ -144,14 +139,15 @@
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
     let myColor = localStorage.getItem('en_myColor') || '--sakura';
 
-    // Googleアプリ用：キーボード位置を完全に補正
+    // Googleアプリ用・ウェブブラウザ用の高さ補正
+    const setView = () => {
+        if (!window.visualViewport) return;
+        const vh = window.visualViewport.height;
+        const offset = window.innerHeight - vh;
+        document.getElementById('inputWrap').style.transform = `translateY(-${offset}px)`;
+        window.scrollTo(0, 0);
+    };
     if (window.visualViewport) {
-        const setView = () => {
-            const vh = window.visualViewport.height;
-            const offset = window.innerHeight - vh;
-            document.getElementById('inputWrap').style.transform = `translateY(-${offset}px)`;
-            window.scrollTo(0, 0);
-        };
         window.visualViewport.addEventListener('resize', setView);
         window.visualViewport.addEventListener('scroll', setView);
     }
@@ -160,14 +156,19 @@
 
     function showStep(id) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        if(id) document.getElementById(id).classList.add('active');
-        else { document.getElementById('chat-view').style.display = 'flex'; document.getElementById('gear').style.display = 'block'; }
+        if(id) {
+            document.getElementById(id).classList.add('active');
+            document.getElementById('chat-view').style.display = 'none';
+        } else {
+            document.getElementById('chat-view').style.display = 'flex';
+            document.getElementById('gear').style.display = 'block';
+        }
     }
 
     function sync() {
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
-            if (!snap.exists()) { if(localStorage.getItem('isChatting')) location.reload(); return; }
             const data = snap.val();
+            if (!data) { if(localStorage.getItem('isChatting')) location.reload(); return; }
             if (data.status === 'achieved') {
                 if (data.pass) document.getElementById('welcome-msg').style.display = 'none';
                 if (data.pass && !sessionStorage.getItem('unlocked')) showStep('step-gate');
@@ -186,7 +187,7 @@
         localStorage.setItem('en_partnerName', partnerName);
         await set(ref(db, `feelings/${roomPath}/${myName}`), { color: myColor });
         const snap = await get(ref(db, `feelings/${roomPath}`));
-        if (Object.keys(snap.val() || {}).length >= 2) {
+        if (snap.exists() && Object.keys(snap.val()).length >= 2) {
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
         } else { alert("想いをおくりました。"); }
         sync();
@@ -195,25 +196,29 @@
     window.startChat = () => { localStorage.setItem('isChatting', 'true'); showStep(null); render(); };
 
     function render() {
-        onValue(ref(db, 'chats/' + roomPath), (snap) => {
-            const area = document.getElementById('chat-area');
-            const welcome = document.getElementById('welcome-msg');
-            area.innerHTML = "";
-            area.appendChild(welcome);
-            snap.forEach(c => {
-                const d = c.val();
-                const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
-                if(d.sender === myName) {
-                    m.style.background = `var(${d.color || '--sakura'})`;
-                } else {
-                    // 相手の選んだ色をリアルタイムで枠線に反映
-                    m.style.borderColor = `var(${d.color || '--sakura'})`;
-                }
-                m.innerText = d.text;
-                area.appendChild(m);
+        // 相手の色をリアルタイム取得するためのリスナー
+        onValue(ref(db, `feelings/${roomPath}`), (fSnap) => {
+            const colors = fSnap.val() || {};
+            onValue(ref(db, 'chats/' + roomPath), (snap) => {
+                const area = document.getElementById('chat-area');
+                const welcome = document.getElementById('welcome-msg');
+                area.innerHTML = "";
+                area.appendChild(welcome);
+                snap.forEach(c => {
+                    const d = c.val();
+                    const senderColor = colors[d.sender]?.color || d.color || '--sakura';
+                    const m = document.createElement('div');
+                    m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
+                    if(d.sender === myName) {
+                        m.style.background = `var(${senderColor})`;
+                    } else {
+                        m.style.borderColor = `var(${senderColor})`;
+                    }
+                    m.innerText = d.text;
+                    area.appendChild(m);
+                });
+                area.scrollTop = area.scrollHeight;
             });
-            area.scrollTop = area.scrollHeight;
         });
     }
 
@@ -237,7 +242,6 @@
     window.saveSettings = async () => {
         const p = document.getElementById('newPass').value.trim();
         if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
-        // 自分の選んだ色をデータベースにも反映
         await update(ref(db, `feelings/${roomPath}/${myName}`), { color: myColor });
         closeSettings();
     };
@@ -245,7 +249,7 @@
     window.checkGate = async () => {
         const input = document.getElementById('gatePass').value.trim();
         const snap = await get(ref(db, 'rooms/' + roomPath));
-        if (snap.val().pass === input) { sessionStorage.setItem('unlocked', 'true'); showStep(null); render(); }
+        if (snap.val()?.pass === input) { sessionStorage.setItem('unlocked', 'true'); showStep(null); render(); }
         else alert("合言葉が違います");
     };
 

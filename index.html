@@ -61,7 +61,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 01:10</span>
+        <span class="update-tag">更新: 2026-04-21 01:20</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -151,6 +151,7 @@
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             correctPass = (data.pass || "").trim();
+            // 両方のデータが揃っていれば、後から入った人も即座にマッチ画面へ
             if (data[myN] && data[partnerN]) {
                 document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                 if (localStorage.getItem('en_chatActive')) { 

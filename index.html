@@ -4,139 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>縁結び</title>
-    <link rel="apple-touch-icon" href="icon.PNG">
-    <link rel="icon" href="icon.PNG">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="縁結び">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { 
-            --sakura: #f4a7b9; /* 縁起の良い桜色 */
-            --white: #ffffff; 
-            --cream: #fffafb; 
-            --text: #4a2535; 
-            --muted: #a38b96; 
-            --error: #ff4d4d;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        html, body { height: 100%; width: 100%; background: var(--cream); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; }
-        body { display: flex; flex-direction: column; }
-        .container { position: relative; z-index: 1; width: 100%; max-width: 400px; height: 100%; margin: 0 auto; display: flex; flex-direction: column; padding: 10px; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-        .card { background: white; border-radius: 25px; padding: 15px; box-shadow: 0 10px 30px rgba(194,88,122,0.05); flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #fdf0f3; }
-        
-        .header { text-align: center; margin-bottom: 5px; flex-shrink: 0; position: relative; }
-        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.4em; font-weight: 700; }
-        .update-tag { font-size: 0.55rem; color: var(--muted); display: block; font-family: monospace; margin-top: 2px; }
-        .settings-btn { position: absolute; right: 0; top: 0; font-size: 1.2rem; cursor: pointer; color: #ddd; padding: 5px; }
+        @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap'); /* 筆文字用 */
 
-        .step { display: none; height: 100%; flex-direction: column; overflow: hidden; }
+        :root { --sakura: #f4a7b9; --gold: #d4af37; --text: #4a2535; --muted: #a38b96; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { background: #fffafb; font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        .container { flex: 1; display: flex; flex-direction: column; padding: 15px; padding-top: env(safe-area-inset-top); max-width: 450px; margin: 0 auto; width: 100%; }
+        .card { background: white; border-radius: 30px; flex: 1; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); position: relative; overflow: hidden; border: 1px solid #fdf0f3; }
+        
+        /* ヘッダー */
+        .header { text-align: center; margin-bottom: 15px; position: relative; z-index: 10; }
+        h1 { font-size: 1.2rem; color: var(--sakura); letter-spacing: 0.5em; }
+        .update-tag { font-size: 0.6rem; color: var(--muted); }
+
+        .step { display: none; height: 100%; flex-direction: column; justify-content: center; z-index: 5; }
         .step.active { display: flex; }
 
-        /* チャットエリア */
-        #chat-area { flex: 1; background: #fff; border-radius: 15px; margin: 5px 0; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #f9f0f2; -webkit-overflow-scrolling: touch; }
-        .msg { max-width: 85%; padding: 8px 14px; border-radius: 18px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
-        .msg.align-me { align-self: flex-end; border-top-right-radius: 2px; }
-        .msg.align-you { align-self: flex-start; border-top-left-radius: 2px; }
+        /* 入力フォーム */
+        input[type="text"] { width: 100%; padding: 15px; border: 1px solid #f0f0f0; border-radius: 15px; font-size: 1rem; margin-bottom: 10px; background: #fdfdfd; outline: none; }
+        .btn { width: 100%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:disabled { background: #eee; }
 
-        /* カラーバリエーション */
-        .color-sakura { background: #f4a7b9; color: white; }
-        .color-blue { background: #8ecae6; color: white; }
-        .color-pink { background: #ffb7c5; color: white; }
-        .color-white { background: white; color: var(--text); border: 1px solid #eee; }
-
-        .chat-input-wrap { display: flex; gap: 6px; flex-shrink: 0; background: white; padding-bottom: 5px; align-items: center; }
-        .chat-input { flex: 1; padding: 12px 15px; border: 1px solid #f5f5f5; border-radius: 25px; font-size: 1rem; outline: none; background: #fafafa; }
-        .send-btn { background: var(--sakura); border: none; width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 1.1rem; opacity: 0.8; }
-
-        /* 入力フォーム共通 */
-        input[type="text"] { width: 100%; padding: 14px; border: 1px solid #f0f0f0; border-radius: 15px; font-size: 1rem; outline: none; margin-bottom: 5px; -webkit-appearance: none; background: #fdfdfd; }
-        .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; }
-        .btn:disabled { background: #eee; color: #ccc; cursor: default; }
-
-        /* モーダル */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; align-items: center; justify-content: center; padding: 10px; }
-        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 300px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .color-picker { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
-        .color-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #f0f0f0; cursor: pointer; }
+        /* 成就演出 */
+        .shoji-text { font-family: 'Yuji Syuku', serif; font-size: 4rem; color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.3); animation: zoomIn 1.5s ease-out; margin-bottom: 20px; text-align: center; }
+        @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        .guide-box { font-size: 0.7rem; color: var(--muted); text-align: center; margin-bottom: 10px; padding: 12px; border: 1px dashed #eee; border-radius: 15px; background: #fffcfd; line-height: 1.6; }
+        .sakura-fall { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        .petal { position: absolute; background: var(--sakura); border-radius: 150% 0 150% 0; opacity: 0.7; animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
+
+        /* チャット */
+        #chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 20px; font-size: 0.95rem; }
+        .msg.me { align-self: flex-end; background: var(--sakura); color: white; border-bottom-right-radius: 2px; }
+        .msg.you { align-self: flex-start; background: #f0f0f0; border-bottom-left-radius: 2px; }
+
+        .settings-btn { position: absolute; top: 20px; right: 20px; font-size: 1.2rem; cursor: pointer; color: #ddd; z-index: 20; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 300px; text-align: center; }
     </style>
 </head>
 <body>
-    <div id="settingsModal" class="modal" onclick="closeModal()">
+
+    <div id="settingsModal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="font-size: 0.9rem; margin-bottom: 15px; color:#888;">設定</h3>
-            <p style="font-size: 0.7rem; color: var(--muted);">あなたの吹き出しの色</p>
-            <div class="color-picker">
-                <div class="color-dot" style="background:#f4a7b9;" onclick="updateMyColor('sakura')"></div>
-                <div class="color-dot" style="background:#8ecae6;" onclick="updateMyColor('blue')"></div>
-                <div class="color-dot" style="background:#ffb7c5;" onclick="updateMyColor('pink')"></div>
-                <div class="color-dot" style="background:#ffffff;" onclick="updateMyColor('white')"></div>
-            </div>
-            <input type="text" id="newRoomPass" placeholder="新しい合言葉(日本語OK)">
-            <button class="btn" onclick="saveNewPass()">合言葉を保存</button>
-            <div style="margin:15px 0; border-top:1px solid #f5f5f5;"></div>
-            <button class="btn" style="background:#ff9999; font-size:0.75rem; margin-top:0;" onclick="fullReset()">ご縁の履歴をすべて消去</button>
-            <p style="margin-top: 15px; font-size: 0.8rem; color: #ccc; cursor: pointer;" onclick="closeModal()">キャンセル</p>
+            <h3 style="margin-bottom:15px; font-size:0.9rem;">設定</h3>
+            <button class="btn" style="background:#ff9999;" onclick="fullReset()">ご縁をリセットする</button>
+            <p style="font-size:0.7rem; color:var(--muted); margin-top:10px;">※リセットすると他の人とマッチング可能になります</p>
         </div>
     </div>
 
     <div class="container">
         <div class="card">
+            <div id="sakura-container" class="sakura-fall"></div>
             <div class="header">
                 <h1>縁結び</h1>
-                <span class="update-tag">Ver. 2026-0420-00:00</span>
-                <div id="gear" class="settings-btn" style="display:none;" onclick="openModal()">⚙</div>
-            </div>
-            
-            <div class="step active" id="step0">
-                <div style="margin: auto 0; text-align: center;">
-                    <p style="font-size:0.75rem; color:var(--muted); margin-bottom:15px;">お互いの名前をカタカナで入力してください</p>
-                    <input type="text" id="myName" placeholder="あなたの名前" oninput="validateInput()">
-                    <input type="text" id="crushName" placeholder="お相手の名前" oninput="validateInput()">
-                    <button id="submitBtn" class="btn" onclick="submitFeeling()" disabled>想いをおくる</button>
-                </div>
-            </div>
-            
-            <div class="step" id="step1">
-                <div style="margin: auto; text-align:center;">
-                    <span style="font-size:1.5rem;">💌</span>
-                    <p style="margin-top:15px; font-size:0.85rem; color:var(--muted); line-height:1.6;">
-                        お相手を待っています...<br>
-                        二人の想いが重なると、ご縁が結ばれます。
-                    </p>
-                    <p style="margin-top:20px; font-size:0.75rem; color:#ddd; cursor:pointer;" onclick="cancelWait()">一度とりけす</p>
-                </div>
+                <span class="update-tag">Ver. 2026-0421-00:00</span>
+                <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
-            <div class="step" id="step-matched">
-                <div style="margin: auto; text-align:center;">
-                    <span style="font-size:3rem;">✨</span>
-                    <h2 style="color:var(--sakura); margin-top:10px; font-size: 1.1rem; letter-spacing:0.1em;">ご縁が結ばれました</h2>
-                    <p style="font-size:0.75rem; color:var(--muted); margin-top:8px;">二人の大切な場所へ</p>
-                    <button class="btn" style="margin-top:25px;" onclick="checkRoomPass()">はじめる</button>
-                </div>
+            <div id="step0" class="step active">
+                <input type="text" id="myName" placeholder="あなたの名前（カタカナ）" oninput="checkInput()">
+                <input type="text" id="crushName" placeholder="お相手の名前（カタカナ）" oninput="checkInput()">
+                <button id="submitBtn" class="btn" onclick="sendFeeling()" disabled>想いをおくる</button>
             </div>
 
-            <div class="step" id="step-pass">
-                <div style="margin: auto 0; text-align:center;">
-                    <span style="font-size:1.5rem;">🔒</span>
-                    <p style="font-size:0.8rem; color:var(--muted); margin:10px 0;">本人確認：二人の合言葉を入力</p>
-                    <input type="text" id="checkPass" placeholder="合言葉を入力">
-                    <button class="btn" onclick="verifyPass()">確認</button>
-                </div>
+            <div id="step-achieved" class="step">
+                <div class="shoji-text">成就</div>
+                <p style="text-align:center; color:var(--muted); margin-bottom:30px;">二人のご縁が結ばれました</p>
+                <button class="btn" onclick="startChat()">二人の場所へ</button>
             </div>
 
-            <div class="step" id="step3">
-                <div class="guide-box">
-                    ご縁が結ばれました。<br>
-                    右上の⚙から、<b>次回の入室に必要な合言葉</b>を<br>二人で決めて保存してくださいね。
-                </div>
+            <div id="step-chat" class="step">
                 <div id="chat-area"></div>
-                <div class="chat-input-wrap">
-                    <input type="text" id="chatInput" class="chat-input" placeholder="メッセージ...">
-                    <button id="sendBtn" class="send-btn" onclick="sendMsg()">▶</button>
+                <div style="display:flex; gap:10px; padding-top:10px;">
+                    <input type="text" id="chatInput" placeholder="メッセージ..." style="margin:0;">
+                    <button onclick="sendMsg()" style="background:var(--sakura); border:none; color:white; width:50px; border-radius:15px;">▶</button>
                 </div>
             </div>
         </div>
@@ -144,156 +90,93 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, serverTimestamp, update, remove, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Firebase初期設定
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myFullId = ""; 
-    let crushFullId = ""; 
-    let roomPath = ""; 
-    let roomInfo = {};
+    let myName = "";
+    let crushName = "";
+    let roomPath = "";
 
-    // 入力バリデーション
-    window.validateInput = () => {
+    // 桜を降らせる
+    function createSakura() {
+        const container = document.getElementById('sakura-container');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = p.style.height = (Math.random() * 10 + 5) + 'px';
+            p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            p.style.animationDelay = (Math.random() * 2) + 's';
+            container.appendChild(p);
+        }
+    }
+
+    window.checkInput = () => {
         const v1 = document.getElementById('myName').value.trim();
         const v2 = document.getElementById('crushName').value.trim();
-        document.getElementById('submitBtn').disabled = !(v1.length>=2 && v2.length>=2);
+        document.getElementById('submitBtn').disabled = !(v1 && v2);
     };
 
-    // 想いをおくる
-    window.submitFeeling = async () => {
-        myFullId = document.getElementById('myName').value.trim();
-        crushFullId = document.getElementById('crushName').value.trim();
-        roomPath = [myFullId, crushFullId].sort().join('_');
+    window.sendFeeling = async () => {
+        myName = document.getElementById('myName').value.trim();
+        crushName = document.getElementById('crushName').value.trim();
+        roomPath = [myName, crushName].sort().join('_');
+
+        await set(ref(db, 'feelings/' + myName), { crush: crushName });
         
-        showStep(1);
-        await set(ref(db, 'feelings/' + myFullId), { crushKey: crushFullId });
-
-        // 部屋情報の監視
-        onValue(ref(db, 'rooms/' + roomPath), (snap) => {
-            if (!snap.exists() && ['step3','step-matched','step-pass'].includes(document.querySelector('.step.active').id)) {
-                location.reload();
-            }
-            roomInfo = snap.val() || {};
-        });
-
-        // マッチングの監視
-        onValue(ref(db, 'feelings/' + crushFullId), (snap) => {
-            if (snap.exists() && snap.val().crushKey === myFullId) {
-                showStep('matched');
+        onValue(ref(db, 'feelings/' + crushName), (snap) => {
+            if (snap.exists() && snap.val().crush === myName) {
+                achieve();
             }
         });
     };
 
-    // キャンセル
-    window.cancelWait = async () => {
-        if(myFullId) await remove(ref(db, 'feelings/' + myFullId));
-        location.reload();
-    };
+    async function achieve() {
+        await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
+        // 他の「想い」を消去して一途モードへ
+        await remove(ref(db, 'feelings/' + myName));
+        
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-achieved').classList.add('active');
+        createSakura();
+    }
 
-    // 入室チェック
-    window.checkRoomPass = async () => {
-        const snap = await get(ref(db, 'rooms/' + roomPath));
-        if (!snap.exists()) {
-            await set(ref(db, 'rooms/' + roomPath), { active: true, [myFullId]: 'sakura' });
-            goToChat();
-        } else {
-            if (!snap.val()[myFullId]) await update(ref(db, 'rooms/' + roomPath), { [myFullId]: 'sakura' });
-            if (snap.val().pass) showStep('pass'); else goToChat();
-        }
-    };
-
-    // 合言葉確認
-    window.verifyPass = () => {
-        const input = document.getElementById('checkPass').value.trim();
-        if (input === roomInfo.pass) {
-            goToChat();
-        } else {
-            alert("合言葉が違います");
-        }
-    };
-
-    // 色変更
-    window.updateMyColor = async (color) => {
-        await update(ref(db, 'rooms/' + roomPath), { [myFullId]: color });
-        alert("色を変更しました");
-    };
-
-    // チャット画面へ
-    window.goToChat = () => {
-        showStep(3);
-        const chatRef = ref(db, 'chats/' + roomPath);
-        onValue(chatRef, (snap) => {
+    window.startChat = () => {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('step-chat').classList.add('active');
+        document.getElementById('gear').style.display = 'block';
+        
+        onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
                 const m = document.createElement('div');
-                const senderColor = roomInfo[d.sender] || 'white'; 
-                m.className = `msg align-${d.sender===myFullId?'me':'you'} color-${senderColor}`;
-                m.innerText = d.text || ""; // セキュリティのためinnerTextを使用
+                m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
+                m.innerText = d.text;
                 area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
         });
     };
 
-    // メッセージ送信
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');
-        const text = i.value.trim();
-        if (!text) return;
-        await push(ref(db, 'chats/' + roomPath), { 
-            sender: myFullId, 
-            text: text,
-            timestamp: serverTimestamp() 
-        });
+        if (!i.value.trim()) return;
+        await push(ref(db, 'chats/' + roomPath), { sender: myName, text: i.value });
         i.value = "";
     };
 
-    // 合言葉保存
-    window.saveNewPass = async () => {
-        const p = document.getElementById('newRoomPass').value.trim();
-        if (p) {
-            await update(ref(db, 'rooms/' + roomPath), { pass: p });
-            alert("合言葉を保存しました");
-            closeModal();
-        }
-    };
-
-    // リセット（全消去）
     window.fullReset = async () => {
-        if(confirm("すべて消去して最初の画面に戻りますか？\nお相手との接続も解除されます。")){
-            off(ref(db, 'rooms/' + roomPath));
-            off(ref(db, 'chats/' + roomPath));
-            off(ref(db, 'feelings/' + myFullId));
-            off(ref(db, 'feelings/' + crushFullId));
-
-            const updates = {};
-            updates['rooms/' + roomPath] = null;
-            updates['chats/' + roomPath] = null;
-            updates['feelings/' + myFullId] = null;
-            updates['feelings/' + crushFullId] = null;
-
-            await update(ref(db), updates);
+        if(confirm("このご縁をリセットしますか？")){
+            await remove(ref(db, 'rooms/' + roomPath));
+            await remove(ref(db, 'chats/' + roomPath));
             location.reload();
         }
     };
-
-    // ステップ切り替え
-    function showStep(id) {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        const targetId = (typeof id === 'number') ? 'step' + id : 'step-' + id;
-        document.getElementById(targetId).classList.add('active');
-        document.getElementById('gear').style.display = (id === 3) ? 'block' : 'none';
-    }
-
-    // モーダル制御
-    window.openModal = () => document.getElementById('settingsModal').style.display='flex';
-    window.closeModal = () => document.getElementById('settingsModal').style.display='none';
 </script>
 </body>
 </html>

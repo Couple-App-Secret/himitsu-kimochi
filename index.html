@@ -31,7 +31,7 @@
         input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; }
         
         #setup-view { align-items: center; justify-content: center; padding: 40px; }
-        .system-msg { background: #fff5f7; border-radius: 15px; padding: 15px; font-size: 0.8rem; text-align: center; margin: 10px 15px; border: 1px dashed var(--sakura); line-height: 1.6; color: var(--text); }
+        .system-msg { background: #fffafb; border-radius: 15px; padding: 20px; font-size: 0.85rem; text-align: center; margin: 15px; border: 1px dashed var(--sakura); line-height: 1.8; color: var(--text); }
 
         #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
         .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 8px; }
@@ -61,7 +61,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 00:05</span>
+        <span class="update-tag">更新: 2026-04-21 00:20</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -72,9 +72,10 @@
         <button class="btn" onclick="startMatching()">想いをおくる</button>
     </div>
 
-    <div id="waiting-view" class="view" style="align-items:center; justify-content:center; text-align:center;">
-        <div style="font-size:3rem; margin-bottom:20px;">💌</div>
-        <p style="color:#999; font-size:0.9rem;">お相手を待っています...</p>
+    <div id="waiting-view" class="view" style="align-items:center; justify-content:center; text-align:center; padding: 0 40px;">
+        <div style="font-size:3.5rem; margin-bottom:25px;">💌</div>
+        <p style="color:#999; font-size:0.95rem; margin-bottom:8px; letter-spacing: 0.05em;">お相手を待っています...</p>
+        <p style="color:#bbb; font-size:0.85rem; line-height:1.6;">二人の想いが重なると、<br>ご縁が結ばれます。</p>
     </div>
 
     <div id="match-view" class="view" style="align-items:center; justify-content:center; text-align:center;">
@@ -108,7 +109,7 @@
         <p style="font-size:0.8rem; color:#888; margin-top:10px;">入室の合言葉</p>
         <input type="text" id="newPass" placeholder="合言葉を決める">
         <button class="btn" onclick="saveSettings()">保存</button>
-        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">名前設定からやり直す</button>
+        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">二人のご縁の履歴をすべて消去</button>
         <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
@@ -121,23 +122,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "";
-    let currentViewId = "";
+    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
 
     function showView(id) {
         currentViewId = id;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        
         const exitBtn = document.getElementById('exit');
-        // 待機画面、またはチャット画面なら「戻る/退出」を表示
         if (id === 'waiting-view' || id === 'chat-view') {
             exitBtn.style.display = 'block';
             exitBtn.innerText = (id === 'waiting-view') ? '戻る' : '退出';
-        } else {
-            exitBtn.style.display = 'none';
-        }
-        
+        } else { exitBtn.style.display = 'none'; }
         document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
@@ -180,7 +175,7 @@
                 if (!mData.pass) {
                     const guide = document.createElement('div');
                     guide.className = "system-msg";
-                    guide.innerHTML = "ご縁が結ばれました。<br>右上の⚙から合言葉を保存してください。";
+                    guide.innerHTML = "ご縁が結ばれました✨<br><b>次回から必要となる合言葉</b>を、ぜひ二人で話し合って決めて、右上の⚙から保存してくださいね。";
                     area.appendChild(guide);
                 }
                 snap.forEach(c => {
@@ -200,22 +195,14 @@
         push(ref(db, 'chats/' + room), { s: myN, t: i.value }); i.value = "";
     };
 
-    // 退出・戻るボタンの共通処理
     window.handleExit = () => {
-        if (currentViewId === 'waiting-view') {
-            // 待機画面なら名前設定を消してセットアップへ
-            localStorage.removeItem('en_me');
-            localStorage.removeItem('en_partner');
-        } else if (currentViewId === 'chat-view') {
-            // チャット中ならチャットアクティブフラグだけ消してマッチ画面へ
-            localStorage.removeItem('en_chatActive');
-        }
+        if (currentViewId === 'waiting-view') { localStorage.removeItem('en_me'); localStorage.removeItem('en_partner'); }
+        else if (currentViewId === 'chat-view') { localStorage.removeItem('en_chatActive'); }
         location.reload(); 
     };
 
     window.saveSettings = async () => {
-        const updates = {}; 
-        const p = document.getElementById('newPass').value.trim();
+        const updates = {}; const p = document.getElementById('newPass').value.trim();
         if (p) updates['pass'] = p;
         updates[`${myN}/color`] = myColor; 
         await update(ref(db, `matching/${room}`), updates); 
@@ -230,15 +217,7 @@
     }
     window.openModal = () => { document.getElementById('newPass').value = correctPass; document.getElementById('settingsModal').style.display = 'flex'; };
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
-    
-    window.fullReset = async () => { 
-        if(confirm("最初からやり直しますか？")) { 
-            await remove(ref(db, `matching/${room}`)); 
-            await remove(ref(db, `chats/${room}`)); 
-            localStorage.clear(); 
-            location.reload(); 
-        } 
-    };
+    window.fullReset = async () => { if(confirm("二人のこれまでのご縁を、すべて清めますか？")) { await remove(ref(db, `matching/${room}`)); await remove(ref(db, `chats/${room}`)); localStorage.clear(); location.reload(); } };
 </script>
 </body>
 </html>

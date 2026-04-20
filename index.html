@@ -6,7 +6,7 @@
     <title>縁結び</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap'); /* 筆文字用 */
+        @import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
 
         :root { --sakura: #f4a7b9; --gold: #d4af37; --text: #4a2535; --muted: #a38b96; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -15,7 +15,6 @@
         .container { flex: 1; display: flex; flex-direction: column; padding: 15px; padding-top: env(safe-area-inset-top); max-width: 450px; margin: 0 auto; width: 100%; }
         .card { background: white; border-radius: 30px; flex: 1; display: flex; flex-direction: column; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); position: relative; overflow: hidden; border: 1px solid #fdf0f3; }
         
-        /* ヘッダー */
         .header { text-align: center; margin-bottom: 15px; position: relative; z-index: 10; }
         h1 { font-size: 1.2rem; color: var(--sakura); letter-spacing: 0.5em; }
         .update-tag { font-size: 0.6rem; color: var(--muted); }
@@ -23,13 +22,12 @@
         .step { display: none; height: 100%; flex-direction: column; justify-content: center; z-index: 5; }
         .step.active { display: flex; }
 
-        /* 入力フォーム */
         input[type="text"] { width: 100%; padding: 15px; border: 1px solid #f0f0f0; border-radius: 15px; font-size: 1rem; margin-bottom: 10px; background: #fdfdfd; outline: none; }
-        .btn { width: 100%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:disabled { background: #eee; }
+        .btn { width: 100%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; }
+        .btn:disabled { background: #eee; color: #ccc; }
 
-        /* 成就演出 */
-        .shoji-text { font-family: 'Yuji Syuku', serif; font-size: 4rem; color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.3); animation: zoomIn 1.5s ease-out; margin-bottom: 20px; text-align: center; }
+        /* 成就 */
+        .shoji-text { font-family: 'Yuji Syuku', serif; font-size: 4rem; color: var(--gold); text-align: center; animation: zoomIn 1.5s ease-out; }
         @keyframes zoomIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
         .sakura-fall { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
@@ -44,7 +42,7 @@
 
         .settings-btn { position: absolute; top: 20px; right: 20px; font-size: 1.2rem; cursor: pointer; color: #ddd; z-index: 20; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 300px; text-align: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; text-align: center; }
     </style>
 </head>
 <body>
@@ -53,7 +51,6 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="margin-bottom:15px; font-size:0.9rem;">設定</h3>
             <button class="btn" style="background:#ff9999;" onclick="fullReset()">ご縁をリセットする</button>
-            <p style="font-size:0.7rem; color:var(--muted); margin-top:10px;">※リセットすると他の人とマッチング可能になります</p>
         </div>
     </div>
 
@@ -62,19 +59,27 @@
             <div id="sakura-container" class="sakura-fall"></div>
             <div class="header">
                 <h1>縁結び</h1>
-                <span class="update-tag">Ver. 2026-0421-00:00</span>
+                <span class="update-tag">Ver. 2026-0421-00:10</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
             <div id="step0" class="step active">
-                <input type="text" id="myName" placeholder="あなたの名前（カタカナ）" oninput="checkInput()">
-                <input type="text" id="crushName" placeholder="お相手の名前（カタカナ）" oninput="checkInput()">
+                <input type="text" id="myName" placeholder="あなたの名前" oninput="checkInput()">
+                <input type="text" id="crushName" placeholder="お相手の名前" oninput="checkInput()">
                 <button id="submitBtn" class="btn" onclick="sendFeeling()" disabled>想いをおくる</button>
+            </div>
+
+            <div id="step-waiting" class="step">
+                <div style="text-align:center;">
+                    <div style="font-size:2rem; margin-bottom:20px;">💌</div>
+                    <p style="color:var(--muted); font-size:0.9rem;">お相手を待っています...</p>
+                    <p style="color:#eee; font-size:0.7rem; margin-top:20px; cursor:pointer;" onclick="location.reload()">一度とりけす</p>
+                </div>
             </div>
 
             <div id="step-achieved" class="step">
                 <div class="shoji-text">成就</div>
-                <p style="text-align:center; color:var(--muted); margin-bottom:30px;">二人のご縁が結ばれました</p>
+                <p style="text-align:center; color:var(--muted); margin-bottom:30px;">ご縁が結ばれました</p>
                 <button class="btn" onclick="startChat()">二人の場所へ</button>
             </div>
 
@@ -100,18 +105,9 @@
     let crushName = "";
     let roomPath = "";
 
-    // 桜を降らせる
-    function createSakura() {
-        const container = document.getElementById('sakura-container');
-        for (let i = 0; i < 30; i++) {
-            const p = document.createElement('div');
-            p.className = 'petal';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.width = p.style.height = (Math.random() * 10 + 5) + 'px';
-            p.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            p.style.animationDelay = (Math.random() * 2) + 's';
-            container.appendChild(p);
-        }
+    function showStep(id) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
     window.checkInput = () => {
@@ -125,8 +121,13 @@
         crushName = document.getElementById('crushName').value.trim();
         roomPath = [myName, crushName].sort().join('_');
 
+        // まず待機画面へ
+        showStep('step-waiting');
+
+        // 自分の想いを登録
         await set(ref(db, 'feelings/' + myName), { crush: crushName });
         
+        // お相手を監視
         onValue(ref(db, 'feelings/' + crushName), (snap) => {
             if (snap.exists() && snap.val().crush === myName) {
                 achieve();
@@ -136,19 +137,25 @@
 
     async function achieve() {
         await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
-        // 他の「想い」を消去して一途モードへ
         await remove(ref(db, 'feelings/' + myName));
         
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step-achieved').classList.add('active');
-        createSakura();
+        showStep('step-achieved');
+        // 桜吹雪
+        const container = document.getElementById('sakura-container');
+        for (let i = 0; i < 40; i++) {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = p.style.height = (Math.random() * 10 + 5) + 'px';
+            p.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            p.style.animationDelay = (Math.random() * 2) + 's';
+            container.appendChild(p);
+        }
     }
 
     window.startChat = () => {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById('step-chat').classList.add('active');
+        showStep('step-chat');
         document.getElementById('gear').style.display = 'block';
-        
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
             const area = document.getElementById('chat-area');
             area.innerHTML = "";
@@ -171,7 +178,7 @@
     };
 
     window.fullReset = async () => {
-        if(confirm("このご縁をリセットしますか？")){
+        if(confirm("ご縁をリセットしますか？")){
             await remove(ref(db, 'rooms/' + roomPath));
             await remove(ref(db, 'chats/' + roomPath));
             location.reload();

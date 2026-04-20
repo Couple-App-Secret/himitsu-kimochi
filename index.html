@@ -17,7 +17,7 @@
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; 
+            overflow: hidden; /* 全体は動かさない */
         }
 
         .container { 
@@ -40,69 +40,66 @@
             flex-direction: column; 
             box-shadow: 0 10px 40px rgba(194,88,122,0.05); 
             position: relative; 
-            overflow: hidden; 
+            overflow: hidden;
             margin-bottom: env(safe-area-inset-bottom);
         }
 
-        /* ヘッダー固定 */
         .header { 
             text-align: center; 
-            padding: 20px 0 10px; 
+            padding: 15px 0; 
             flex-shrink: 0; 
             background: white; 
-            z-index: 10;
+            border-bottom: 1px solid #fff5f7;
         }
-        h1 { font-size: 1.2rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: 700; }
-        .update-tag { font-size: 0.6rem; color: #ccc; }
+        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: 700; }
+        .update-tag { font-size: 0.55rem; color: #ddd; }
 
-        /* 各ステップの基本 */
         .step { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
         .step.active { display: flex; }
 
-        /* チャット画面専用 */
-        #step-chat.active { display: flex; flex-direction: column; justify-content: space-between; padding: 0; }
+        /* チャット専用：上下にパーツを配置 */
+        #step-chat.active { display: flex; flex-direction: column; justify-content: flex-start; padding: 0; }
 
-        /* 会話エリア：ここがスクロールの肝 */
+        /* 会話エリア：ここだけがスクロールする */
         #chat-area { 
             flex: 1; 
-            overflow-y: scroll; 
+            overflow-y: auto; 
             display: flex; 
             flex-direction: column; 
             gap: 12px; 
             padding: 15px; 
             width: 100%;
-            background: white;
-            -webkit-overflow-scrolling: touch; /* iOS用スムーズスクロール */
+            background: #ffffff;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; word-wrap: break-word; }
+        .msg { max-width: 75%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; word-break: break-all; line-height: 1.4; }
         .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; }
 
-        /* カラー設定 */
         .color-pink { background: #f4a7b9 !important; color: white !important; }
         .color-blue { background: #a2d2ff !important; color: white !important; }
         .color-yellow { background: #f9d057 !important; color: white !important; }
         .color-white { background: #ffffff !important; color: var(--text) !important; border: 1px solid #eee !important; }
 
-        /* 入力エリア：最下部に固定 */
+        /* 入力欄：絶対に下に固定 */
         .input-box { 
-            padding: 10px 15px 15px; 
+            padding: 12px 15px; 
             background: white; 
-            border-top: 1px solid #f9f9f9; 
+            border-top: 1px solid #f0f0f0; 
             display: flex; 
             gap: 10px; 
             align-items: center;
-            flex-shrink: 0;
+            flex-shrink: 0; /* 潰れないように固定 */
         }
 
         #chatInput { 
             flex: 1; 
-            padding: 14px; 
+            padding: 12px 18px; 
             border: none; 
             border-radius: 25px; 
-            background: #f2f2f2; 
-            font-size: 1rem; 
+            background: #f5f5f5; 
+            font-size: 0.95rem; 
             outline: none; 
         }
 
@@ -110,41 +107,43 @@
             background: var(--sakura); 
             color: white; 
             border: none; 
-            width: 45px; 
-            height: 45px; 
+            width: 42px; 
+            height: 42px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            cursor: pointer; 
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
         }
 
-        .settings-btn { position: absolute; top: 20px; right: 20px; font-size: 1.2rem; color: #bbb; z-index: 20; }
-        .btn { width: 90%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; margin-top: 10px; }
+        .settings-btn { position: absolute; top: 15px; right: 20px; font-size: 1.2rem; color: #ccc; z-index: 20; cursor: pointer; }
         
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        .modal-content { background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 320px; text-align: center; }
-        .color-picker { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .color-dot { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* 設定モーダルの改善 */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; }
+        .modal-input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin: 15px 0 10px; text-align: center; font-size: 0.9rem; }
+        
+        .btn { width: 100%; padding: 14px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .btn-ghost { background: transparent; color: #ccc; font-size: 0.75rem; margin-top: 20px; border: none; }
     </style>
 </head>
 <body>
 
     <div id="settingsModal" class="modal" onclick="this.style.display='none'">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="color:var(--muted); margin-bottom:10px;">設定</h3>
+            <h3 style="font-size:1rem; margin-bottom:10px;">設定</h3>
             <p style="font-size:0.75rem; color:var(--muted);">あなたの吹き出しの色</p>
-            <div class="color-picker">
-                <div onclick="updateColor('pink')" class="color-dot" style="background:#f4a7b9;"></div>
-                <div onclick="updateColor('blue')" class="color-dot" style="background:#a2d2ff;"></div>
-                <div onclick="updateColor('yellow')" class="color-dot" style="background:#f9d057;"></div>
-                <div onclick="updateColor('white')" class="color-dot" style="background:#ffffff; border:1px solid #eee;"></div>
+            <div style="display:flex; justify-content:center; gap:12px; margin:15px 0;">
+                <div onclick="updateColor('pink')" style="width:32px; height:32px; border-radius:50%; background:#f4a7b9; cursor:pointer; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div onclick="updateColor('blue')" style="width:32px; height:32px; border-radius:50%; background:#a2d2ff; cursor:pointer; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div onclick="updateColor('yellow')" style="width:32px; height:32px; border-radius:50%; background:#f9d057; cursor:pointer; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
+                <div onclick="updateColor('white')" style="width:32px; height:32px; border-radius:50%; background:#fff; cursor:pointer; border:1px solid #eee; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
             </div>
-            <input type="text" id="newPass" placeholder="新しい合言葉" style="width:100%; padding:12px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
-            <button class="btn" onclick="savePass()">合言葉を保存</button>
-            <p style="font-size:0.75rem; color:#ccc; margin-top:20px; cursor:pointer;" onclick="fullReset()">履歴をすべて消去</p>
+            <p style="font-size:0.75rem; color:var(--muted); margin-top:10px;">次回の合言葉（例：記念日など）</p>
+            <input type="text" id="newPass" class="modal-input" placeholder="合言葉を決める">
+            <button class="btn" onclick="savePass()">設定を保存</button>
+            <button class="btn-ghost" onclick="fullReset()">ご縁の履歴をすべて消去</button>
         </div>
     </div>
 
@@ -152,7 +151,7 @@
         <div class="card">
             <div class="header">
                 <h1>縁 結 び</h1>
-                <span class="update-tag">Ver. 2026-0420-21:55</span>
+                <span class="update-tag">Ver. 2026-0420-22:15</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
@@ -164,8 +163,8 @@
 
             <div id="step-waiting" class="step">
                 <div style="font-size:2rem; margin-bottom:15px;">💌</div>
-                <p style="color:var(--muted); font-size:0.9rem;">お相手を待っています...</p>
-                <p style="color:#eee; font-size:0.8rem; margin-top:30px; cursor:pointer;" onclick="cancelFeeling()">一度とりけす</p>
+                <p style="color:var(--muted); font-size:0.85rem;">お相手を待っています...</p>
+                <p style="color:#eee; font-size:0.75rem; margin-top:30px; cursor:pointer;" onclick="cancelFeeling()">一度とりけす</p>
             </div>
 
             <div id="step-achieved" class="step">
@@ -176,7 +175,7 @@
             </div>
 
             <div id="step-verify" class="step">
-                <input type="text" id="passInput" placeholder="合言葉を入力" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
+                <input type="text" id="passInput" placeholder="合言葉を入力" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:15px; text-align:center;">
                 <button class="btn" onclick="verifyPass()">確認</button>
             </div>
 
@@ -290,20 +289,21 @@
 
     window.updateColor = async (c) => {
         await update(ref(db, 'rooms/' + roomPath), { [myName]: c });
-        document.getElementById('settingsModal').style.display = 'none';
     };
 
     window.savePass = async () => {
         const p = document.getElementById('newPass').value.trim();
         if (p) {
             await update(ref(db, 'rooms/' + roomPath), { pass: p });
-            alert("保存しました");
+            alert("設定を保存しました");
+            document.getElementById('settingsModal').style.display = 'none';
+        } else {
             document.getElementById('settingsModal').style.display = 'none';
         }
     };
 
     window.fullReset = async () => {
-        if(confirm("すべてをリセットします。")){
+        if(confirm("すべてをリセットします。よろしいですか？")){
             await remove(ref(db, 'rooms/' + roomPath));
             await remove(ref(db, 'chats/' + roomPath));
             localStorage.clear();

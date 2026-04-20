@@ -70,15 +70,15 @@
     <div class="app-container">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0421-23:59</span>
+            <span class="update-tag">Ver. 2026-0422-00:45</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
         <div id="main-view">
             <div id="step0" class="step">
-                <p style="color:var(--sakura); font-weight:bold; margin-bottom:15px;">※カタカナで入力してください</p>
-                <input type="text" id="myName" placeholder="あなた" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:10px; text-align:center;">
-                <input type="text" id="crushName" placeholder="お相手" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:20px; text-align:center;">
+                <p style="color:var(--sakura); font-weight:bold; margin-bottom:15px;">※カタカナのみで入力してください</p>
+                <input type="text" id="myName" placeholder="あなた" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:10px; text-align:center;">
+                <input type="text" id="crushName" placeholder="お相手" oninput="this.value=this.value.replace(/[^ァ-ンヴー]/g,'')" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:20px; text-align:center;">
                 <button class="btn" onclick="sendFeeling()">想いをおくる</button>
             </div>
 
@@ -176,12 +176,17 @@
     window.sendFeeling = async () => {
         const n1 = document.getElementById('myName').value.trim();
         const n2 = document.getElementById('crushName').value.trim();
-        if (!n1 || !n2) return;
         
-        myName = n1;
-        partnerName = n2;
+        // カタカナチェック（全角カタカナ・中黒・長音）
+        const kanaRegex = /^[ァ-ンヴー]+$/;
+        if (!n1 || !n2) { alert("名前を入力してください"); return; }
+        if (!kanaRegex.test(n1) || !kanaRegex.test(n2)) {
+            alert("カタカナのみで入力してください");
+            return;
+        }
+        
+        myName = n1; partnerName = n2;
         roomPath = [myName, partnerName].sort().join('_');
-        
         localStorage.setItem('en_myName', myName);
         localStorage.setItem('en_partnerName', partnerName);
         
@@ -190,33 +195,33 @@
         const snap = await get(ref(db, `feelings/${roomPath}`));
         if (snap.exists() && Object.keys(snap.val()).length >= 2) {
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
-            sync();
-        } else { 
-            alert("想いをおくりました。お相手も同じように登録するとチャットが始まります。"); 
+        } else {
+            alert("想いをおくりました。お相手の登録をお待ちください。");
         }
+        sync();
     };
 
     window.startChat = () => { localStorage.setItem('isChatting', 'true'); showStep(null); render(); };
 
     function render() {
-        // 色情報のリアルタイム監視を統合
         onValue(ref(db, `feelings/${roomPath}`), (fSnap) => {
             const colors = fSnap.val() || {};
             onValue(ref(db, 'chats/' + roomPath), (snap) => {
                 const area = document.getElementById('chat-area');
-                const welcome = document.getElementById('welcome-msg');
                 area.innerHTML = "";
-                area.appendChild(welcome);
+                area.appendChild(document.getElementById('welcome-msg'));
+                
                 snap.forEach(c => {
                     const d = c.val();
+                    const sender = d.sender || "不明";
+                    const isMe = (sender === myName);
                     const m = document.createElement('div');
-                    m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
-                    const senderColor = colors[d.sender]?.color || d.color || '--sakura';
-                    if(d.sender === myName) {
-                        m.style.background = `var(${senderColor})`;
-                    } else {
-                        m.style.borderColor = `var(${senderColor})`;
-                    }
+                    m.className = `msg ${isMe ? 'me' : 'you'}`;
+                    
+                    const senderColor = colors[sender]?.color || d.color || '--sakura';
+                    if(isMe) m.style.background = `var(${senderColor})`;
+                    else m.style.borderColor = `var(${senderColor})`;
+                    
                     m.innerText = d.text;
                     area.appendChild(m);
                 });

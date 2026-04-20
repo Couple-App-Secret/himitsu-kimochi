@@ -6,42 +6,31 @@
     <title>縁結び</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-
         :root { --sakura: #f4a7b9; --gold: #f9d057; --text: #4a2535; --muted: #a38b96; --bg: #fffafb; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        
         .container { flex: 1; display: flex; flex-direction: column; padding: 15px; padding-top: env(safe-area-inset-top); max-width: 450px; margin: 0 auto; width: 100%; }
         .card { background: white; border-radius: 35px; flex: 1; display: flex; flex-direction: column; padding: 25px 20px; box-shadow: 0 10px 40px rgba(194,88,122,0.05); position: relative; overflow: hidden; }
-        
         .header { text-align: center; margin-bottom: 20px; position: relative; z-index: 10; }
         h1 { font-size: 1.3rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: 700; }
         .update-tag { font-size: 0.6rem; color: #ccc; }
-
         .step { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; z-index: 5; text-align: center; }
         .step.active { display: flex; }
-
         input[type="text"] { width: 100%; padding: 16px; border: 1px solid #f0f0f0; border-radius: 18px; font-size: 1rem; margin-bottom: 15px; background: #fafafa; outline: none; text-align: center; color: var(--text); }
         .btn { width: 90%; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: 1rem; }
         .btn-delete { background: #ff9f9f; margin-top: 10px; }
-
         .info-banner { background: #fdfdfd; border: 1px dashed #eee; border-radius: 15px; padding: 15px; margin-bottom: 15px; font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
-
         #chat-area { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; width: 100%; }
-        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; position: relative; }
+        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; transition: background 0.3s; }
         .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; }
-
-        /* カラー定義 */
         .color-pink { background: #f4a7b9 !important; color: white !important; border: none; }
         .color-blue { background: #a2d2ff !important; color: white !important; border: none; }
         .color-yellow { background: #f9d057 !important; color: white !important; border: none; }
         .color-white { background: #ffffff !important; color: var(--text) !important; border: 1px solid #eee !important; }
-
         .settings-btn { position: absolute; top: 25px; right: 25px; font-size: 1.3rem; cursor: pointer; color: #bbb; z-index: 20; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
         .modal-content { background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 320px; text-align: center; }
-        
         .color-picker { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
         .color-dot { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     </style>
@@ -62,7 +51,6 @@
             <button class="btn" onclick="savePass()">合言葉を保存</button>
             <div style="height:1px; background:#eee; margin:20px 0;"></div>
             <button class="btn btn-delete" onclick="fullReset()">ご縁の履歴をすべて消去</button>
-            <p style="font-size:0.8rem; color:#ccc; margin-top:15px; cursor:pointer;" onclick="document.getElementById('settingsModal').style.display='none'">キャンセル</p>
         </div>
     </div>
 
@@ -70,7 +58,7 @@
         <div class="card">
             <div class="header">
                 <h1>縁 結 び</h1>
-                <span class="update-tag">Ver. 2026-0420-21:15</span>
+                <span class="update-tag">Ver. 2026-0420-21:30</span>
                 <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
             </div>
 
@@ -84,14 +72,12 @@
             <div id="step-waiting" class="step">
                 <div style="font-size:2.5rem; margin-bottom:20px;">💌</div>
                 <p style="color:var(--muted); font-size:0.9rem;">お相手を待っています...</p>
-                <p style="color:var(--muted); font-size:0.75rem; margin-top:5px;">二人の想いが重なると、ご縁が結ばれます。</p>
                 <p style="color:#eee; font-size:0.8rem; margin-top:30px; cursor:pointer;" onclick="cancelFeeling()">一度とりけす</p>
             </div>
 
             <div id="step-achieved" class="step">
                 <div style="font-size:2.5rem; margin-bottom:15px;">✨</div>
                 <p style="color:var(--sakura); font-size:1.3rem; font-weight:700;">ご縁が結ばれました</p>
-                <p style="color:var(--muted); font-size:0.85rem; margin-bottom:30px;">二人の大切な場所へ</p>
                 <button class="btn" onclick="checkPass()">はじめる</button>
             </div>
 
@@ -105,7 +91,7 @@
                     ご縁が結ばれました。<br>右上の⚙から、<b>次回の入室に必要な合言葉</b>を二人で決めて保存してくださいね。
                 </div>
                 <div id="chat-area"></div>
-                <div style="display:flex; gap:10px; width:100%; padding-top:10px;">
+                <div style="display:flex; gap:10px; width:100%; padding-top:10px; background:white;">
                     <input type="text" id="chatInput" placeholder="メッセージ..." style="margin:0; text-align:left; flex:1; background:#f2f2f2; border:none;">
                     <button onclick="sendMsg()" style="background:var(--sakura); border:none; color:white; width:50px; height:50px; border-radius:50%; font-size:1.2rem; cursor:pointer;">▶</button>
                 </div>
@@ -115,7 +101,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, push, update, remove, off } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -136,15 +122,12 @@
 
     function syncRoom() {
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
-            if (!snap.exists()) {
-                if (roomPath) { localStorage.clear(); location.reload(); }
-                return;
-            }
+            if (!snap.exists()) return;
             roomInfo = snap.val();
             if (roomInfo.status === 'achieved') {
                 if (roomInfo.pass) document.getElementById('chatInfo').style.display = 'none';
                 if (!isChatting) showStep('step-achieved');
-                else renderMessages(); // チャット中なら再描画して色を同期
+                else renderMessages(); 
             }
         });
     }
@@ -192,27 +175,27 @@
     };
 
     function renderMessages() {
-        const chatRef = ref(db, 'chats/' + roomPath);
-        get(chatRef).then((snap) => {
-            const area = document.getElementById('chat-area');
+        const area = document.getElementById('chat-area');
+        onValue(ref(db, 'chats/' + roomPath), (snap) => {
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                const senderColor = roomInfo[d.sender] || 'pink'; // 送信者が設定した色を取得
+                const col = roomInfo[d.sender] || 'pink';
                 const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me' : 'you'} color-${senderColor}`;
+                m.className = `msg ${d.sender === myName ? 'me' : 'you'} color-${col}`;
                 m.innerText = d.text;
                 area.appendChild(m);
             });
             area.scrollTop = area.scrollHeight;
-        });
+        }, { onlyOnce: false });
     }
 
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');
         if (!i.value.trim()) return;
-        await push(ref(db, 'chats/' + roomPath), { sender: myName, text: i.value });
-        i.value = "";
+        const text = i.value;
+        i.value = ""; // 送信前に空にする（連続入力を防ぐ）
+        await push(ref(db, 'chats/' + roomPath), { sender: myName, text: text });
     };
 
     window.updateColor = async (c) => {
@@ -231,8 +214,7 @@
     };
 
     window.fullReset = async () => {
-        if(confirm("すべてをリセットします。お相手の画面も戻ります。")){
-            off(ref(db, 'rooms/' + roomPath));
+        if(confirm("すべてをリセットします。")){
             await remove(ref(db, 'rooms/' + roomPath));
             await remove(ref(db, 'chats/' + roomPath));
             localStorage.clear();

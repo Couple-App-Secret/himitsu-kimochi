@@ -8,99 +8,79 @@
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
         :root { --sakura: #f4a7b9; --gold: #f9d057; --text: #4a2535; --muted: #a38b96; --bg: #fffafb; }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body { 
             background: var(--bg); 
             font-family: 'Zen Maru Gothic', sans-serif; 
             color: var(--text); 
             height: 100vh; 
-            height: -webkit-fill-available;
             display: flex; 
             flex-direction: column; 
-            overflow: hidden;
+            overflow: hidden; /* 画面全体のスクロールを禁止 */
         }
 
-        .container { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 10px 10px 0; 
-            padding-top: env(safe-area-inset-top);
-            max-width: 450px; 
-            margin: 0 auto; 
-            width: 100%;
-            height: 100%;
-        }
-
-        .card { 
-            background: white; 
-            border-radius: 30px 30px 0 0; 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 -5px 20px rgba(194,88,122,0.05); 
-            position: relative; 
-            overflow: hidden;
-        }
-
+        /* ヘッダー：固定 */
         .header { 
-            text-align: center; 
-            padding: 15px 0; 
-            flex-shrink: 0; 
-            background: white;
+            height: 70px;
+            background: white; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
             border-bottom: 1px solid #fff5f7;
-            position: relative;
+            flex-shrink: 0;
+            z-index: 10;
         }
-        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: 700; }
-        .update-tag { font-size: 0.55rem; color: #ddd; }
+        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; }
+        .update-tag { font-size: 0.5rem; color: #eee; }
 
-        .step { display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; overflow-y: auto; }
-        .step.active { display: flex; }
+        /* メインコンテンツエリア */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* チャット構造の強化 */
-        #step-chat.active { display: flex; flex-direction: column; padding: 0; }
-        
+        /* 会話エリア：ここだけが動く */
         #chat-area { 
             flex: 1; 
-            overflow-y: scroll; 
+            overflow-y: auto; 
+            padding: 20px 15px; 
             display: flex; 
             flex-direction: column; 
-            gap: 12px; 
-            padding: 15px; 
-            width: 100%;
+            gap: 12px;
             -webkit-overflow-scrolling: touch;
         }
 
-        .msg { max-width: 75%; padding: 10px 16px; border-radius: 20px; font-size: 0.9rem; word-break: break-all; }
+        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.5; }
         .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; }
 
-        .color-pink { background: #f4a7b9 !important; color: white !important; }
-        .color-blue { background: #a2d2ff !important; color: white !important; }
-        .color-yellow { background: #f9d057 !important; color: white !important; }
-        .color-white { background: #ffffff !important; color: var(--text) !important; border: 1px solid #eee !important; }
+        .color-pink { background: var(--sakura); color: white; }
+        .color-blue { background: #a2d2ff; color: white; }
+        .color-yellow { background: var(--gold); color: white; }
+        .color-white { background: white; color: var(--text); border: 1px solid #eee; }
 
-        /* 入力欄の底上げ：env(safe-area-inset-bottom) でブラウザのバーを回避 */
+        /* 入力欄：最下部に絶対固定 */
         .input-wrap {
             background: white;
+            padding: 10px 15px calc(10px + env(safe-area-inset-bottom));
             border-top: 1px solid #f0f0f0;
-            padding-bottom: env(safe-area-inset-bottom); /* iOSバー対策 */
             flex-shrink: 0;
-        }
-        .input-box { 
-            padding: 10px 15px 20px; /* 下に余裕を持たせる */
-            display: flex; 
-            gap: 10px; 
+            display: flex;
+            gap: 10px;
             align-items: center;
         }
 
         #chatInput { 
             flex: 1; 
-            padding: 12px 18px; 
+            padding: 12px 20px; 
             border: none; 
-            border-radius: 25px; 
-            background: #f5f5f5; 
+            border-radius: 30px; 
+            background: #f8f8f8; 
             font-size: 1rem; 
             outline: none; 
         }
@@ -109,85 +89,66 @@
             background: var(--sakura); 
             color: white; 
             border: none; 
-            width: 44px; 
-            height: 44px; 
+            width: 45px; 
+            height: 45px; 
             border-radius: 50%; 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
-            flex-shrink: 0;
+            justify-content: center;
         }
 
-        .settings-btn { position: absolute; top: 15px; right: 20px; font-size: 1.2rem; color: #ccc; cursor: pointer; }
+        /* 提案・設定周り */
+        .settings-btn { position: absolute; top: 20px; right: 20px; color: #ccc; cursor: pointer; z-index: 100; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
+        .suggestion-box { background: #fffcf0; padding: 10px; border-radius: 12px; font-size: 0.8rem; color: #b7a06b; margin: 10px 0; border: 1px dashed #e5dcb5; }
         
-        /* モーダル */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-input { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 12px; margin: 15px 0; text-align: center; }
-        
-        .btn { width: 100%; padding: 14px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; }
-        .btn-reset { background: #ff7675; margin-top: 20px; padding: 10px; font-size: 0.8rem; }
+        .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; }
+        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; }
+        .step.active { display: flex; }
     </style>
 </head>
 <body>
 
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <h3 style="margin-bottom:10px;">設定</h3>
-            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-                <div onclick="updateColor('pink')" style="width:35px; height:35px; border-radius:50%; background:#f4a7b9; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
-                <div onclick="updateColor('blue')" style="width:35px; height:35px; border-radius:50%; background:#a2d2ff; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
-                <div onclick="updateColor('yellow')" style="width:35px; height:35px; border-radius:50%; background:#f9d057; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
-                <div onclick="updateColor('white')" style="width:35px; height:35px; border-radius:50%; background:#fff; border:1px solid #eee; box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
-            </div>
-            <p style="font-size:0.75rem; color:var(--muted);">次回の合言葉</p>
-            <input type="text" id="newPass" class="modal-input" placeholder="合言葉を上書き">
-            <button class="btn" onclick="saveSettings()">設定を保存</button>
-            <button class="btn btn-reset" onclick="fullReset()">履歴をすべて消去</button>
-            <p onclick="document.getElementById('settingsModal').style.display='none'" style="margin-top:15px; font-size:0.8rem; color:#bbb; cursor:pointer;">とじる</p>
+            <h3 style="font-size:1rem; margin-bottom:15px;">設定と合言葉</h3>
+            <p style="font-size:0.7rem; color:var(--muted);">合言葉のヒント（提案）</p>
+            <div id="hint-text" class="suggestion-box">読み込み中...</div>
+            <button onclick="changeHint()" style="font-size:0.7rem; color:var(--sakura); background:none; border:none; margin-bottom:10px;">別の提案を見る</button>
+            
+            <input type="text" id="newPass" style="width:100%; padding:12px; border:1px solid #eee; border-radius:10px; text-align:center;" placeholder="新しい合言葉を入力">
+            
+            <button class="btn" onclick="saveSettings()">保存して閉じる</button>
+            <button onclick="fullReset()" style="margin-top:20px; font-size:0.7rem; color:#ff7675; border:none; background:none;">全てをリセットする</button>
+            <p onclick="document.getElementById('settingsModal').style.display='none'" style="margin-top:15px; font-size:0.8rem; color:#ccc;">キャンセル</p>
         </div>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <div class="header">
-                <h1>縁 結 び</h1>
-                <span class="update-tag">Ver. 2026-0420-22:35</span>
-                <div id="gear" class="settings-btn" style="display:none;" onclick="document.getElementById('settingsModal').style.display='flex'">⚙</div>
-            </div>
+    <div class="header">
+        <h1>縁 結 び</h1>
+        <span class="update-tag">Ver. 2026-0420-22:50</span>
+        <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
+    </div>
 
-            <div id="step0" class="step active">
-                <input type="text" id="myName" placeholder="あなたのお名前(カタカナ)" oninput="checkInput()" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
-                <input type="text" id="crushName" placeholder="お相手のお名前(カタカナ)" oninput="checkInput()" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
-                <button id="submitBtn" class="btn" onclick="sendFeeling()" disabled>想いをおくる</button>
-            </div>
+    <div class="main-content">
+        <div id="step0" class="step active">
+            <input type="text" id="myName" placeholder="あなたのお名前" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
+            <input type="text" id="crushName" placeholder="お相手のお名前" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
+            <button class="btn" onclick="sendFeeling()">想いをおくる</button>
+        </div>
 
-            <div id="step-waiting" class="step">
-                <div style="font-size:2rem; margin-bottom:15px;">💌</div>
-                <p style="color:var(--muted); font-size:0.85rem;">お相手を待っています...</p>
-                <p style="color:#eee; font-size:0.75rem; margin-top:40px; cursor:pointer;" onclick="cancelFeeling()">キャンセル</p>
-            </div>
+        <div id="step-achieved" class="step">
+            <div style="font-size:2rem; margin-bottom:10px;">✨</div>
+            <p style="color:var(--sakura); font-weight:bold;">ご縁が結ばれました</p>
+            <button class="btn" onclick="startChat()">チャットをはじめる</button>
+        </div>
 
-            <div id="step-achieved" class="step">
-                <div style="font-size:2rem; margin-bottom:15px;">✨</div>
-                <p style="color:var(--sakura); font-size:1.2rem; font-weight:700;">ご縁が結ばれました</p>
-                <p style="color:var(--muted); font-size:0.8rem; margin-bottom:25px;">二人の大切な場所へ</p>
-                <button class="btn" onclick="checkPass()">はじめる</button>
-            </div>
-
-            <div id="step-verify" class="step">
-                <input type="text" id="passInput" placeholder="合言葉を入力" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
-                <button class="btn" onclick="verifyPass()">確認</button>
-            </div>
-
-            <div id="step-chat" class="step">
-                <div id="chat-area"></div>
-                <div class="input-wrap">
-                    <div class="input-box">
-                        <input type="text" id="chatInput" placeholder="メッセージ...">
-                        <button class="send-btn" onclick="sendMsg()">▶</button>
-                    </div>
-                </div>
+        <div id="step-chat" style="display:none; flex-direction:column; height:100%;">
+            <div id="chat-area"></div>
+            <div class="input-wrap">
+                <input type="text" id="chatInput" placeholder="メッセージ...">
+                <button class="send-btn" onclick="sendMsg()">▶</button>
             </div>
         </div>
     </div>
@@ -200,81 +161,61 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myName = localStorage.getItem('enmusubi_myName') || "";
-    let partnerName = localStorage.getItem('enmusubi_partnerName') || "";
+    let myName = localStorage.getItem('en_myName') || "";
+    let partnerName = localStorage.getItem('en_partnerName') || "";
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
     let roomInfo = {};
-    let isChatting = false;
 
-    window.onload = () => { if (roomPath) syncRoom(); };
+    const hints = ["初めて会った場所", "好きな食べ物", "二人の記念日", "次に一緒に行きたい所", "秘密のあだ名", "今日のラッキーカラー"];
 
-    function showStep(id) {
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+    window.onload = () => { if (roomPath) sync(); };
 
-    function syncRoom() {
+    function sync() {
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
             if (!snap.exists()) return;
             roomInfo = snap.val();
             if (roomInfo.status === 'achieved') {
-                if (!isChatting) showStep('step-achieved');
-                else renderMessages(); 
+                document.getElementById('step0').style.display = 'none';
+                document.getElementById('step-achieved').style.display = 'flex';
+                if (localStorage.getItem('isChatting')) startChat();
             }
         });
     }
 
-    window.checkInput = () => {
-        const v1 = document.getElementById('myName').value.trim();
-        const v2 = document.getElementById('crushName').value.trim();
-        document.getElementById('submitBtn').disabled = !(v1 && v2);
-    };
-
     window.sendFeeling = async () => {
         myName = document.getElementById('myName').value.trim();
         partnerName = document.getElementById('crushName').value.trim();
+        if (!myName || !partnerName) return;
         roomPath = [myName, partnerName].sort().join('_');
-        localStorage.setItem('enmusubi_myName', myName);
-        localStorage.setItem('enmusubi_partnerName', partnerName);
-        showStep('step-waiting');
+        localStorage.setItem('en_myName', myName);
+        localStorage.setItem('en_partnerName', partnerName);
+        
         await set(ref(db, 'feelings/' + myName), { crush: partnerName });
         onValue(ref(db, 'feelings/' + partnerName), (snap) => {
-            if (snap.exists() && snap.val().crush === myName) achieve();
+            if (snap.exists() && snap.val().crush === myName) {
+                update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
+                sync();
+            }
         });
-    };
-
-    async function achieve() {
-        await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
-        await remove(ref(db, 'feelings/' + myName));
-        syncRoom();
-    }
-
-    window.checkPass = () => {
-        if (roomInfo.pass) showStep('step-verify');
-        else startChat();
-    };
-
-    window.verifyPass = () => {
-        if (document.getElementById('passInput').value === roomInfo.pass) startChat();
-        else alert("合言葉が違います");
+        alert("想いをおくりました。お相手も入力すると繋がります。");
     };
 
     window.startChat = () => {
-        isChatting = true;
-        showStep('step-chat');
+        localStorage.setItem('isChatting', 'true');
+        document.getElementById('step-achieved').style.display = 'none';
+        document.getElementById('step-chat').style.display = 'flex';
         document.getElementById('gear').style.display = 'block';
-        onValue(ref(db, 'chats/' + roomPath), () => renderMessages());
+        render();
     };
 
-    function renderMessages() {
+    function render() {
         const area = document.getElementById('chat-area');
         onValue(ref(db, 'chats/' + roomPath), (snap) => {
             area.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
-                const col = roomInfo[d.sender] || 'pink';
                 const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me' : 'you'} color-${col}`;
+                m.className = `msg ${d.sender === myName ? 'me color-pink' : 'you color-white'}`;
                 m.innerText = d.text;
                 area.appendChild(m);
             });
@@ -285,13 +226,18 @@
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput');
         if (!i.value.trim()) return;
-        const text = i.value;
+        await push(ref(db, 'chats/' + roomPath), { sender: myName, text: i.value });
         i.value = "";
-        await push(ref(db, 'chats/' + roomPath), { sender: myName, text: text });
     };
 
-    window.updateColor = async (c) => {
-        if (roomPath) await update(ref(db, 'rooms/' + roomPath), { [myName]: c });
+    window.openSettings = () => {
+        changeHint();
+        document.getElementById('settingsModal').style.display = 'flex';
+    };
+
+    window.changeHint = () => {
+        const randomHint = hints[Math.floor(Math.random() * hints.length)];
+        document.getElementById('hint-text').innerText = "例えば：「" + randomHint + "」";
     };
 
     window.saveSettings = async () => {
@@ -301,20 +247,12 @@
     };
 
     window.fullReset = async () => {
-        if(confirm("すべてをリセットします。本当によろしいですか？")){
-            if(roomPath) {
-                await remove(ref(db, 'rooms/' + roomPath));
-                await remove(ref(db, 'chats/' + roomPath));
-            }
+        if(confirm("全てのデータを消去しますか？")){
+            await remove(ref(db, 'rooms/' + roomPath));
+            await remove(ref(db, 'chats/' + roomPath));
             localStorage.clear();
             location.reload();
         }
-    };
-
-    window.cancelFeeling = async () => {
-        await remove(ref(db, 'feelings/' + myName));
-        localStorage.clear();
-        location.reload();
     };
 </script>
 </body>

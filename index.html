@@ -17,12 +17,14 @@
             height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            overflow: hidden; /* 画面全体のスクロールを禁止 */
+            overflow: hidden;
+            position: fixed; /* 画面のバウンス防止 */
+            width: 100%;
         }
 
-        /* ヘッダー：固定 */
+        /* ヘッダー：確実に最前面へ */
         .header { 
-            height: 70px;
+            height: 60px;
             background: white; 
             display: flex; 
             flex-direction: column; 
@@ -30,49 +32,38 @@
             justify-content: center;
             border-bottom: 1px solid #fff5f7;
             flex-shrink: 0;
-            z-index: 10;
-        }
-        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; }
-        .update-tag { font-size: 0.5rem; color: #eee; }
-
-        /* メインコンテンツエリア */
-        .main-content {
-            flex: 1;
+            z-index: 100;
             position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
         }
+        h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
+        .update-tag { font-size: 0.5rem; color: #ccc; }
+        .settings-btn { position: absolute; right: 20px; color: #ccc; font-size: 1.2rem; cursor: pointer; }
 
-        /* 会話エリア：ここだけが動く */
+        /* メイン：会話エリア */
         #chat-area { 
             flex: 1; 
             overflow-y: auto; 
-            padding: 20px 15px; 
+            padding: 15px; 
             display: flex; 
             flex-direction: column; 
             gap: 12px;
             -webkit-overflow-scrolling: touch;
+            background: var(--bg);
         }
 
-        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.5; }
-        .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; }
+        .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; background: var(--sakura); color: white; }
+        .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; background: white; color: var(--text); border: 1px solid #eee; }
 
-        .color-pink { background: var(--sakura); color: white; }
-        .color-blue { background: #a2d2ff; color: white; }
-        .color-yellow { background: var(--gold); color: white; }
-        .color-white { background: white; color: var(--text); border: 1px solid #eee; }
-
-        /* 入力欄：最下部に絶対固定 */
+        /* 入力欄：最下部に固定 */
         .input-wrap {
             background: white;
-            padding: 10px 15px calc(10px + env(safe-area-inset-bottom));
+            padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
             border-top: 1px solid #f0f0f0;
             flex-shrink: 0;
             display: flex;
             gap: 10px;
-            align-items: center;
+            z-index: 100;
         }
 
         #chatInput { 
@@ -80,7 +71,7 @@
             padding: 12px 20px; 
             border: none; 
             border-radius: 30px; 
-            background: #f8f8f8; 
+            background: #f5f5f5; 
             font-size: 1rem; 
             outline: none; 
         }
@@ -97,14 +88,14 @@
             justify-content: center;
         }
 
-        /* 提案・設定周り */
-        .settings-btn { position: absolute; top: 20px; right: 20px; color: #ccc; cursor: pointer; z-index: 100; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
+        /* モーダル */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
-        .suggestion-box { background: #fffcf0; padding: 10px; border-radius: 12px; font-size: 0.8rem; color: #b7a06b; margin: 10px 0; border: 1px dashed #e5dcb5; }
         
-        .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; }
-        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; }
+        .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        .btn-reset { background: #ff7675; font-size: 0.8rem; margin-top: 20px; }
+
+        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; background: white; }
         .step.active { display: flex; }
     </style>
 </head>
@@ -112,44 +103,40 @@
 
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <h3 style="font-size:1rem; margin-bottom:15px;">設定と合言葉</h3>
-            <p style="font-size:0.7rem; color:var(--muted);">合言葉のヒント（提案）</p>
-            <div id="hint-text" class="suggestion-box">読み込み中...</div>
-            <button onclick="changeHint()" style="font-size:0.7rem; color:var(--sakura); background:none; border:none; margin-bottom:10px;">別の提案を見る</button>
-            
+            <h3 style="margin-bottom:15px;">設定</h3>
+            <p style="font-size:0.75rem; color:var(--muted);">合言葉の提案</p>
+            <div id="hint-text" style="background:#fffcf0; padding:10px; border-radius:12px; font-size:0.8rem; margin:10px 0; border:1px dashed #e5dcb5;"></div>
             <input type="text" id="newPass" style="width:100%; padding:12px; border:1px solid #eee; border-radius:10px; text-align:center;" placeholder="新しい合言葉を入力">
-            
-            <button class="btn" onclick="saveSettings()">保存して閉じる</button>
-            <button onclick="fullReset()" style="margin-top:20px; font-size:0.7rem; color:#ff7675; border:none; background:none;">全てをリセットする</button>
-            <p onclick="document.getElementById('settingsModal').style.display='none'" style="margin-top:15px; font-size:0.8rem; color:#ccc;">キャンセル</p>
+            <button class="btn" onclick="saveSettings()">設定を保存</button>
+            <button class="btn btn-reset" onclick="fullReset()">全ての履歴を消去</button>
+            <p onclick="closeSettings()" style="margin-top:15px; font-size:0.8rem; color:#ccc; cursor:pointer;">とじる</p>
         </div>
     </div>
 
     <div class="header">
         <h1>縁 結 び</h1>
-        <span class="update-tag">Ver. 2026-0420-22:50</span>
+        <span class="update-tag">Ver. 2026-0420-23:15</span>
         <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
     </div>
 
-    <div class="main-content">
-        <div id="step0" class="step active">
-            <input type="text" id="myName" placeholder="あなたのお名前" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
-            <input type="text" id="crushName" placeholder="お相手のお名前" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
-            <button class="btn" onclick="sendFeeling()">想いをおくる</button>
-        </div>
+    <div id="step0" class="step active">
+        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px;">※カタカナで入力してください</p>
+        <input type="text" id="myName" placeholder="あなたのお名前（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
+        <input type="text" id="crushName" placeholder="お相手のお名前（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
+        <button class="btn" onclick="sendFeeling()">想いをおくる</button>
+    </div>
 
-        <div id="step-achieved" class="step">
-            <div style="font-size:2rem; margin-bottom:10px;">✨</div>
-            <p style="color:var(--sakura); font-weight:bold;">ご縁が結ばれました</p>
-            <button class="btn" onclick="startChat()">チャットをはじめる</button>
-        </div>
+    <div id="step-achieved" class="step">
+        <div style="font-size:2rem; margin-bottom:10px;">✨</div>
+        <p style="color:var(--sakura); font-weight:bold; margin-bottom:20px;">ご縁が結ばれました</p>
+        <button class="btn" onclick="startChat()">チャットをはじめる</button>
+    </div>
 
-        <div id="step-chat" style="display:none; flex-direction:column; height:100%;">
-            <div id="chat-area"></div>
-            <div class="input-wrap">
-                <input type="text" id="chatInput" placeholder="メッセージ...">
-                <button class="send-btn" onclick="sendMsg()">▶</button>
-            </div>
+    <div id="step-chat" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+        <div id="chat-area"></div>
+        <div class="input-wrap">
+            <input type="text" id="chatInput" placeholder="メッセージ...">
+            <button class="send-btn" onclick="sendMsg()">▶</button>
         </div>
     </div>
 
@@ -164,19 +151,17 @@
     let myName = localStorage.getItem('en_myName') || "";
     let partnerName = localStorage.getItem('en_partnerName') || "";
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
-    let roomInfo = {};
-
-    const hints = ["初めて会った場所", "好きな食べ物", "二人の記念日", "次に一緒に行きたい所", "秘密のあだ名", "今日のラッキーカラー"];
+    const hints = ["初めて会った場所", "好きな食べ物", "二人の記念日", "行きたい旅行先", "秘密のあだ名"];
 
     window.onload = () => { if (roomPath) sync(); };
 
     function sync() {
         onValue(ref(db, 'rooms/' + roomPath), (snap) => {
             if (!snap.exists()) return;
-            roomInfo = snap.val();
-            if (roomInfo.status === 'achieved') {
-                document.getElementById('step0').style.display = 'none';
-                document.getElementById('step-achieved').style.display = 'flex';
+            const data = snap.val();
+            if (data.status === 'achieved') {
+                document.getElementById('step0').classList.remove('active');
+                document.getElementById('step-achieved').classList.add('active');
                 if (localStorage.getItem('isChatting')) startChat();
             }
         });
@@ -202,7 +187,7 @@
 
     window.startChat = () => {
         localStorage.setItem('isChatting', 'true');
-        document.getElementById('step-achieved').style.display = 'none';
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
         document.getElementById('step-chat').style.display = 'flex';
         document.getElementById('gear').style.display = 'block';
         render();
@@ -215,7 +200,7 @@
             snap.forEach(c => {
                 const d = c.val();
                 const m = document.createElement('div');
-                m.className = `msg ${d.sender === myName ? 'me color-pink' : 'you color-white'}`;
+                m.className = `msg ${d.sender === myName ? 'me' : 'you'}`;
                 m.innerText = d.text;
                 area.appendChild(m);
             });
@@ -231,25 +216,25 @@
     };
 
     window.openSettings = () => {
-        changeHint();
+        const h = hints[Math.floor(Math.random() * hints.length)];
+        document.getElementById('hint-text').innerText = "例えば：「" + h + "」";
         document.getElementById('settingsModal').style.display = 'flex';
     };
 
-    window.changeHint = () => {
-        const randomHint = hints[Math.floor(Math.random() * hints.length)];
-        document.getElementById('hint-text').innerText = "例えば：「" + randomHint + "」";
-    };
+    window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
 
     window.saveSettings = async () => {
         const p = document.getElementById('newPass').value.trim();
         if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
-        document.getElementById('settingsModal').style.display = 'none';
+        closeSettings();
     };
 
     window.fullReset = async () => {
-        if(confirm("全てのデータを消去しますか？")){
-            await remove(ref(db, 'rooms/' + roomPath));
-            await remove(ref(db, 'chats/' + roomPath));
+        if(confirm("全てのデータを完全に消去します。よろしいですか？")){
+            if(roomPath) {
+                await remove(ref(db, 'rooms/' + roomPath));
+                await remove(ref(db, 'chats/' + roomPath));
+            }
             localStorage.clear();
             location.reload();
         }

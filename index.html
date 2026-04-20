@@ -63,7 +63,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 01:45</span>
+        <span class="update-tag">更新: 2026-04-21 02:05</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -82,12 +82,10 @@
     <div id="match-view" class="view">
         <div style="font-size:3.5rem; margin-bottom:20px;">✨</div>
         <p style="font-weight:bold; margin-bottom:25px; color:var(--sakura); font-size:1.1rem;">ご縁が結ばれています</p>
-        
         <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
             <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">合言葉を入力してください</p>
             <input type="text" id="authPass" placeholder="合言葉">
         </div>
-        
         <button class="btn" onclick="attemptEntry()">はじめる</button>
     </div>
 
@@ -139,7 +137,7 @@
         document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
-    window.onload = () => { if (myN && partnerN) checkStatus(); else showView('setup-view'); updateColorUI(); };
+    window.onload = () => { if (myN && partnerN) startListening(); else showView('setup-view'); updateColorUI(); };
 
     window.startMatching = async () => {
         const n1 = document.getElementById('myName').value.trim(), n2 = document.getElementById('crushName').value.trim();
@@ -147,24 +145,32 @@
         myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
         await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
-        checkStatus();
+        startListening();
     };
 
-    function checkStatus() {
+    function startListening() {
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             correctPass = (data.pass || "").trim();
-            if (data[myN] && data[partnerN]) {
+            
+            // 重要：お互いの active フラグをチェック
+            const meActive = data[myN] && data[myN].active;
+            const youActive = data[partnerN] && data[partnerN].active;
+
+            if (meActive && youActive) {
+                // 二人とも揃った
                 document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                 if (localStorage.getItem('en_chatActive')) { 
                     showView('chat-view'); initChat(); 
                 } else {
                     showView('match-view');
                 }
-            } else if (data[myN]) {
+            } else if (meActive) {
+                // 自分だけ登録済み
                 showView('waiting-view');
             } else {
+                // データがない、または消去された
                 showView('setup-view');
             }
         });
@@ -183,15 +189,12 @@
             onValue(ref(db, 'chats/' + room), (snap) => {
                 const area = document.getElementById('chat-area');
                 area.innerHTML = "";
-                
-                // 合言葉が未設定（または案内が必要）な場合のシステムメッセージ
                 if (!mData.pass) {
                     const guide = document.createElement('div');
                     guide.className = "system-msg";
                     guide.innerHTML = "ご縁が結ばれました✨<br><b>次回の入室に必要な合言葉</b>を二人で決めて、右上の⚙から保存してくださいね。";
                     area.appendChild(guide);
                 }
-
                 snap.forEach(c => {
                     const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--sakura';
                     const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;

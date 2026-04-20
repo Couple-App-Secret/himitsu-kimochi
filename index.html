@@ -6,26 +6,31 @@
     <title>縁結び</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --sakura: #f4a7b9; --gold: #f9d057; --text: #4a2535; --muted: #a38b96; --bg: #fffafb; }
+        :root { --sakura: #f4a7b9; --text: #4a2535; --bg: #fffafb; }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
+        /* 画面のスクロールを完全に禁止 */
         html, body { 
             height: 100%; 
+            width: 100%;
             overflow: hidden; 
             background: var(--bg); 
             font-family: 'Zen Maru Gothic', sans-serif; 
             color: var(--text);
+            position: fixed; /* iOSでのバウンス防止 */
         }
 
+        /* アプリ全体のコンテナ */
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 100vh; /* 代替案としてJSでも制御 */
+            height: 100dvh; /* 動的ビューポート単位を使用 */
+            width: 100%;
         }
 
         .header { 
-            height: 65px;
+            height: 60px;
             background: white; 
             display: flex; 
             flex-direction: column; 
@@ -33,13 +38,13 @@
             justify-content: center;
             border-bottom: 1px solid #fff5f7;
             flex-shrink: 0;
-            position: relative;
             z-index: 100;
         }
         h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .update-tag { font-size: 0.4rem; color: #eee; }
         .settings-btn { position: absolute; right: 20px; color: #ccc; font-size: 1.2rem; cursor: pointer; }
 
+        /* チャットエリア：ここだけが伸び縮みし、スクロールする */
         #chat-area { 
             flex: 1; 
             overflow-y: auto; 
@@ -48,52 +53,55 @@
             flex-direction: column; 
             gap: 12px;
             -webkit-overflow-scrolling: touch;
-            background: var(--bg);
         }
 
-        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; }
-        .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; background: var(--sakura); color: white; }
-        .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; background: white; color: var(--text); border: 1px solid #eee; }
+        .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; }
+        .msg.me { align-self: flex-end; background: var(--sakura); color: white; border-bottom-right-radius: 4px; }
+        .msg.you { align-self: flex-start; background: white; border: 1px solid #eee; border-bottom-left-radius: 4px; }
 
+        /* 入力エリア：画面下部に固定し、セーフエリア（iPhoneの棒）を考慮 */
         .input-wrap {
             background: white;
-            padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
+            padding: 10px 15px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
             border-top: 1px solid #f0f0f0;
             display: flex;
             gap: 10px;
             flex-shrink: 0;
+            z-index: 110;
         }
 
         #chatInput { 
             flex: 1; 
-            padding: 12px 20px; 
+            padding: 12px 18px; 
             border: none; 
-            border-radius: 30px; 
+            border-radius: 25px; 
             background: #f5f5f5; 
-            font-size: 1rem; 
+            font-size: 16px; /* 16px以上にするとiOSで勝手にズームしない */
             outline: none; 
         }
 
-        .send-btn { background: var(--sakura); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+        .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; flex-shrink: 0; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
-        .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        
-        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; background: white; position: absolute; inset: 0; z-index: 500; }
+        /* 各種画面（ステップ） */
+        .step { display: none; position: fixed; inset: 0; background: white; z-index: 500; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
         .step.active { display: flex; }
+        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="mainApp">
+    <div class="app-container">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0420-23:55</span>
+            <span class="update-tag">Ver. 2026-0421-00:10</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
-        <div id="step-chat" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+        <div id="chat-view" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
             <div id="chat-area"></div>
             <div class="input-wrap">
                 <input type="text" id="chatInput" placeholder="メッセージ...">
@@ -103,33 +111,32 @@
     </div>
 
     <div id="step0" class="step">
-        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; font-weight:bold;">※カタカナで入力してください</p>
-        <input type="text" id="myName" placeholder="あなた（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
-        <input type="text" id="crushName" placeholder="お相手（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
+        <p style="color:var(--sakura); font-weight:bold; margin-bottom:15px;">※カタカナで入力してください</p>
+        <input type="text" id="myName" placeholder="あなた（カタカナ）" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:10px; text-align:center;">
+        <input type="text" id="crushName" placeholder="お相手（カタカナ）" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:20px; text-align:center;">
         <button class="btn" onclick="sendFeeling()">想いをおくる</button>
     </div>
 
     <div id="step-gate" class="step">
-        <p style="font-size:1rem; margin-bottom:20px; font-weight:bold;">合言葉が必要です</p>
-        <input type="text" id="gatePass" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;" placeholder="合言葉を入力">
+        <p style="font-weight:bold; margin-bottom:20px;">合言葉を入力</p>
+        <input type="text" id="gatePass" style="width:100%; max-width:280px; padding:15px; border:1px solid #eee; border-radius:15px; margin-bottom:20px; text-align:center;" placeholder="合言葉">
         <button class="btn" onclick="checkGate()">鍵をあける</button>
     </div>
 
     <div id="step-achieved" class="step">
-        <div style="font-size:2rem; margin-bottom:10px;">✨</div>
-        <p style="color:var(--sakura); font-weight:bold; margin-bottom:20px;">ご縁が結ばれました</p>
+        <div style="font-size:2rem;">✨</div>
+        <p style="color:var(--sakura); font-weight:bold; margin-top:10px; margin-bottom:20px;">ご縁が結ばれました</p>
         <button class="btn" onclick="startChat()">チャットをはじめる</button>
     </div>
 
-    <div id="settingsModal" class="modal">
+    <div id="settingsModal" class="modal" onclick="if(event.target==this)closeSettings()">
         <div class="modal-content">
-            <h3 style="margin-bottom:15px;">設定</h3>
-            <p style="font-size:0.75rem; color:var(--muted);">合言葉の提案</p>
-            <div id="hint-text" style="background:#fffcf0; padding:10px; border-radius:12px; font-size:0.8rem; margin:10px 0; border:1px dashed #e5dcb5;"></div>
+            <h3>設定</h3>
+            <div id="hint-text" style="background:#fffcf0; padding:10px; border-radius:12px; font-size:0.8rem; margin:15px 0; border:1px dashed #e5dcb5;"></div>
             <input type="text" id="newPass" style="width:100%; padding:12px; border:1px solid #eee; border-radius:10px; text-align:center;" placeholder="新しい合言葉を入力">
             <button class="btn" onclick="saveSettings()">合言葉を保存</button>
             <button class="btn" style="background:#ff7675; font-size:0.8rem;" onclick="fullReset()">全ての履歴を消去</button>
-            <p onclick="closeSettings()" style="margin-top:15px; font-size:0.8rem; color:#ccc; cursor:pointer;">とじる</p>
+            <p onclick="closeSettings()" style="margin-top:15px; font-size:0.8rem; color:#ccc;">とじる</p>
         </div>
     </div>
 
@@ -144,40 +151,24 @@
     let myName = localStorage.getItem('en_myName') || "";
     let partnerName = localStorage.getItem('en_partnerName') || "";
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
-    const hints = ["初めて会った場所", "好きな食べ物", "二人の記念日", "行きたい旅行先", "秘密のあだ名"];
 
-    // 起動時の初期化
     window.onload = () => {
-        // iOSの100vh問題を解決
-        const setFillHeight = () => {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-        };
-        window.addEventListener('resize', setFillHeight);
-        setFillHeight();
-
-        if (roomPath) {
-            sync();
-        } else {
-            showStep('step0');
-        }
+        if (roomPath) sync();
+        else showStep('step0');
     };
 
     function showStep(id) {
         document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        if (id) document.getElementById(id).classList.add('active');
+        if(id) document.getElementById(id).classList.add('active');
     }
 
     async function sync() {
         const snap = await get(ref(db, 'rooms/' + roomPath));
-        if (!snap.exists()) {
-            showStep('step0');
-            return;
-        }
+        if (!snap.exists()) { showStep('step0'); return; }
         
         const data = snap.val();
         if (data.status === 'achieved') {
-            // 合言葉チェックを最優先
+            // 合言葉ガード（セッション中一度も解除していなければ表示）
             if (data.pass && !sessionStorage.getItem('unlocked')) {
                 showStep('step-gate');
             } else if (localStorage.getItem('isChatting')) {
@@ -215,14 +206,14 @@
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
             sync();
         } else {
-            alert("想いをおくりました。お相手も入力すると繋がります。");
+            alert("想いをおくりました。");
         }
     };
 
     window.startChat = () => {
         localStorage.setItem('isChatting', 'true');
-        showStep(null); // 全ステップを非表示
-        document.getElementById('step-chat').style.display = 'flex';
+        showStep(null);
+        document.getElementById('chat-view').style.display = 'flex';
         document.getElementById('gear').style.display = 'block';
         render();
     };
@@ -249,25 +240,18 @@
         i.value = "";
     };
 
-    window.openSettings = () => {
-        const h = hints[Math.floor(Math.random() * hints.length)];
-        document.getElementById('hint-text').innerText = "例えば：「" + h + "」";
-        document.getElementById('settingsModal').style.display = 'flex';
-    };
-
+    window.openSettings = () => { document.getElementById('settingsModal').style.display = 'flex'; };
     window.closeSettings = () => { document.getElementById('settingsModal').style.display = 'none'; };
 
     window.saveSettings = async () => {
         const p = document.getElementById('newPass').value.trim();
-        if (p) {
-            await update(ref(db, 'rooms/' + roomPath), { pass: p });
-            alert("合言葉を保存しました。次回起動時から有効です。");
-        }
+        if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
+        alert("合言葉を保存しました");
         closeSettings();
     };
 
     window.fullReset = async () => {
-        if(confirm("全てのデータを消去します。よろしいですか？")){
+        if(confirm("全て消去します。")){
             if(roomPath) {
                 await remove(ref(db, 'rooms/' + roomPath));
                 await remove(ref(db, 'chats/' + roomPath));

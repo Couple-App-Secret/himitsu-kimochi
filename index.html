@@ -10,7 +10,6 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        /* 画面全体を固定してスクロールさせない */
         html, body { 
             height: 100%; 
             overflow: hidden; 
@@ -19,12 +18,10 @@
             color: var(--text);
         }
 
-        /* 3段構成のレイアウト */
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            height: -webkit-fill-available;
+            height: 100vh; /* 代替案としてJSでも制御 */
         }
 
         .header { 
@@ -36,13 +33,13 @@
             justify-content: center;
             border-bottom: 1px solid #fff5f7;
             flex-shrink: 0;
+            position: relative;
             z-index: 100;
         }
         h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .update-tag { font-size: 0.4rem; color: #eee; }
         .settings-btn { position: absolute; right: 20px; color: #ccc; font-size: 1.2rem; cursor: pointer; }
 
-        /* 真ん中の会話エリアだけがスクロールする */
         #chat-area { 
             flex: 1; 
             overflow-y: auto; 
@@ -51,13 +48,13 @@
             flex-direction: column; 
             gap: 12px;
             -webkit-overflow-scrolling: touch;
+            background: var(--bg);
         }
 
         .msg { max-width: 80%; padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; }
         .msg.me { align-self: flex-end; border-bottom-right-radius: 4px; background: var(--sakura); color: white; }
         .msg.you { align-self: flex-start; border-bottom-left-radius: 4px; background: white; color: var(--text); border: 1px solid #eee; }
 
-        /* 入力欄：絶対に下に居座る */
         .input-wrap {
             background: white;
             padding: 10px 15px calc(15px + env(safe-area-inset-bottom));
@@ -77,22 +74,22 @@
             outline: none; 
         }
 
-        .send-btn { background: var(--sakura); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; }
+        .send-btn { background: var(--sakura); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
 
-        /* モーダル・ステップ共通 */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
         .btn { width: 100%; padding: 15px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; background: white; position: absolute; inset: 0; z-index: 50; }
+        
+        .step { display: none; flex-direction: column; height: 100%; align-items: center; justify-content: center; padding: 30px; background: white; position: absolute; inset: 0; z-index: 500; }
         .step.active { display: flex; }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
+    <div class="app-container" id="mainApp">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0420-23:40</span>
+            <span class="update-tag">Ver. 2026-0420-23:55</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
@@ -105,7 +102,7 @@
         </div>
     </div>
 
-    <div id="step0" class="step active">
+    <div id="step0" class="step">
         <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; font-weight:bold;">※カタカナで入力してください</p>
         <input type="text" id="myName" placeholder="あなた（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:10px; text-align:center;">
         <input type="text" id="crushName" placeholder="お相手（カタカナ）" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;">
@@ -113,8 +110,8 @@
     </div>
 
     <div id="step-gate" class="step">
-        <p style="font-size:1rem; margin-bottom:20px;">合言葉を入力してください</p>
-        <input type="text" id="gatePass" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;" placeholder="合言葉">
+        <p style="font-size:1rem; margin-bottom:20px; font-weight:bold;">合言葉が必要です</p>
+        <input type="text" id="gatePass" style="width:100%; padding:15px; border-radius:15px; border:1px solid #eee; margin-bottom:20px; text-align:center;" placeholder="合言葉を入力">
         <button class="btn" onclick="checkGate()">鍵をあける</button>
     </div>
 
@@ -149,37 +146,55 @@
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
     const hints = ["初めて会った場所", "好きな食べ物", "二人の記念日", "行きたい旅行先", "秘密のあだ名"];
 
-    window.onload = () => { if (roomPath) sync(); };
+    // 起動時の初期化
+    window.onload = () => {
+        // iOSの100vh問題を解決
+        const setFillHeight = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        window.addEventListener('resize', setFillHeight);
+        setFillHeight();
 
-    // データの同期と画面遷移の制御
+        if (roomPath) {
+            sync();
+        } else {
+            showStep('step0');
+        }
+    };
+
+    function showStep(id) {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        if (id) document.getElementById(id).classList.add('active');
+    }
+
     async function sync() {
         const snap = await get(ref(db, 'rooms/' + roomPath));
-        if (!snap.exists()) return;
+        if (!snap.exists()) {
+            showStep('step0');
+            return;
+        }
+        
         const data = snap.val();
-
         if (data.status === 'achieved') {
-            document.getElementById('step0').classList.remove('active');
-            
-            // 合言葉が設定されているかチェック
+            // 合言葉チェックを最優先
             if (data.pass && !sessionStorage.getItem('unlocked')) {
-                document.getElementById('step-gate').classList.add('active');
+                showStep('step-gate');
+            } else if (localStorage.getItem('isChatting')) {
+                startChat();
             } else {
-                if (localStorage.getItem('isChatting')) {
-                    startChat();
-                } else {
-                    document.getElementById('step-achieved').classList.add('active');
-                }
+                showStep('step-achieved');
             }
+        } else {
+            showStep('step0');
         }
     }
 
-    // 合言葉のチェック
     window.checkGate = async () => {
         const input = document.getElementById('gatePass').value.trim();
         const snap = await get(ref(db, 'rooms/' + roomPath));
         if (snap.val().pass === input) {
             sessionStorage.setItem('unlocked', 'true');
-            document.getElementById('step-gate').classList.remove('active');
             startChat();
         } else {
             alert("合言葉が違います");
@@ -200,13 +215,13 @@
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
             sync();
         } else {
-            alert("想いをおくりました。お相手も入力するのを待っています。");
+            alert("想いをおくりました。お相手も入力すると繋がります。");
         }
     };
 
     window.startChat = () => {
         localStorage.setItem('isChatting', 'true');
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        showStep(null); // 全ステップを非表示
         document.getElementById('step-chat').style.display = 'flex';
         document.getElementById('gear').style.display = 'block';
         render();
@@ -244,8 +259,10 @@
 
     window.saveSettings = async () => {
         const p = document.getElementById('newPass').value.trim();
-        if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
-        alert("合言葉を保存しました");
+        if (p) {
+            await update(ref(db, 'rooms/' + roomPath), { pass: p });
+            alert("合言葉を保存しました。次回起動時から有効です。");
+        }
         closeSettings();
     };
 

@@ -27,7 +27,7 @@
         .header { 
             height: 65px; background: white; display: flex; flex-direction: column; 
             align-items: center; justify-content: center; border-bottom: 1px solid #fff5f7;
-            flex-shrink: 0; z-index: 1000;
+            flex-shrink: 0; z-index: 1000; position: relative;
         }
         h1 { font-size: 1.1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
         .update-tag { font-size: 0.65rem; color: var(--muted); }
@@ -70,7 +70,7 @@
     <div class="app-container">
         <div class="header">
             <h1>縁 結 び</h1>
-            <span class="update-tag">Ver. 2026-0421-23:55</span>
+            <span class="update-tag">Ver. 2026-0421-23:59</span>
             <div id="gear" class="settings-btn" style="display:none;" onclick="openSettings()">⚙</div>
         </div>
 
@@ -138,7 +138,6 @@
     let roomPath = (myName && partnerName) ? [myName, partnerName].sort().join('_') : "";
     let myColor = localStorage.getItem('en_myColor') || '--sakura';
 
-    // Googleアプリ・iOSキーボード干渉対策
     if (window.visualViewport) {
         const resizeHandler = () => {
             const vh = window.visualViewport.height;
@@ -175,25 +174,33 @@
     }
 
     window.sendFeeling = async () => {
-        myName = document.getElementById('myName').value.trim();
-        partnerName = document.getElementById('crushName').value.trim();
-        if (!myName || !partnerName) return;
+        const n1 = document.getElementById('myName').value.trim();
+        const n2 = document.getElementById('crushName').value.trim();
+        if (!n1 || !n2) return;
+        
+        myName = n1;
+        partnerName = n2;
         roomPath = [myName, partnerName].sort().join('_');
+        
         localStorage.setItem('en_myName', myName);
         localStorage.setItem('en_partnerName', partnerName);
+        
         await set(ref(db, `feelings/${roomPath}/${myName}`), { color: myColor });
+        
         const snap = await get(ref(db, `feelings/${roomPath}`));
         if (snap.exists() && Object.keys(snap.val()).length >= 2) {
             await update(ref(db, 'rooms/' + roomPath), { status: 'achieved' });
-        } else { alert("想いをおくりました。相手の登録を待っています。"); }
-        sync();
+            sync();
+        } else { 
+            alert("想いをおくりました。お相手も同じように登録するとチャットが始まります。"); 
+        }
     };
 
     window.startChat = () => { localStorage.setItem('isChatting', 'true'); showStep(null); render(); };
 
     function render() {
-        // 相手の色情報を一度だけ読み込み、その後チャットを監視
-        get(ref(db, `feelings/${roomPath}`)).then((fSnap) => {
+        // 色情報のリアルタイム監視を統合
+        onValue(ref(db, `feelings/${roomPath}`), (fSnap) => {
             const colors = fSnap.val() || {};
             onValue(ref(db, 'chats/' + roomPath), (snap) => {
                 const area = document.getElementById('chat-area');
@@ -240,7 +247,6 @@
         if (p) await update(ref(db, 'rooms/' + roomPath), { pass: p });
         await update(ref(db, `feelings/${roomPath}/${myName}`), { color: myColor });
         closeSettings();
-        render(); // 設定変更後に色を再反映
     };
 
     window.checkGate = async () => {

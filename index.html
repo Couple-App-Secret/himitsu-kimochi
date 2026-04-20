@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-title" content="縁結び">
     
     <title>縁結び</title>
-    <link rel="apple-touch-icon" href="https://img.icons8.com/emoji/160/omamori-japanese-amulet.png">
-    <link rel="icon" type="image/png" href="https://img.icons8.com/emoji/32/omamori-japanese-amulet.png">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
@@ -17,6 +17,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
 
+        /* ヘッダー・ビュー・チャットのスタイル（リアルタイム同期対応） */
         .app-container { display: flex; flex-direction: column; height: 100%; }
         .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
         h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
@@ -48,6 +49,7 @@
 
         .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; }
 
+        /* モーダル */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
         .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
@@ -61,7 +63,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="tempExit()">退出</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-20 23:40</span>
+        <span class="update-tag">更新: 2026-04-20 23:45</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -84,13 +86,11 @@
             <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">合言葉を入力してください</p>
             <input type="text" id="authPass" placeholder="合言葉">
         </div>
-        <button class="btn" onclick="attemptEntry()">チャチャットをはじめる</button>
+        <button class="btn" onclick="attemptEntry()">チャットをはじめる</button>
     </div>
 
     <div id="chat-view" class="view">
-        <div id="chat-area">
-            <div id="guide-msg" class="system-msg" style="display:none;">二人の合言葉を決めて保存してください。</div>
-        </div>
+        <div id="chat-area"></div>
         <div class="input-wrap">
             <input type="text" id="chatInput" placeholder="メッセージ..." autocomplete="off">
             <button class="send-btn" onclick="sendMsg()">▶</button>
@@ -110,7 +110,7 @@
         <input type="text" id="newPass" placeholder="合言葉（日本語OK）" style="margin-top:10px;">
         <button class="btn" onclick="saveSettings()">保存する</button>
         <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">履歴消去</button>
-        <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem;">とじる</p>
+        <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem; cursor:pointer;">とじる</p>
     </div>
 </div>
 
@@ -158,7 +158,7 @@
     }
 
     window.attemptEntry = () => {
-        if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("違います"); return; }
+        if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }
         localStorage.setItem('en_chatActive', 'true'); showView('chat-view'); initChat();
     };
 
@@ -176,7 +176,7 @@
                     row.appendChild(m); area.appendChild(row);
                 });
                 area.scrollTop = area.scrollHeight;
-            });
+            }, { onlyOnce: false });
         });
     }
 
@@ -186,9 +186,14 @@
     };
 
     window.tempExit = () => { localStorage.removeItem('en_chatActive'); location.reload(); };
+
     window.saveSettings = async () => {
-        const updates = {}; if (document.getElementById('newPass').value.trim()) updates['pass'] = document.getElementById('newPass').value.trim();
-        updates[`${myN}/color`] = myColor; await update(ref(db, `matching/${room}`), updates); closeModal();
+        const updates = {}; 
+        const p = document.getElementById('newPass').value.trim();
+        if (p) updates['pass'] = p;
+        updates[`${myN}/color`] = myColor; 
+        await update(ref(db, `matching/${room}`), updates); 
+        closeModal();
     };
 
     window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };

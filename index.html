@@ -48,7 +48,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 19:42</span>
+        <span class="update-tag">更新: 2026-04-21 19:45</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -111,7 +111,6 @@
 
     let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
 
-    // 文字のクリーニング（カタカナ変換・不正文字削除）
     window.cleanInput = (el) => {
         let val = el.value;
         val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60));
@@ -144,6 +143,9 @@
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
+            if (!data[myN] || !data[myN].active) {
+                 showView('setup-view'); return;
+            }
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
@@ -154,10 +156,8 @@
                 if (isMatch) {
                     document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                     showView('match-view');
-                } else if (data[myN] && data[myN].active) {
-                    showView('waiting-view');
                 } else {
-                    showView('setup-view');
+                    showView('waiting-view');
                 }
             }
         });
@@ -191,7 +191,7 @@
                 });
                 area.scrollTop = area.scrollHeight;
             });
-        }, { onlyOnce: false });
+        }, { onlyOnce: true });
     }
 
     window.sendMsg = () => {
@@ -224,7 +224,19 @@
     }
     window.openModal = () => { document.getElementById('newPass').value = correctPass; document.getElementById('settingsModal').style.display = 'flex'; };
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
-    window.fullReset = async () => { if(confirm("二人のこれまでのご縁を、すべて清めますか？")) { await remove(ref(db, `matching/${room}`)); await remove(ref(db, `chats/${room}`)); localStorage.clear(); location.reload(); } };
+    
+    window.fullReset = async () => {
+        if(confirm("二人のこれまでのご縁を、すべて清めますか？\n（相手の画面も初期状態に戻ります）")) {
+            try {
+                await remove(ref(db, `chats/${room}`));
+                await remove(ref(db, `matching/${room}`));
+                localStorage.clear();
+                location.reload();
+            } catch (e) {
+                alert("通信エラーにより清められませんでした。");
+            }
+        }
+    };
 </script>
 </body>
 </html>

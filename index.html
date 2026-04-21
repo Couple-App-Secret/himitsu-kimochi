@@ -4,7 +4,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>縁結び</title>
+    <title>縁結びのお守り</title>
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
 
@@ -15,7 +15,7 @@
         body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
         .app-container { display: flex; flex-direction: column; height: 100%; }
         .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
-        h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.3em; font-weight: bold; }
+        h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.2em; font-weight: bold; }
         .update-tag { font-size: 0.6rem; color: #ccc; margin-top: 2px; }
         .exit-btn { position: absolute; left: 15px; font-size: 0.8rem; color: #aaa; padding: 10px; cursor: pointer; }
         .settings-trigger { position: absolute; right: 15px; font-size: 1.2rem; color: #ccc; padding: 10px; cursor: pointer; }
@@ -47,29 +47,29 @@
 <div class="app-container">
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
-        <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 19:48</span>
+        <h1>縁結びのお守り</h1>
+        <span class="update-tag">更新: 2026-04-21 20:30</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
     <div id="setup-view" class="view active">
-        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.05em;">※お名前をカタカナで入力してください</p>
-        <input type="text" id="myName" placeholder="あなた" onchange="cleanInput(this)" oncompositionend="cleanInput(this)" onblur="cleanInput(this)">
-        <input type="text" id="crushName" placeholder="お相手" onchange="cleanInput(this)" oncompositionend="cleanInput(this)" onblur="cleanInput(this)">
+        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.05em;">※お名前をカタカナで記してください</p>
+        <input type="text" id="myName" placeholder="あなた" onchange="cleanInput(this)" onblur="cleanInput(this)">
+        <input type="text" id="crushName" placeholder="お相手" onchange="cleanInput(this)" onblur="cleanInput(this)">
         <button class="btn" onclick="startMatching()">ご縁を願う</button>
     </div>
 
     <div id="waiting-view" class="view">
         <div style="font-size:3.5rem; margin-bottom:25px;">💌</div>
         <p style="color:#999; font-size:0.95rem; letter-spacing: 0.05em;">お相手の願いを待っています...</p>
-        <p style="color:var(--sakura); font-size:0.8rem; margin-top:10px; line-height:1.5;">二人の想いが重なると、<br>ご縁が結ばれます。</p>
+        <p style="color:var(--sakura); font-size:0.8rem; margin-top:10px; line-height:1.5;">二人の想いが重なると、<br>静かに扉が開きます。</p>
     </div>
 
     <div id="match-view" class="view">
         <div style="font-size:3.5rem; margin-bottom:20px;">✨</div>
-        <p style="font-weight:bold; margin-bottom:25px; color:var(--sakura); font-size:1.1rem;">ご縁が結ばれています</p>
+        <p style="font-weight:bold; margin-bottom:25px; color:var(--sakura); font-size:1.1rem;">ご縁が結ばれました</p>
         <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
-            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">合言葉を入力してください</p>
+            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">合言葉を記してください</p>
             <input type="text" id="authPass" placeholder="合言葉">
         </div>
         <button class="btn" onclick="attemptEntry()">はじめる</button>
@@ -86,7 +86,7 @@
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-bottom:20px;">設定</h3>
+        <h3 style="margin-bottom:20px;">お守りの設定</h3>
         <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
@@ -95,8 +95,8 @@
         </div>
         <p style="font-size:0.8rem; color:#888; margin-top:10px;">入室の合言葉</p>
         <input type="text" id="newPass" placeholder="合言葉を決める">
-        <button class="btn" onclick="saveSettings()">保存</button>
-        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁の履歴をすべて清める</button>
+        <button class="btn" onclick="saveSettings()">保存する</button>
+        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁をすべてお清めする</button>
         <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
@@ -111,11 +111,13 @@
 
     let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
 
+    // 文字のクリーニング（ダブり防止：確定時のみ実行）
     window.cleanInput = (el) => {
         let val = el.value;
-        val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60));
-        val = val.replace(/[^ァ-ンヴー]/g, '');
-        el.value = val;
+        if (!val) return;
+        val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60)); // カタカナ変換
+        val = val.replace(/[^ァ-ンヴー]/g, ''); // カタカナ以外削除
+        el.value = val.trim();
     };
 
     function showView(id) {
@@ -131,7 +133,8 @@
     window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); updateColorUI(); };
 
     window.startMatching = async () => {
-        const n1 = document.getElementById('myName').value.trim(), n2 = document.getElementById('crushName').value.trim();
+        const n1 = document.getElementById('myName').value.trim();
+        const n2 = document.getElementById('crushName').value.trim();
         if (!n1 || !n2) return;
         myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
@@ -143,15 +146,17 @@
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
-            // リセット検知：自分のデータが消えていたら強制クリア
+            
+            // リセット検知：データが消えていたら入力欄も含めて完全初期化
             if (!data[myN] || !data[myN].active) {
-                 localStorage.clear(); // 保存情報を消去
-                 document.getElementById('myName').value = ""; // 入力欄をクリア
-                 document.getElementById('crushName').value = ""; // 入力欄をクリア
-                 myN = ""; partnerN = ""; // 変数をリセット
+                 localStorage.clear();
+                 document.getElementById('myName').value = "";
+                 document.getElementById('crushName').value = "";
+                 myN = ""; partnerN = "";
                  showView('setup-view'); 
                  return;
             }
+
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
@@ -179,14 +184,14 @@
     function initChat() {
         onValue(ref(db, `matching/${room}`), (mSnap) => {
             const mData = mSnap.val() || {};
-            if (!mData[myN]) return; // リセット対策
+            if (!mData[myN]) return;
             onValue(ref(db, 'chats/' + room), (snap) => {
                 const area = document.getElementById('chat-area');
                 area.innerHTML = "";
                 if (!mData.pass) {
                     const guide = document.createElement('div');
                     guide.className = "system-msg";
-                    guide.innerHTML = "ご縁が結ばれました✨<br><b>次回の入室に必要な合言葉</b>を二人で決めて、右上の⚙から保存してくださいね。";
+                    guide.innerHTML = "ご縁が結ばれました✨<br><b>入室の合言葉</b>を二人で決めて、右上の⚙から保存してください。";
                     area.appendChild(guide);
                 }
                 snap.forEach(c => {
@@ -233,7 +238,7 @@
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
     
     window.fullReset = async () => {
-        if(confirm("二人のこれまでのご縁を、すべて清めますか？\n（相手の画面も初期状態に戻ります）")) {
+        if(confirm("これまでのご縁を、すべてお清めしますか？\n（相手の画面も初期状態に戻ります）")) {
             try {
                 await remove(ref(db, `chats/${room}`));
                 await remove(ref(db, `matching/${room}`));
@@ -242,7 +247,7 @@
                 document.getElementById('crushName').value = "";
                 location.reload();
             } catch (e) {
-                alert("通信エラーにより清められませんでした。");
+                alert("通信エラーによりお清めできませんでした。");
             }
         }
     };

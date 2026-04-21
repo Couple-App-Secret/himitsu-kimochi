@@ -21,7 +21,7 @@
         .settings-trigger { position: absolute; right: 15px; font-size: 1.2rem; color: #ccc; padding: 10px; cursor: pointer; }
         .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; }
         .view.active { display: flex; }
-        input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; }
+        input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; background: white; }
         #setup-view, #waiting-view, #match-view { align-items: center; justify-content: center; text-align: center; padding: 0 40px; }
         .system-msg { background: #fffafb; border-radius: 15px; padding: 20px; font-size: 0.85rem; text-align: center; margin: 15px; border: 1px dashed var(--sakura); line-height: 1.8; color: var(--text); }
         #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
@@ -34,7 +34,7 @@
         .input-wrap { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: white; display: flex; gap: 10px; border-top: 1px solid #f0f0f0; }
         #chatInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #f5f5f5; font-size: 16px; outline: none; }
         .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
-        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; }
+        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
         .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
@@ -48,20 +48,21 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 02:25</span>
+        <span class="update-tag">更新: 2026-04-21 19:25</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
     <div id="setup-view" class="view active">
-        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px;">※お名前をカタカナで入力してください</p>
+        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.05em;">※お名前をカタカナで入力してください</p>
         <input type="text" id="myName" placeholder="あなた">
         <input type="text" id="crushName" placeholder="お相手">
-        <button class="btn" onclick="startMatching()">想いをおくる</button>
+        <button class="btn" onclick="startMatching()">ご縁を願う</button>
     </div>
 
     <div id="waiting-view" class="view">
         <div style="font-size:3.5rem; margin-bottom:25px;">💌</div>
-        <p style="color:#999; font-size:0.95rem; letter-spacing: 0.05em;">お相手を待っています...</p>
+        <p style="color:#999; font-size:0.95rem; letter-spacing: 0.05em;">お相手の願いを待っています...</p>
+        <p style="color:var(--sakura); font-size:0.8rem; margin-top:10px; line-height:1.5;">二人の想いが重なると、<br>ご縁が結ばれます。</p>
     </div>
 
     <div id="match-view" class="view">
@@ -85,7 +86,7 @@
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <h3>設定</h3>
+        <h3 style="margin-bottom:20px;">設定</h3>
         <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
@@ -96,7 +97,7 @@
         <input type="text" id="newPass" placeholder="合言葉を決める">
         <button class="btn" onclick="saveSettings()">保存</button>
         <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁の履歴をすべて清める</button>
-        <p onclick="closeModal()" style="margin-top:15px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
+        <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
 
@@ -138,7 +139,6 @@
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
-            // 重要：en_chatActive フラグがない限り、マッチしていても必ず match-view で止める
             if (localStorage.getItem('en_chatActive')) {
                 if (isMatch) { showView('chat-view'); initChat(); }
                 else { localStorage.removeItem('en_chatActive'); showView('waiting-view'); }

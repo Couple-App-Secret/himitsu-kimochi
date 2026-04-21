@@ -4,213 +4,179 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>縁結びのお守り - 結 -</title>
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Couple-App-Secret/himitsu-kimochi/main/icon.PNG">
-
+    <title>縁結びのお守り</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@700&display=swap');
         
         :root { 
-            --jp-white: #FAF9F6;  /* 胡粉色 */
-            --jp-red: #D15652;    /* 控えめな朱赤 */
-            --jp-gold: #B49661;   /* 落ち着いた金 */
-            --jp-ink: #333333;    /* 墨色 */
-            --jp-sakura: #F5ECF2; /* 桜鼠 */
-            --jp-line: #E0DDD5;
+            --fuda-white: #FAF9F6;  /* 御札の白 */
+            --himu-red: #B03A2E;   /* 結び紐の赤 */
+            --kire-base: #E8E4D9;   /* 布地のベース */
+            --kire-deep: #2F3E46;   /* 落ち着いた布地の濃色 */
+            --text-ink: #333333;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
         body { 
             height: 100dvh; 
-            background: var(--jp-white); 
+            background: var(--kire-base); 
             font-family: 'Zen Maru Gothic', sans-serif; 
-            color: var(--jp-ink); 
+            color: var(--text-ink); 
             overflow: hidden; 
             position: fixed; 
             width: 100%; 
-            background-image: radial-gradient(#e0ddd5 0.5px, transparent 0.5px);
-            background-size: 20px 20px; /* 控えめなドットで和紙感を演出 */
+            /* お守りの布地感を出すテクスチャ */
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
+            background-size: 3px 3px;
         }
 
-        .app-container { display: flex; flex-direction: column; height: 100%; }
-        
-        .header { 
-            height: 70px; 
+        .app-container { 
             display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: rgba(255,255,255,0.8); 
-            backdrop-filter: blur(5px);
-            border-bottom: 1px solid var(--jp-line); 
-            z-index: 100; 
-            position: relative; 
+            flex-direction: column; 
+            height: 100%; 
+            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+        }
+        
+        /* お守りの上部（紐を通す部分） */
+        .omamori-top {
+            height: 60px;
+            background: var(--kire-deep);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        .omamori-top::after {
+            content: '×'; /* 紐の結び目イメージ */
+            color: var(--himu-red);
+            font-size: 24px;
+            font-weight: bold;
         }
 
+        /* お守りの中身（白い御札の部分） */
+        .fuda-content { 
+            flex: 1;
+            margin: 15px 20px;
+            background: var(--fuda-white);
+            border-radius: 4px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #ddd;
+        }
+
+        .fuda-header {
+            padding: 25px 0 10px;
+            text-align: center;
+        }
         h1 { 
             font-family: 'Shippori Mincho', serif;
-            font-size: 1.1rem; 
-            color: var(--jp-ink);
-            letter-spacing: 0.3em; 
-            font-weight: 700;
+            font-size: 1.2rem; 
+            color: var(--text-ink);
+            letter-spacing: 0.4em; 
         }
-
-        /* 繊細な水引のイメージ */
         .mizuhiki {
-            width: 40px;
+            width: 60px;
             height: 1px;
-            background: var(--jp-red);
-            margin: 5px auto;
-            position: relative;
-        }
-        .mizuhiki::after {
-            content: '●';
-            color: var(--jp-red);
-            font-size: 6px;
-            position: absolute;
-            top: -4px;
-            left: 50%;
-            transform: translateX(-50%);
+            background: var(--himu-red);
+            margin: 10px auto;
         }
 
-        .exit-btn { position: absolute; left: 18px; font-size: 0.75rem; color: #999; letter-spacing: 0.1em; cursor: pointer; }
-        .settings-trigger { position: absolute; right: 18px; font-size: 1.1rem; color: #ccc; cursor: pointer; }
-        
-        .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; padding: 0 45px; align-items: center; justify-content: center; text-align: center; }
+        .view { display: none; flex: 1; flex-direction: column; padding: 20px; align-items: center; justify-content: center; text-align: center; }
         .view.active { display: flex; }
         
         input[type="text"] { 
-            width: 100%; 
-            max-width: 280px; 
-            padding: 15px; 
-            border: none;
-            border-bottom: 1px solid var(--jp-line);
-            border-radius: 0;
-            margin-bottom: 20px; 
-            text-align: center; 
-            font-size: 16px; 
-            outline: none; 
-            background: transparent;
-            color: var(--jp-ink);
-            font-family: 'Shippori Mincho', serif;
+            width: 100%; max-width: 240px; padding: 12px; 
+            border: none; border-bottom: 1.5px solid var(--kire-base);
+            border-radius: 0; margin-bottom: 25px; 
+            text-align: center; font-size: 16px; outline: none; 
+            background: transparent; font-family: 'Shippori Mincho', serif;
         }
 
-        .info-txt { font-size: 0.75rem; color: var(--jp-gold); margin-bottom: 25px; letter-spacing: 0.1em; }
-        
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; }
-        .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 12px; }
+        /* チャットエリア */
+        #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; width: 100%; background: #fff; }
+        .msg-row { display: flex; flex-direction: column; max-width: 85%; margin-bottom: 12px; }
         .msg-row.me { align-self: flex-end; align-items: flex-end; }
         .msg-row.you { align-self: flex-start; align-items: flex-start; }
-        
-        .msg { padding: 12px 18px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; }
-        .msg.me { background: var(--jp-sakura); color: var(--jp-ink); border-bottom-right-radius: 2px; }
-        .msg.you { background: #f0f0f0; color: var(--jp-ink); border-bottom-left-radius: 2px; }
+        .msg { padding: 10px 14px; border-radius: 8px; font-size: 0.9rem; line-height: 1.5; border: 1px solid #eee; }
+        .msg.me { background: #fdfaf5; color: var(--text-ink); border-right: 3px solid var(--himu-red); }
+        .msg.you { background: #f5f7f8; color: var(--text-ink); border-left: 3px solid var(--kire-deep); }
         
         .input-wrap { 
-            padding: 15px; 
-            padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
-            background: white; 
-            display: flex; 
-            gap: 12px; 
-            border-top: 1px solid var(--jp-line);
-            width: 100%;
+            padding: 10px; display: flex; gap: 8px; 
+            background: var(--fuda-white); border-top: 1px solid #eee;
         }
-        #chatInput { 
-            flex: 1; 
-            padding: 12px 20px; 
-            border: 1px solid var(--jp-line); 
-            border-radius: 25px; 
-            background: var(--jp-white); 
-            font-size: 16px; 
-            outline: none; 
-        }
-        .send-btn { 
-            background: var(--jp-red); 
-            color: white; 
-            border: none; 
-            width: 45px; 
-            height: 45px; 
-            border-radius: 50%; 
-            display: flex; align-items: center; justify-content: center;
-        }
+        #chatInput { flex: 1; padding: 10px 15px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; outline: none; }
+        .send-btn { background: var(--himu-red); color: white; border: none; width: 40px; height: 40px; border-radius: 4px; }
         
         .btn { 
-            width: 100%; 
-            max-width: 280px; 
-            padding: 16px; 
-            background: var(--jp-ink); 
-            color: white; 
-            border: none; 
-            border-radius: 4px; /* 四角形で少し凛とした印象に */
-            font-weight: bold; 
-            font-size: 0.9rem; 
-            letter-spacing: 0.2em;
-            font-family: 'Shippori Mincho', serif;
+            width: 100%; max-width: 240px; padding: 15px; 
+            background: var(--kire-deep); color: white; border: none; 
+            border-radius: 2px; font-size: 0.9rem; letter-spacing: 0.2em; font-family: 'Shippori Mincho', serif;
         }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-content { background: var(--jp-white); padding: 30px; border-radius: 4px; width: 85%; max-width: 320px; text-align: center; border: 1px solid var(--jp-gold); }
-        
-        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .c-btn { width: 35px; height: 35px; border-radius: 50%; border: 1px solid #ddd; }
-        .c-btn.active { border: 2px solid var(--jp-red); transform: scale(1.1); }
+        .settings-trigger { position: absolute; top: 10px; right: 10px; font-size: 1rem; color: #ccc; cursor: pointer; }
+        .exit-btn { position: absolute; top: 10px; left: 10px; font-size: 0.7rem; color: #ccc; cursor: pointer; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; width: 85%; max-width: 300px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="header">
+    <div class="omamori-top"></div>
+    
+    <div class="fuda-content">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
-        <div>
+        <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
+        
+        <div class="fuda-header">
             <h1>縁結びのお守り</h1>
             <div class="mizuhiki"></div>
         </div>
-        <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
-    </div>
 
-    <div id="setup-view" class="view active">
-        <p class="info-txt">御名前をカタカナで記してください</p>
-        <input type="text" id="myName" placeholder="御自身" onchange="cleanInput(this)" onblur="cleanInput(this)">
-        <input type="text" id="crushName" placeholder="御相手" onchange="cleanInput(this)" onblur="cleanInput(this)">
-        <button class="btn" onclick="startMatching()">ご縁を祈念する</button>
-    </div>
-
-    <div id="waiting-view" class="view">
-        <div style="font-size:1.5rem; margin-bottom:25px; color: var(--jp-gold); letter-spacing: 0.2em; font-family: 'Shippori Mincho', serif;">静寂</div>
-        <p style="color:#999; font-size:0.85rem; letter-spacing: 0.1em;">御相手の願いを待っています</p>
-        <p style="color:#ccc; font-size:0.7rem; margin-top:15px; letter-spacing: 0.05em;">二人の想いが重なるとき 扉が開きます</p>
-    </div>
-
-    <div id="match-view" class="view">
-        <div style="font-size:1.5rem; margin-bottom:20px; color: var(--jp-red); font-family: 'Shippori Mincho', serif;">結</div>
-        <p style="font-weight:bold; margin-bottom:25px; color:var(--jp-ink); letter-spacing: 0.1em;">ご縁が結ばれました</p>
-        <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:25px;">
-            <input type="text" id="authPass" placeholder="合言葉を記す">
+        <div id="setup-view" class="view active">
+            <input type="text" id="myName" placeholder="御名前" onchange="cleanInput(this)" onblur="cleanInput(this)">
+            <input type="text" id="crushName" placeholder="御相手" onchange="cleanInput(this)" onblur="cleanInput(this)">
+            <button class="btn" onclick="startMatching()">願いを記す</button>
         </div>
-        <button class="btn" onclick="attemptEntry()">扉をひらく</button>
-    </div>
 
-    <div id="chat-view" class="view" style="padding:0;">
-        <div id="chat-area"></div>
-        <div class="input-wrap">
-            <input type="text" id="chatInput" placeholder="筆を執る..." autocomplete="off">
-            <button class="send-btn" onclick="sendMsg()">▶</button>
+        <div id="waiting-view" class="view">
+            <p style="color:#999; font-size:0.85rem; letter-spacing:0.1em;">御相手を待っています</p>
+        </div>
+
+        <div id="match-view" class="view">
+            <p style="font-weight:bold; color:var(--himu-red); margin-bottom:20px;">ご縁が結ばれました</p>
+            <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
+                <input type="text" id="authPass" placeholder="合言葉">
+            </div>
+            <button class="btn" onclick="attemptEntry()">扉をひらく</button>
+        </div>
+
+        <div id="chat-view" class="view" style="padding:0; justify-content:flex-start;">
+            <div id="chat-area"></div>
+            <div class="input-wrap">
+                <input type="text" id="chatInput" placeholder="筆を執る..." autocomplete="off">
+                <button class="send-btn" onclick="sendMsg()">▶</button>
+            </div>
         </div>
     </div>
 </div>
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <p style="font-size:0.9rem; margin-bottom:20px; font-family: 'Shippori Mincho', serif;">お清めと設定</p>
-        <div class="color-pnl">
-            <div class="c-btn" id="c-sakura" style="background:#F5ECF2;" onclick="selectColor('--jp-sakura')"></div>
-            <div class="c-btn" id="c-blue" style="background:#E6F0F5;" onclick="selectColor('#E6F0F5')"></div>
-            <div class="c-btn" id="c-green" style="background:#F0F5E6;" onclick="selectColor('#F0F5E6')"></div>
-        </div>
+        <p style="margin-bottom:20px; font-family: 'Shippori Mincho', serif;">お清めと合言葉</p>
         <input type="text" id="newPass" placeholder="入室の合言葉">
         <button class="btn" onclick="saveSettings()">保存</button>
-        <button class="btn" style="background:#fdfdfd; color:#aaa; margin-top:15px; font-size:0.75rem; border:1px solid #eee;" onclick="fullReset()">ご縁をすべてお清めする</button>
+        <button class="btn" style="background:#eee; color:#999; margin-top:10px;" onclick="fullReset()">お清め（消去）</button>
         <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
@@ -223,7 +189,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--jp-sakura', room = "", correctPass = "", currentViewId = "";
+    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), room = "", correctPass = "", currentViewId = "";
 
     window.cleanInput = (el) => {
         let val = el.value;
@@ -237,12 +203,11 @@
         currentViewId = id;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        const exitBtn = document.getElementById('exit');
-        exitBtn.style.display = (id === 'setup-view') ? 'none' : 'block';
+        document.getElementById('exit').style.display = (id === 'setup-view') ? 'none' : 'block';
         document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
-    window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); updateColorUI(); };
+    window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); };
 
     window.startMatching = async () => {
         const n1 = document.getElementById('myName').value.trim();
@@ -250,7 +215,7 @@
         if (!n1 || !n2) return;
         myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
-        await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
+        await update(ref(db, `matching/${room}/${myN}`), { active: true });
         startSync();
     };
 
@@ -259,12 +224,7 @@
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
             if (!data[myN] || !data[myN].active) {
-                 localStorage.clear();
-                 document.getElementById('myName').value = "";
-                 document.getElementById('crushName').value = "";
-                 myN = ""; partnerN = "";
-                 showView('setup-view'); 
-                 return;
+                 localStorage.clear(); location.reload(); return;
             }
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
@@ -276,9 +236,7 @@
                 if (isMatch) {
                     document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
                     showView('match-view');
-                } else {
-                    showView('waiting-view');
-                }
+                } else { showView('waiting-view'); }
             }
         });
     }
@@ -286,30 +244,22 @@
     window.attemptEntry = () => {
         if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }
         localStorage.setItem('en_chatActive', 'true');
-        showView('chat-view');
-        initChat();
+        showView('chat-view'); initChat();
     };
 
     function initChat() {
-        onValue(ref(db, `matching/${room}`), (mSnap) => {
-            const mData = mSnap.val() || {};
-            if (!mData[myN]) return;
-            onValue(ref(db, 'chats/' + room), (snap) => {
-                const area = document.getElementById('chat-area');
-                area.innerHTML = "";
-                snap.forEach(c => {
-                    const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--jp-sakura';
-                    const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
-                    const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
-                    if(isMe){
-                        m.style.background = sColor.startsWith('--') ? `var(${sColor})` : sColor;
-                    }
-                    m.innerText = d.t;
-                    row.appendChild(m); area.appendChild(row);
-                });
-                area.scrollTop = area.scrollHeight;
+        onValue(ref(db, 'chats/' + room), (snap) => {
+            const area = document.getElementById('chat-area');
+            area.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val(), isMe = (d.s === myN);
+                const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
+                const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
+                m.innerText = d.t;
+                row.appendChild(m); area.appendChild(row);
             });
-        }, { onlyOnce: true });
+            area.scrollTop = area.scrollHeight;
+        });
     }
 
     window.sendMsg = () => {
@@ -324,29 +274,19 @@
     };
 
     window.saveSettings = async () => {
-        const updates = {}; const p = document.getElementById('newPass').value.trim();
-        if (p) updates['pass'] = p;
-        updates[`${myN}/color`] = myColor;
-        await update(ref(db, `matching/${room}`), updates);
+        const p = document.getElementById('newPass').value.trim();
+        if (p) await update(ref(db, `matching/${room}`), { pass: p });
         closeModal();
     };
 
-    window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
-    function updateColorUI() {
-        document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
-        let targetId = myColor.replace('--', '').replace('#', '').replace('jp-', '');
-        const activeBtn = document.getElementById('c-' + targetId);
-        if(activeBtn) activeBtn.classList.add('active');
-    }
     window.openModal = () => { document.getElementById('newPass').value = correctPass; document.getElementById('settingsModal').style.display = 'flex'; };
     window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
     
     window.fullReset = async () => {
-        if(confirm("すべてお清めしますか？")) {
+        if(confirm("お清め（消去）しますか？")) {
             await remove(ref(db, `chats/${room}`));
             await remove(ref(db, `matching/${room}`));
-            localStorage.clear();
-            location.reload();
+            localStorage.clear(); location.reload();
         }
     };
 </script>

@@ -11,10 +11,9 @@
         :root { 
             --oma-white: #F4F2ED; 
             --oma-gold: #B8A078;
-            /* 落ち着いた伝統色へのアップデート */
-            --sango: #E57373;  /* 珊瑚色：落ち着いた赤 */
-            --tsuyukusa: #5C7A95; /* 露草色：深みのある青 */
-            --kogane: #C5B358; /* 黄金色：くすんだ金 */
+            --sango: #E57373;  
+            --tsuyukusa: #5C7A95; 
+            --kogane: #C5B358; 
             --oma-navy: #243354;
             --oma-red: #B02A26;
         }
@@ -35,8 +34,8 @@
         .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.4rem; color: var(--oma-gold); letter-spacing: 0.4em; margin: 10px 0; font-weight: bold; }
         .sub-secret { font-size: 0.7rem; color: var(--oma-gold); letter-spacing: 0.3em; text-transform: uppercase; margin-top: -5px; opacity: 0.8; }
         
-        .exit-btn { position: absolute; top: 15px; left: 15px; color: #ccc; font-size: 0.8rem; cursor: pointer; z-index: 100; }
-        .settings-trigger { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); font-size: 1.2rem; cursor: pointer; z-index: 100; }
+        .exit-btn { position: absolute; top: 15px; left: 15px; color: #ccc; font-size: 0.8rem; cursor: pointer; z-index: 100; padding: 5px; }
+        .settings-trigger { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); font-size: 1.2rem; cursor: pointer; z-index: 100; padding: 5px; }
 
         .view { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 40px; text-align: center; }
         .view.active { display: flex; }
@@ -49,7 +48,7 @@
 
         .btn { width: 100%; max-width: 280px; padding: 18px; background: var(--oma-navy); color: white; border: none; border-radius: 4px; font-weight: bold; font-family: 'Shippori Mincho', serif; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1rem; letter-spacing: 0.1em; }
 
-        /* チャット：大人向けデザイン */
+        /* チャットデザイン */
         #chat-view { padding: 0; justify-content: flex-start; }
         #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; }
         .msg-row { display: flex; flex-direction: column; max-width: 85%; margin-bottom: 12px; }
@@ -63,7 +62,7 @@
         #chatInput { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 4px; outline: none; font-size: 16px; background: white; }
         .send-btn { background: var(--oma-navy); color: white; border: none; width: 50px; height: 44px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
 
-        /* 設定モーダル */
+        /* モーダル */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-content { background: var(--oma-white); padding: 30px; border-radius: 4px; width: 85%; max-width: 340px; text-align: center; border: 1px solid var(--oma-gold); }
         .color-pnl { display: flex; justify-content: center; gap: 20px; margin: 25px 0; }
@@ -99,7 +98,8 @@
     </div>
 
     <div id="match-view" class="view">
-        <p style="font-weight:bold; color:var(--oma-red); margin-bottom:25px; font-size:1.1rem; letter-spacing: 0.2em;">ご縁が結ばれました</p>
+        <div id="match-icon" style="font-size:3.5rem; margin-bottom:20px;">✨</div>
+        <p id="match-text" style="font-weight:bold; color:var(--oma-red); margin-bottom:25px; font-size:1.1rem; letter-spacing: 0.2em;">ご縁が結ばれました</p>
         <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:25px;">
             <input type="text" id="authPass" placeholder="合言葉を記す">
         </div>
@@ -118,7 +118,7 @@
 <div id="settingsModal" class="modal">
     <div class="modal-content">
         <h3 style="font-family: 'Shippori Mincho', serif; margin-bottom:20px; color:var(--oma-navy);">設定</h3>
-        <p style="font-size:0.8rem; color:#888;">吹き出しの色（伝統色）</p>
+        <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sango" style="background:#E57373;" onclick="selectColor('--sango')"></div>
             <div class="c-btn" id="c-tsuyukusa" style="background:#5C7A95;" onclick="selectColor('--tsuyukusa')"></div>
@@ -151,9 +151,19 @@
         currentViewId = id;
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        
         const exitBtn = document.getElementById('exit');
         exitBtn.style.display = (id === 'setup-view') ? 'none' : 'block';
+        exitBtn.innerText = (id === 'chat-view') ? '退出' : '戻る';
+        
         document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
+
+        // ニュアンスの切り替え
+        if (id === 'match-view') {
+            const isReturn = localStorage.getItem('en_hasEntered'); // 一度でも入ったことがあるか
+            document.getElementById('match-icon').innerText = isReturn ? "🤝" : "✨";
+            document.getElementById('match-text').innerText = isReturn ? "ご縁が結ばれています" : "ご縁が結ばれました";
+        }
     }
 
     window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); updateColorUI(); };
@@ -175,6 +185,7 @@
             if (!data[myN] || !data[myN].active) { localStorage.clear(); location.reload(); return; }
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN]?.active && data[partnerN]?.active);
+            
             if (localStorage.getItem('en_chatActive')) {
                 if (isMatch) { showView('chat-view'); initChat(); }
                 else { localStorage.removeItem('en_chatActive'); showView('waiting-view'); }
@@ -190,6 +201,7 @@
     window.attemptEntry = () => {
         if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }
         localStorage.setItem('en_chatActive', 'true');
+        localStorage.setItem('en_hasEntered', 'true'); // 入室フラグをセット
         showView('chat-view'); initChat();
     };
 
@@ -216,9 +228,13 @@
     };
 
     window.handleExit = () => {
-        if (currentViewId === 'chat-view') localStorage.removeItem('en_chatActive');
-        else { localStorage.removeItem('en_me'); localStorage.removeItem('en_partner'); }
-        location.reload();
+        if (currentViewId === 'chat-view') {
+            localStorage.removeItem('en_chatActive');
+            location.reload(); 
+        } else {
+            localStorage.clear(); // 完全に最初から
+            location.reload();
+        }
     };
 
     window.saveSettings = async () => {

@@ -48,7 +48,7 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 19:45</span>
+        <span class="update-tag">更新: 2026-04-21 19:48</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
@@ -143,8 +143,14 @@
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
+            // リセット検知：自分のデータが消えていたら強制クリア
             if (!data[myN] || !data[myN].active) {
-                 showView('setup-view'); return;
+                 localStorage.clear(); // 保存情報を消去
+                 document.getElementById('myName').value = ""; // 入力欄をクリア
+                 document.getElementById('crushName').value = ""; // 入力欄をクリア
+                 myN = ""; partnerN = ""; // 変数をリセット
+                 showView('setup-view'); 
+                 return;
             }
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
@@ -173,6 +179,7 @@
     function initChat() {
         onValue(ref(db, `matching/${room}`), (mSnap) => {
             const mData = mSnap.val() || {};
+            if (!mData[myN]) return; // リセット対策
             onValue(ref(db, 'chats/' + room), (snap) => {
                 const area = document.getElementById('chat-area');
                 area.innerHTML = "";
@@ -231,6 +238,8 @@
                 await remove(ref(db, `chats/${room}`));
                 await remove(ref(db, `matching/${room}`));
                 localStorage.clear();
+                document.getElementById('myName').value = "";
+                document.getElementById('crushName').value = "";
                 location.reload();
             } catch (e) {
                 alert("通信エラーにより清められませんでした。");

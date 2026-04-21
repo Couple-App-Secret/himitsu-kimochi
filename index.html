@@ -23,15 +23,15 @@
 
         .app-container { display: flex; flex-direction: column; height: 100%; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); align-items: center; position: relative; }
 
-        .knot-area { padding: 40px 0 10px; text-align: center; z-index: 20; }
-        .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.6rem; color: var(--oma-gold); letter-spacing: 0.5em; margin-bottom: 15px; font-weight: bold; text-indent: 0.5em; }
-        .knot-svg { width: 120px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+        .knot-area { padding: 30px 0 10px; text-align: center; z-index: 20; flex-shrink: 0; }
+        .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.5rem; color: var(--oma-gold); letter-spacing: 0.5em; margin-bottom: 10px; font-weight: bold; text-indent: 0.5em; }
+        .knot-svg { width: 100px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
         
         .nav-btn { position: absolute; top: 15px; font-size: 0.8rem; cursor: pointer; z-index: 100; padding: 10px; color: var(--oma-gold); font-weight: bold; }
         #exit-link { left: 10px; }
         #gear-link { right: 10px; font-size: 1.3rem; }
 
-        .view { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 40px; text-align: center; }
+        .view { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 30px; text-align: center; overflow: hidden; }
         .view.active { display: flex; }
 
         input[type="text"] {
@@ -42,29 +42,30 @@
 
         .btn { width: 100%; max-width: 280px; padding: 18px; background: var(--oma-navy); color: white; border: none; border-radius: 4px; font-weight: bold; font-family: 'Shippori Mincho', serif; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1rem; }
 
-        #chat-view { padding: 0; justify-content: flex-start; }
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; }
-        .msg { padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; color: white; margin-bottom: 12px; max-width: 85%; line-height: 1.6; }
-        .msg.me { align-self: flex-end; border-bottom-right-radius: 1px; }
-        .msg.you { align-self: flex-start; border-bottom-left-radius: 1px; }
+        /* チャット表示エリアの改善 */
+        #chat-view { padding: 0; justify-content: flex-end; position: relative; height: 100%; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; scroll-behavior: smooth; }
+        .msg { padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; color: white; margin-bottom: 12px; max-width: 80%; line-height: 1.5; word-wrap: break-word; }
+        .msg.me { align-self: flex-end; border-bottom-right-radius: 2px; }
+        .msg.you { align-self: flex-start; border-bottom-left-radius: 2px; }
         
-        .chat-input-wrap { padding: 12px 15px; background: var(--oma-white); border-top: 1px solid #e0ded9; display: flex; gap: 10px; width: 100%; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-        #chatInput { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 16px; }
+        .chat-input-wrap { padding: 15px; background: var(--oma-white); border-top: 1px solid #e0ded9; display: flex; gap: 8px; width: 100%; flex-shrink: 0; }
+        #chatInput { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 16px; text-align: left; margin-bottom: 0; }
 
         .kumihimo-area { width: 140px; height: 70px; margin: 0 auto 10px; }
         .oma-thread { fill: none; stroke-width: 4; stroke-dasharray: 100; stroke-dashoffset: 100; animation: threadScroll 2s ease-out forwards; }
         @keyframes threadScroll { to { stroke-dashoffset: 0; } }
 
-        /* 結ばれた時刻の刻印 */
-        .timestamp-mark { font-size: 0.75rem; color: var(--oma-gold); margin-bottom: 35px; font-family: 'Shippori Mincho', serif; border-top: 1px solid rgba(184, 160, 120, 0.2); padding-top: 12px; letter-spacing: 0.1em; }
-        
-        .code-version { position: absolute; bottom: 8px; right: 12px; font-size: 0.6rem; color: #bbb; letter-spacing: 0.05em; pointer-events: none; }
+        .timestamp-mark { font-size: 0.75rem; color: var(--oma-gold); margin-bottom: 30px; font-family: 'Shippori Mincho', serif; border-top: 1px solid rgba(184, 160, 120, 0.2); padding-top: 12px; letter-spacing: 0.05em; }
+        .code-version { position: absolute; bottom: 5px; right: 8px; font-size: 0.5rem; color: #ccc; pointer-events: none; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-content { background: var(--oma-white); padding: 30px; border-radius: 8px; width: 85%; max-width: 320px; text-align: center; }
-        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .c-btn { width: 45px; height: 45px; border-radius: 4px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .c-btn.active { border-color: var(--oma-navy); transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        /* 設定モーダル */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--oma-white); padding: 25px; border-radius: 12px; width: 90%; max-width: 320px; text-align: center; }
+        .modal-info { font-size: 0.8rem; color: var(--oma-red); margin: 15px 0 5px; font-weight: bold; }
+        .color-pnl { display: flex; justify-content: center; gap: 12px; margin: 15px 0; }
+        .c-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
+        .c-btn.active { border-color: var(--oma-navy); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -95,7 +96,8 @@
         <div id="match-content" style="width:100%;"></div>
         <div id="ts-display" class="timestamp-mark"></div>
         <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
-            <input type="text" id="authPass" placeholder="合言葉を記す">
+            <p style="font-size:0.8rem; color:var(--oma-gold); margin-bottom:10px;">絆を守る「合言葉」を記してください</p>
+            <input type="text" id="authPass" placeholder="合言葉">
         </div>
         <button class="btn" onclick="attemptEntry()">はじめる</button>
     </div>
@@ -104,32 +106,37 @@
         <div id="chat-area"></div>
         <div class="chat-input-wrap">
             <input type="text" id="chatInput" placeholder="想いを綴る..." autocomplete="off">
-            <button class="btn" style="width:70px; padding:10px;" onclick="sendMsg()">送信</button>
+            <button class="btn" style="width:70px; padding:12px; height:46px;" onclick="sendMsg()">送信</button>
         </div>
     </div>
 
-    <div class="code-version">Code Ver: 2026-04-22 05:10</div>
+    <div class="code-version">Code Ver: 2026-04-22 05:15</div>
 </div>
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <h3 style="color:var(--oma-navy); margin-bottom:10px;">設定</h3>
-        <p style="font-size:0.7rem; color:#888;">吹き出しの色（伝統色）</p>
+        <h3 style="color:var(--oma-navy);">設定</h3>
+        
+        <p class="modal-info">二人の絆を守る「合言葉」</p>
+        <p style="font-size:0.65rem; color:#888; margin-bottom:10px;">※二人で同じ言葉を決めて保存してください</p>
+        <input type="text" id="newPass" placeholder="例：記念日など" style="width:100%; padding:10px; border:1px solid #ddd; font-size:0.9rem;">
+        
+        <p style="font-size:0.75rem; color:#888; margin-top:10px;">吹き出しの色</p>
         <div class="color-pnl">
             <div class="c-btn" id="c-sango" style="background:#E57373;" onclick="selectColor('--sango')"></div>
             <div class="c-btn" id="c-tsuyukusa" style="background:#5C7A95;" onclick="selectColor('--tsuyukusa')"></div>
             <div class="c-btn" id="c-kogane" style="background:#C5B358;" onclick="selectColor('--kogane')"></div>
         </div>
-        <input type="text" id="newPass" placeholder="合言葉の変更" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; text-align:center;">
-        <button class="btn" style="padding:12px; font-size:0.9rem;" onclick="saveSettings()">保存</button>
-        <button class="btn" style="background:var(--oma-red); margin-top:15px; font-size:0.7rem; padding:10px;" onclick="fullReset()">ご縁をお清めする（全リセット）</button>
+        
+        <button class="btn" style="padding:12px; font-size:0.9rem;" onclick="saveSettings()">設定を保存</button>
+        <button class="btn" style="background:var(--oma-red); margin-top:15px; font-size:0.7rem; padding:8px;" onclick="fullReset()">ご縁をお清めする（全削除）</button>
         <p onclick="closeModal()" style="margin-top:20px; color:#aaa; cursor:pointer; font-size:0.8rem;">閉じる</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, remove, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, remove, update, serverTimestamp, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -155,9 +162,7 @@
         if(id === 'match-view') {
             const isReturn = localStorage.getItem('en_hasEntered');
             const d = new Date(ts);
-            // 「結縁の刻」として、マッチした時刻を表示
             document.getElementById('ts-display').innerText = ts ? `結縁の刻：${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : "";
-            
             document.getElementById('match-content').innerHTML = isReturn ? 
                 `<div class="kumihimo-area"><svg viewBox="0 0 100 60"><path class="oma-thread" stroke="#B02A26" d="M10 30 C30 10, 30 50, 50 30 C70 10, 70 50, 90 30"/><path class="oma-thread" stroke="#243354" d="M10 30 C30 50, 30 10, 50 30 C70 50, 70 10, 90 30" style="animation-delay:0.5s;"/></svg></div><p style="font-weight:bold; color:var(--oma-red); margin-bottom:10px;">ご縁が結ばれています</p>` :
                 `<div style="font-size:3rem; margin-bottom:15px;">✨</div><p style="font-weight:bold; color:var(--oma-red); margin-bottom:10px;">ご縁が結ばれました</p>`;
@@ -172,9 +177,13 @@
         if(!myN || !partnerN) return;
         room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
-        await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
-        // マッチング開始時にタイムスタンプをセット
-        await update(ref(db, `matching/${room}`), { lastAt: serverTimestamp() });
+        
+        // 既存のタイムスタンプがあるか確認
+        const snapshot = await get(child(ref(db), `matching/${room}/lastAt`));
+        const updates = { [`matching/${room}/${myN}`]: { active: true, color: myColor } };
+        if (!snapshot.exists()) { updates[`matching/${room}/lastAt`] = serverTimestamp(); }
+        
+        await update(ref(db), updates);
         startSync();
     };
 
@@ -217,9 +226,8 @@
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput'); if(!i.value.trim()) return;
         await push(ref(db, 'chats/' + room), { s: myN, t: i.value });
-        // メッセージ送信時はlastAtを更新しない（結縁の時間を保持するため）
         i.value = "";
-    };
+    }
 
     window.handleNav = () => {
         if(currentV === 'chat-view') { localStorage.removeItem('en_chatActive'); location.reload(); }

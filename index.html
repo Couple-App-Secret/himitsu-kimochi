@@ -10,36 +10,152 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap');
-        :root { --sakura: #f4a7b9; --sky: #8fcbe5; --canary: #f9d057; --text: #4a2535; --bg: #fffafb; }
+        :root { 
+            --omamori-bg: #FAF9F5; /* 生成り色（ベース背景） */
+            --omamori-main: #2C3E50; /* 群青色（メインカラー・男性も持ちやすい） */
+            --omamori-accent: #C9A063; /* 金茶色（アクセント・ご縁） */
+            --omamori-text: #4A4A4A; /* 墨色（文字） */
+            --omamori-border: #E0DDD5; /* 薄墨色（ボーダー） */
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { height: 100dvh; background: var(--bg); font-family: 'Zen Maru Gothic', sans-serif; color: var(--text); overflow: hidden; position: fixed; width: 100%; }
+        body { 
+            height: 100dvh; 
+            background: var(--omamori-bg); 
+            font-family: 'Zen Maru Gothic', sans-serif; 
+            color: var(--omamori-text); 
+            overflow: hidden; 
+            position: fixed; 
+            width: 100%; 
+            /* 和紙のような薄いテクスチャ */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiIHZpZXdCb3g9IjAgMCA0IDQiPjxnIGZpbGwtb3BhY2l0eT0iMC4wNSIgZmlsbD0iIzAwMDAwMCI+PHBhdGggZD0iTTEgM2gydjFIMVYzem0yLTJoMXYxaC0xVjF6TTAgMGgxdjFIMFYwek0yIDJoMXYxaC0xVjJ6TTMgM2gxdjFoLTFWM3pNMCAyaDF2MUgwVjJ6TTEgMGgxdjFIMVYwek0yIDBoMXYxaC0xVjB6TTMgMWgxdjFoLTFWMXpNMCAzaDF2MUgwVjN6TTIgNGgxdjFIMlY0ek00IDJoMXYxaC0xVjJ6TTQgNGgxdjFIMFY0ek0xIDRoMXYxSDFWNHpNMyA0aDF2MUgzVjR6TTAgNGgxdjVIMFY0eiIvPjwvZz48L3N2Zz4=');
+        }
         .app-container { display: flex; flex-direction: column; height: 100%; }
-        .header { height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-bottom: 1px solid #fff5f7; z-index: 100; position: relative; }
-        h1 { font-size: 1rem; color: var(--sakura); letter-spacing: 0.2em; font-weight: bold; }
-        .update-tag { font-size: 0.6rem; color: #ccc; margin-top: 2px; }
-        .exit-btn { position: absolute; left: 15px; font-size: 0.8rem; color: #aaa; padding: 10px; cursor: pointer; }
-        .settings-trigger { position: absolute; right: 15px; font-size: 1.2rem; color: #ccc; padding: 10px; cursor: pointer; }
+        .header { 
+            height: 65px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: white; 
+            border-bottom: 1px solid var(--omamori-border); 
+            z-index: 100; 
+            position: relative; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        h1 { 
+            font-size: 1.1rem; 
+            color: var(--omamori-accent); /* 金色 */
+            letter-spacing: 0.15em; 
+            font-weight: bold; 
+            position: relative;
+        }
+        /* タイトルの左右にシンプルな結び目アイコン */
+        h1::before, h1::after {
+            content: '∞'; 
+            position: absolute; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            font-size: 0.9rem; 
+            color: var(--omamori-main);
+            opacity: 0.6;
+        }
+        h1::before { left: -1.5em; }
+        h1::after { right: -1.5em; }
+
+        .exit-btn { position: absolute; left: 18px; font-size: 0.8rem; color: #aaa; padding: 10px; cursor: pointer; }
+        .settings-trigger { position: absolute; right: 18px; font-size: 1.3rem; color: #ccc; padding: 10px; cursor: pointer; }
+        
         .view { display: none; flex: 1; flex-direction: column; position: relative; overflow: hidden; }
         .view.active { display: flex; }
-        input[type="text"] { width: 100%; max-width: 280px; padding: 15px; border: 1px solid #eee; border-radius: 15px; margin-bottom: 15px; text-align: center; font-size: 16px; outline: none; background: white; }
-        #setup-view, #waiting-view, #match-view { align-items: center; justify-content: center; text-align: center; padding: 0 40px; }
-        .system-msg { background: #fffafb; border-radius: 15px; padding: 20px; font-size: 0.85rem; text-align: center; margin: 15px; border: 1px dashed var(--sakura); line-height: 1.8; color: var(--text); }
-        #chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-        .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 8px; }
+        
+        input[type="text"] { 
+            width: 100%; 
+            max-width: 290px; 
+            padding: 16px; 
+            border: 1px solid var(--omamori-border); 
+            border-radius: 12px; /* 少し角を残す */
+            margin-bottom: 18px; 
+            text-align: center; 
+            font-size: 16px; 
+            outline: none; 
+            background: white; 
+            color: var(--omamori-text);
+        }
+        input[type="text"]::placeholder { color: #ccc; }
+
+        #setup-view, #waiting-view, #match-view { align-items: center; justify-content: center; text-align: center; padding: 0 45px; }
+        
+        .system-msg { 
+            background: rgba(255,255,255,0.8); 
+            border-radius: 12px; 
+            padding: 22px; 
+            font-size: 0.88rem; 
+            text-align: center; 
+            margin: 20px; 
+            border: 1px dashed var(--omamori-accent); 
+            line-height: 1.9; 
+            color: var(--omamori-text); 
+        }
+        
+        #chat-area { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; }
+        .msg-row { display: flex; flex-direction: column; max-width: 82%; margin-bottom: 10px; }
         .msg-row.me { align-self: flex-end; align-items: flex-end; }
         .msg-row.you { align-self: flex-start; align-items: flex-start; }
-        .msg { padding: 10px 16px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; word-break: break-all; color: white; }
+        .msg { padding: 12px 18px; border-radius: 18px; font-size: 0.98rem; line-height: 1.5; word-break: break-all; color: white; }
         .msg.me { border-bottom-right-radius: 4px; }
         .msg.you { border-bottom-left-radius: 4px; }
-        .input-wrap { padding: 12px 15px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); background: white; display: flex; gap: 10px; border-top: 1px solid #f0f0f0; }
-        #chatInput { flex: 1; padding: 12px 18px; border: none; border-radius: 25px; background: #f5f5f5; font-size: 16px; outline: none; }
-        .send-btn { background: var(--sakura); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; }
-        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--sakura); color: white; border: none; border-radius: 30px; font-weight: bold; font-size: 1rem; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 85%; max-width: 340px; text-align: center; }
-        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 15px 0; }
-        .c-btn { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; }
-        .c-btn.active { border-color: var(--text); transform: scale(1.1); }
+        
+        .input-wrap { 
+            padding: 15px; 
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); 
+            background: white; 
+            display: flex; 
+            gap: 12px; 
+            border-top: 1px solid var(--omamori-border); 
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
+        }
+        #chatInput { 
+            flex: 1; 
+            padding: 14px 20px; 
+            border: 1px solid var(--omamori-border); 
+            border-radius: 25px; 
+            background: #f8f8f8; 
+            font-size: 16px; 
+            outline: none; 
+            color: var(--omamori-text);
+        }
+        .send-btn { 
+            background: var(--omamori-accent); 
+            color: white; 
+            border: none; 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .btn { 
+            width: 100%; 
+            max-width: 290px; 
+            padding: 18px; 
+            background: var(--omamori-main); /* 群青色 */
+            color: var(--omamori-accent); /* 金色文字 */
+            border: none; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            font-size: 1.05rem; 
+            letter-spacing: 0.1em;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .btn:active { transform: translateY(1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-content { background: var(--omamori-bg); padding: 30px; border-radius: 20px; width: 88%; max-width: 350px; text-align: center; border: 1px solid var(--omamori-accent); }
+        .modal-content h3 { color: var(--omamori-accent); margin-bottom: 25px; font-size: 1.1rem; }
+        
+        .color-pnl { display: flex; justify-content: center; gap: 18px; margin: 20px 0; }
+        .c-btn { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); }
+        .c-btn.active { border-color: var(--omamori-accent); transform: scale(1.1); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -48,28 +164,27 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁結びのお守り</h1>
-        <span class="update-tag">更新: 2026-04-21 20:30</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
     <div id="setup-view" class="view active">
-        <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.05em;">※お名前をカタカナで記してください</p>
-        <input type="text" id="myName" placeholder="あなた" onchange="cleanInput(this)" onblur="cleanInput(this)">
-        <input type="text" id="crushName" placeholder="お相手" onchange="cleanInput(this)" onblur="cleanInput(this)">
-        <button class="btn" onclick="startMatching()">ご縁を願う</button>
+        <p style="font-size:0.85rem; color:var(--omamori-accent); margin-bottom:18px; letter-spacing: 0.05em;">※お名前をカタカナで記してください</p>
+        <input type="text" id="myName" placeholder="御身（おんみ）" onchange="cleanInput(this)" onblur="cleanInput(this)">
+        <input type="text" id="crushName" placeholder="御相手（おあいて）" onchange="cleanInput(this)" onblur="cleanInput(this)">
+        <button class="btn" onclick="startMatching()">ご縁を祈念する</button>
     </div>
 
     <div id="waiting-view" class="view">
-        <div style="font-size:3.5rem; margin-bottom:25px;">💌</div>
-        <p style="color:#999; font-size:0.95rem; letter-spacing: 0.05em;">お相手の願いを待っています...</p>
-        <p style="color:var(--sakura); font-size:0.8rem; margin-top:10px; line-height:1.5;">二人の想いが重なると、<br>静かに扉が開きます。</p>
+        <div style="font-size:3.8rem; margin-bottom:28px; color:var(--omamori-accent);">💌</div>
+        <p style="color:#999; font-size:0.98rem; letter-spacing: 0.05em;">御相手の願いを待っています...</p>
+        <p style="color:var(--omamori-accent); font-size:0.85rem; margin-top:12px; line-height:1.6; opacity:0.8;">二人の想いが重なると、<br>静かに扉が開きます。</p>
     </div>
 
     <div id="match-view" class="view">
-        <div style="font-size:3.5rem; margin-bottom:20px;">✨</div>
-        <p style="font-weight:bold; margin-bottom:25px; color:var(--sakura); font-size:1.1rem;">ご縁が結ばれました</p>
-        <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
-            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">合言葉を記してください</p>
+        <div style="font-size:3.8rem; margin-bottom:25px; color:var(--omamori-accent);">✨</div>
+        <p style="font-weight:bold; margin-bottom:28px; color:var(--omamori-accent); font-size:1.15rem; letter-spacing: 0.05em;">ご縁が結ばれました</p>
+        <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:22px;">
+            <p style="font-size:0.85rem; color:#888; margin-bottom:12px;">合言葉を記してください</p>
             <input type="text" id="authPass" placeholder="合言葉">
         </div>
         <button class="btn" onclick="attemptEntry()">はじめる</button>
@@ -86,18 +201,15 @@
 
 <div id="settingsModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-bottom:20px;">お守りの設定</h3>
-        <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
+        <h3>お守りの設定</h3>
+        <p style="font-size:0.85rem; color:#888;">吹き出しの色</p>
         <div class="color-pnl">
-            <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
-            <div class="c-btn" id="c-sky" style="background:#8fcbe5;" onclick="selectColor('--sky')"></div>
-            <div class="c-btn" id="c-canary" style="background:#f9d057;" onclick="selectColor('--canary')"></div>
-        </div>
-        <p style="font-size:0.8rem; color:#888; margin-top:10px;">入室の合言葉</p>
+            <div class="c-btn" id="c-main" style="background:#2C3E50;" onclick="selectColor('--omamori-main')"></div> <div class="c-btn" id="c-accent" style="background:#C9A063;" onclick="selectColor('--omamori-accent')"></div> <div class="c-btn" id="c-seiji" style="background:#77969A;" onclick="selectColor('#77969A')"></div> </div>
+        <p style="font-size:0.85rem; color:#888; margin-top:12px;">入室の合言葉</p>
         <input type="text" id="newPass" placeholder="合言葉を決める">
         <button class="btn" onclick="saveSettings()">保存する</button>
-        <button class="btn" style="background:#ff7675; margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁をすべてお清めする</button>
-        <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
+        <button class="btn" style="background:#A94442; color:white; margin-top:12px; font-size:0.8rem; padding: 15px;" onclick="fullReset()">ご縁をすべてお清めする</button>
+        <p onclick="closeModal()" style="margin-top:22px; color:#ccc; font-size:0.85rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
 
@@ -109,14 +221,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
+    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--omamori-main', room = "", correctPass = "", currentViewId = "";
 
-    // 文字のクリーニング（ダブり防止：確定時のみ実行）
     window.cleanInput = (el) => {
         let val = el.value;
         if (!val) return;
-        val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60)); // カタカナ変換
-        val = val.replace(/[^ァ-ンヴー]/g, ''); // カタカナ以外削除
+        val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60));
+        val = val.replace(/[^ァ-ンヴー]/g, '');
         el.value = val.trim();
     };
 
@@ -146,8 +257,6 @@
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
-            
-            // リセット検知：データが消えていたら入力欄も含めて完全初期化
             if (!data[myN] || !data[myN].active) {
                  localStorage.clear();
                  document.getElementById('myName').value = "";
@@ -156,7 +265,6 @@
                  showView('setup-view'); 
                  return;
             }
-
             correctPass = (data.pass || "").trim();
             const isMatch = (data[myN] && data[myN].active && data[partnerN] && data[partnerN].active);
 
@@ -195,10 +303,20 @@
                     area.appendChild(guide);
                 }
                 snap.forEach(c => {
-                    const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--sakura';
+                    const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--omamori-main';
                     const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
                     const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
-                    m.style.background = `var(${sColor})`; m.innerText = d.t;
+                    
+                    // 色設定の適用ロジック
+                    if (sColor.startsWith('--')) {
+                        m.style.background = `var(${sColor})`;
+                        m.style.color = (sColor === '--omamori-main') ? 'var(--omamori-accent)' : 'white';
+                    } else {
+                        m.style.background = sColor;
+                        m.style.color = 'white';
+                    }
+                    
+                    m.innerText = d.t;
                     row.appendChild(m); area.appendChild(row);
                 });
                 area.scrollTop = area.scrollHeight;
@@ -231,7 +349,9 @@
     window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
     function updateColorUI() {
         document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.getElementById('c-' + myColor.replace('--', ''));
+        // ID指定の便宜上、変数を加工
+        let targetId = myColor.replace('--', '').replace('#', '');
+        const activeBtn = document.getElementById('c-' + targetId);
         if(activeBtn) activeBtn.classList.add('active');
     }
     window.openModal = () => { document.getElementById('newPass').value = correctPass; document.getElementById('settingsModal').style.display = 'flex'; };

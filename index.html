@@ -10,9 +10,12 @@
         
         :root { 
             --oma-white: #F4F2ED; 
-            --oma-red: #B02A26; 
-            --oma-navy: #243354;
             --oma-gold: #B8A078;
+            --sakura: #f4a7b9;
+            --sky: #8fcbe5;
+            --canary: #f9d057;
+            --oma-navy: #243354;
+            --oma-red: #B02A26;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -26,45 +29,55 @@
 
         .app-container { display: flex; flex-direction: column; height: 100%; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); align-items: center; }
 
+        /* ヘッダー周り */
         .knot-area { padding: 30px 0 10px; text-align: center; position: relative; z-index: 20; }
         .knot-svg { width: 100px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.2rem; color: var(--oma-gold); letter-spacing: 0.5em; margin: 10px 0; text-transform: uppercase; }
         
-        .red-thread { position: absolute; top: 100px; bottom: 0; left: 50%; width: 1.5px; background: var(--oma-red); opacity: 0.2; transform: translateX(-50%); z-index: 1; transition: opacity 1s; }
+        .exit-btn { position: absolute; top: 15px; left: 15px; color: #ccc; font-size: 0.8rem; cursor: pointer; z-index: 100; }
+        .settings-trigger { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); font-size: 1.2rem; cursor: pointer; z-index: 100; }
 
-        .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.2rem; color: var(--oma-gold); letter-spacing: 0.5em; margin: 15px 0; text-transform: uppercase; }
+        /* 共通ビュー */
+        .view { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 0 40px; text-align: center; }
+        .view.active { display: flex; }
 
-        .input-group { width: 85%; max-width: 280px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
         input[type="text"] {
-            width: 100%; padding: 15px; background: rgba(255,255,255,0.8);
-            border: 1px solid #e0ded9; border-radius: 8px; text-align: center; font-size: 16px; outline: none;
-            color: var(--oma-navy); font-family: 'Shippori Mincho', serif;
+            width: 100%; max-width: 280px; padding: 15px; background: rgba(255,255,255,0.8);
+            border: 1px solid #e0ded9; border-radius: 12px; text-align: center; font-size: 16px; outline: none;
+            color: var(--oma-navy); font-family: 'Shippori Mincho', serif; margin-bottom: 15px;
         }
 
-        .btn-join {
-            width: 85px; height: 85px; background: var(--oma-navy); border-radius: 50%; color: var(--oma-gold); 
-            border: 2px solid var(--oma-gold); font-family: 'Shippori Mincho', serif; font-size: 1.3rem;
-            display: flex; align-items: center; justify-content: center; margin: 25px auto; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 10;
-        }
+        .btn { width: 100%; max-width: 280px; padding: 16px; background: var(--oma-navy); color: white; border: none; border-radius: 30px; font-weight: bold; font-family: 'Shippori Mincho', serif; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
 
-        #chat-view { width: 100%; flex: 1; display: none; flex-direction: column; z-index: 10; }
-        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
-        .msg { max-width: 75%; padding: 12px 18px; border-radius: 20px; margin-bottom: 10px; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .me { align-self: flex-end; background: var(--oma-navy); color: white; border-bottom-right-radius: 4px; }
-        .you { align-self: flex-start; background: white; color: var(--oma-navy); border-bottom-left-radius: 4px; border: 1px solid #eee; }
-
-        .chat-input-wrap { padding: 15px; background: var(--oma-white); border-top: 1px solid #e0ded9; display: flex; gap: 10px; }
-        #chatInput { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; font-size: 16px; }
+        /* チャットエリア */
+        #chat-view { padding: 0; justify-content: flex-start; }
+        #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; }
+        .msg-row { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 10px; }
+        .msg-row.me { align-self: flex-end; align-items: flex-end; }
+        .msg-row.you { align-self: flex-start; align-items: flex-start; }
+        .msg { padding: 12px 18px; border-radius: 20px; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: white; }
+        .msg.me { border-bottom-right-radius: 4px; }
+        .msg.you { border-bottom-left-radius: 4px; }
         
-        .exit-btn { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); font-size: 1.2rem; cursor: pointer; z-index: 100; }
-        .waiting-msg { font-size: 0.8rem; color: var(--oma-gold); margin-top: 15px; letter-spacing: 0.1em; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        .system-msg { font-size: 0.8rem; color: var(--oma-gold); background: white; padding: 15px; border-radius: 10px; border: 1px dashed var(--oma-gold); margin-bottom: 20px; }
+
+        .chat-input-wrap { padding: 12px 15px; background: var(--oma-white); border-top: 1px solid #e0ded9; display: flex; gap: 10px; width: 100%; }
+        #chatInput { flex: 1; padding: 12px 18px; border: 1px solid #ddd; border-radius: 25px; outline: none; font-size: 16px; }
+        .send-btn { background: var(--oma-navy); color: white; border: none; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; }
+
+        /* モーダル */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--oma-white); padding: 30px; border-radius: 25px; width: 85%; max-width: 340px; text-align: center; }
+        .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .c-btn { width: 45px; height: 45px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
+        .c-btn.active { border-color: var(--oma-navy); transform: scale(1.1); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="exit" class="exit-btn" style="display:none;" onclick="handleReset()">✕</div>
-    <div class="red-thread" id="thread-line"></div>
+    <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
+    <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
 
     <div class="knot-area">
         <svg class="knot-svg" viewBox="0 0 100 60">
@@ -72,38 +85,64 @@
             <path d="M20 30 Q 20 10 35 15 L 65 45 Q 80 50 80 30 Q 80 10 65 15 L 35 45 Q 20 50 20 30" fill="none" stroke="#243354" stroke-width="5" stroke-dasharray="10 5" />
             <circle cx="50" cy="30" r="5" fill="#B8A078" />
         </svg>
-        <div class="secret-title" id="title-text">結び</div>
+        <div class="secret-title">結び</div>
     </div>
 
-    <div id="setup-view" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-        <div class="input-group">
-            <input type="text" id="myName" placeholder="御自身の名" onchange="cleanInput(this)">
-            <input type="text" id="crushName" placeholder="御相手の名" onchange="cleanInput(this)">
-        </div>
-        <div id="join-btn-area">
-            <div class="btn-join" onclick="startMatching()">結</div>
-        </div>
-        <div id="waiting-status" class="waiting-msg" style="display:none;">御相手の結びを待っています...</div>
+    <div id="setup-view" class="view active">
+        <p style="font-size:0.75rem; color:var(--oma-gold); margin-bottom:20px; letter-spacing: 0.1em;">※お名前をカタカナで記してください</p>
+        <input type="text" id="myName" placeholder="あなた" onchange="cleanInput(this)">
+        <input type="text" id="crushName" placeholder="お相手" onchange="cleanInput(this)">
+        <button class="btn" onclick="startMatching()">ご縁を願う</button>
     </div>
 
-    <div id="chat-view">
+    <div id="waiting-view" class="view">
+        <div style="font-size:3rem; margin-bottom:20px;">💌</div>
+        <p style="color:var(--oma-gold); font-size:0.9rem; line-height:1.6;">お相手の願いを待っています...<br>二人の想いが重なると扉が開きます。</p>
+    </div>
+
+    <div id="match-view" class="view">
+        <div style="font-size:3rem; margin-bottom:20px;">✨</div>
+        <p style="font-weight:bold; color:var(--oma-red); margin-bottom:20px;">ご縁が結ばれました</p>
+        <div id="pass-auth-area" style="display:none; width:100%; margin-bottom:20px;">
+            <input type="text" id="authPass" placeholder="合言葉を記す">
+        </div>
+        <button class="btn" onclick="attemptEntry()">はじめる</button>
+    </div>
+
+    <div id="chat-view" class="view">
         <div id="chat-area"></div>
         <div class="chat-input-wrap">
             <input type="text" id="chatInput" placeholder="想いを綴る..." autocomplete="off">
-            <button onclick="sendMsg()" style="background:var(--oma-navy); color:white; border:none; padding:10px 20px; border-radius:20px;">送る</button>
+            <button class="send-btn" onclick="sendMsg()">▶</button>
         </div>
+    </div>
+</div>
+
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <h3 style="font-family: 'Shippori Mincho', serif; margin-bottom:15px;">お守りの設定</h3>
+        <p style="font-size:0.8rem; color:#888;">吹き出しの色</p>
+        <div class="color-pnl">
+            <div class="c-btn" id="c-sakura" style="background:#f4a7b9;" onclick="selectColor('--sakura')"></div>
+            <div class="c-btn" id="c-sky" style="background:#8fcbe5;" onclick="selectColor('--sky')"></div>
+            <div class="c-btn" id="c-canary" style="background:#f9d057;" onclick="selectColor('--canary')"></div>
+        </div>
+        <input type="text" id="newPass" placeholder="入室の合言葉">
+        <button class="btn" onclick="saveSettings()">保存</button>
+        <button class="btn" style="background:var(--oma-red); margin-top:10px; font-size:0.8rem;" onclick="fullReset()">ご縁をお清めする</button>
+        <p onclick="closeModal()" style="margin-top:20px; color:#ccc; font-size:0.8rem; cursor:pointer;">閉じる</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), room = "";
+    let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
 
     window.cleanInput = (el) => {
         let val = el.value; if (!val) return;
@@ -111,18 +150,15 @@
         val = val.replace(/[^ァ-ンヴー]/g, ''); el.value = val.trim();
     };
 
-    function showView(state) {
-        // state: 'setup', 'waiting', 'chat'
-        document.getElementById('setup-view').style.display = (state === 'chat') ? 'none' : 'flex';
-        document.getElementById('join-btn-area').style.display = (state === 'setup') ? 'block' : 'none';
-        document.getElementById('waiting-status').style.display = (state === 'waiting') ? 'block' : 'none';
-        document.getElementById('chat-view').style.display = (state === 'chat') ? 'flex' : 'none';
-        document.getElementById('exit').style.display = (state === 'chat') ? 'block' : 'none';
-        document.getElementById('thread-line').style.opacity = (state === 'chat') ? '0.4' : '0.2';
-        if(state === 'chat') document.getElementById('title-text').innerText = "御縁";
+    function showView(id) {
+        currentViewId = id;
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('exit').style.display = (id === 'setup-view') ? 'none' : 'block';
+        document.getElementById('gear').style.display = (id === 'chat-view') ? 'block' : 'none';
     }
 
-    window.onload = () => { if (myN && partnerN) startSync(); else showView('setup'); };
+    window.onload = () => { if (myN && partnerN) startSync(); else showView('setup-view'); updateColorUI(); };
 
     window.startMatching = async () => {
         const n1 = document.getElementById('myName').value.trim();
@@ -130,7 +166,7 @@
         if (!n1 || !n2) return;
         myN = n1; partnerN = n2; room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
-        await update(ref(db, `matching/${room}/${myN}`), { active: true });
+        await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
         startSync();
     };
 
@@ -138,27 +174,47 @@
         room = [myN, partnerN].sort().join('_');
         onValue(ref(db, `matching/${room}`), (snap) => {
             const data = snap.val() || {};
-            if (data[myN]?.active && data[partnerN]?.active) {
-                showView('chat'); initChat();
-            } else if (data[myN]?.active) {
-                showView('waiting');
+            if (!data[myN] || !data[myN].active) { localStorage.clear(); location.reload(); return; }
+            correctPass = (data.pass || "").trim();
+            const isMatch = (data[myN]?.active && data[partnerN]?.active);
+            if (localStorage.getItem('en_chatActive')) {
+                if (isMatch) { showView('chat-view'); initChat(); }
+                else { localStorage.removeItem('en_chatActive'); showView('waiting-view'); }
+            } else {
+                if (isMatch) {
+                    document.getElementById('pass-auth-area').style.display = correctPass ? 'block' : 'none';
+                    showView('match-view');
+                } else { showView('waiting-view'); }
             }
         });
     }
 
+    window.attemptEntry = () => {
+        if (correctPass && document.getElementById('authPass').value.trim() !== correctPass) { alert("合言葉が違います"); return; }
+        localStorage.setItem('en_chatActive', 'true');
+        showView('chat-view'); initChat();
+    };
+
     function initChat() {
-        onValue(ref(db, 'chats/' + room), (snap) => {
-            const area = document.getElementById('chat-area');
-            area.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val(), isMe = (d.s === myN);
-                const m = document.createElement('div');
-                m.className = `msg ${isMe ? 'me' : 'you'}`;
-                m.innerText = d.t;
-                area.appendChild(m);
+        onValue(ref(db, `matching/${room}`), (mSnap) => {
+            const mData = mSnap.val() || {};
+            onValue(ref(db, 'chats/' + room), (snap) => {
+                const area = document.getElementById('chat-area'); area.innerHTML = "";
+                if (!mData.pass) {
+                    const guide = document.createElement('div'); guide.className = "system-msg";
+                    guide.innerHTML = "ご縁が結ばれました✨<br><b>合言葉</b>を二人で決めて、⚙から保存してください。";
+                    area.appendChild(guide);
+                }
+                snap.forEach(c => {
+                    const d = c.val(), isMe = (d.s === myN), sColor = mData[d.s]?.color || '--sakura';
+                    const row = document.createElement('div'); row.className = `msg-row ${isMe ? 'me' : 'you'}`;
+                    const m = document.createElement('div'); m.className = `msg ${isMe ? 'me' : 'you'}`;
+                    m.style.background = `var(${sColor})`; m.innerText = d.t;
+                    row.appendChild(m); area.appendChild(row);
+                });
+                area.scrollTop = area.scrollHeight;
             });
-            area.scrollTop = area.scrollHeight;
-        });
+        }, { onlyOnce: true });
     }
 
     window.sendMsg = () => {
@@ -166,10 +222,32 @@
         push(ref(db, 'chats/' + room), { s: myN, t: i.value }); i.value = "";
     };
 
-    window.handleReset = async () => {
-        if(confirm("お清めして終了しますか？")) {
-            await remove(ref(db, `matching/${room}`));
-            await remove(ref(db, `chats/${room}`));
+    window.handleExit = () => {
+        if (currentViewId === 'chat-view') localStorage.removeItem('en_chatActive');
+        else { localStorage.removeItem('en_me'); localStorage.removeItem('en_partner'); }
+        location.reload();
+    };
+
+    window.saveSettings = async () => {
+        const updates = {}; const p = document.getElementById('newPass').value.trim();
+        if (p) updates['pass'] = p;
+        updates[`${myN}/color`] = myColor;
+        await update(ref(db, `matching/${room}`), updates);
+        closeModal();
+    };
+
+    window.selectColor = (c) => { myColor = c; localStorage.setItem('en_color', c); updateColorUI(); };
+    function updateColorUI() {
+        document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('active'));
+        const btn = document.getElementById('c-' + myColor.replace('--', ''));
+        if(btn) btn.classList.add('active');
+    }
+    window.openModal = () => { document.getElementById('newPass').value = correctPass; document.getElementById('settingsModal').style.display = 'flex'; };
+    window.closeModal = () => document.getElementById('settingsModal').style.display = 'none';
+    
+    window.fullReset = async () => {
+        if(confirm("すべてをお清めしますか？相手の画面も戻ります。")) {
+            await remove(ref(db, `chats/${room}`)); await remove(ref(db, `matching/${room}`));
             localStorage.clear(); location.reload();
         }
     };

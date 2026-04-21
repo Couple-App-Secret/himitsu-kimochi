@@ -48,14 +48,14 @@
     <div class="header">
         <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">戻る</div>
         <h1>縁 結 び</h1>
-        <span class="update-tag">更新: 2026-04-21 19:25</span>
+        <span class="update-tag">更新: 2026-04-21 19:35</span>
         <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
     </div>
 
     <div id="setup-view" class="view active">
         <p style="font-size:0.8rem; color:var(--sakura); margin-bottom:15px; letter-spacing: 0.05em;">※お名前をカタカナで入力してください</p>
-        <input type="text" id="myName" placeholder="あなた">
-        <input type="text" id="crushName" placeholder="お相手">
+        <input type="text" id="myName" placeholder="あなた" oninput="validateKana(this)">
+        <input type="text" id="crushName" placeholder="お相手" oninput="validateKana(this)">
         <button class="btn" onclick="startMatching()">ご縁を願う</button>
     </div>
 
@@ -110,6 +110,16 @@
     const db = getDatabase(app);
 
     let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), myColor = localStorage.getItem('en_color') || '--sakura', room = "", correctPass = "", currentViewId = "";
+
+    // カタカナバリデーション & 自動変換
+    window.validateKana = (el) => {
+        let val = el.value;
+        // ひらがなをカタカナに変換
+        val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60));
+        // カタカナ以外（長音記号含む）を削除
+        val = val.replace(/[^ァ-ンヴー]/g, '');
+        el.value = val;
+    };
 
     function showView(id) {
         currentViewId = id;

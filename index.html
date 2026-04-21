@@ -23,7 +23,6 @@
 
         .app-container { display: flex; flex-direction: column; height: 100%; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); align-items: center; position: relative; }
 
-        /* ヘッダー：文字が先、組紐が後 */
         .knot-area { padding: 40px 0 10px; text-align: center; z-index: 20; }
         .secret-title { font-family: 'Shippori Mincho', serif; font-size: 1.6rem; color: var(--oma-gold); letter-spacing: 0.5em; margin-bottom: 15px; font-weight: bold; text-indent: 0.5em; }
         .knot-svg { width: 120px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
@@ -43,7 +42,6 @@
 
         .btn { width: 100%; max-width: 280px; padding: 18px; background: var(--oma-navy); color: white; border: none; border-radius: 4px; font-weight: bold; font-family: 'Shippori Mincho', serif; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 1rem; }
 
-        /* チャット */
         #chat-view { padding: 0; justify-content: flex-start; }
         #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; width: 100%; }
         .msg { padding: 12px 16px; border-radius: 8px; font-size: 0.95rem; color: white; margin-bottom: 12px; max-width: 85%; line-height: 1.6; }
@@ -53,17 +51,15 @@
         .chat-input-wrap { padding: 12px 15px; background: var(--oma-white); border-top: 1px solid #e0ded9; display: flex; gap: 10px; width: 100%; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
         #chatInput { flex: 1; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 16px; }
 
-        /* 組紐アニメーション（マッチ画面） */
         .kumihimo-area { width: 140px; height: 70px; margin: 0 auto 10px; }
         .oma-thread { fill: none; stroke-width: 4; stroke-dasharray: 100; stroke-dashoffset: 100; animation: threadScroll 2s ease-out forwards; }
         @keyframes threadScroll { to { stroke-dashoffset: 0; } }
 
-        .timestamp-mark { font-size: 0.7rem; color: var(--oma-gold); margin-bottom: 30px; font-family: 'Shippori Mincho', serif; border-top: 1px solid rgba(184, 160, 120, 0.2); padding-top: 8px; }
+        /* 結ばれた時刻の刻印 */
+        .timestamp-mark { font-size: 0.75rem; color: var(--oma-gold); margin-bottom: 35px; font-family: 'Shippori Mincho', serif; border-top: 1px solid rgba(184, 160, 120, 0.2); padding-top: 12px; letter-spacing: 0.1em; }
         
-        /* 版数刻印 */
         .code-version { position: absolute; bottom: 8px; right: 12px; font-size: 0.6rem; color: #bbb; letter-spacing: 0.05em; pointer-events: none; }
 
-        /* 設定モーダル */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-content { background: var(--oma-white); padding: 30px; border-radius: 8px; width: 85%; max-width: 320px; text-align: center; }
         .color-pnl { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
@@ -112,7 +108,7 @@
         </div>
     </div>
 
-    <div class="code-version">Code Ver: 2026-04-22 05:07</div>
+    <div class="code-version">Code Ver: 2026-04-22 05:10</div>
 </div>
 
 <div id="settingsModal" class="modal">
@@ -159,7 +155,9 @@
         if(id === 'match-view') {
             const isReturn = localStorage.getItem('en_hasEntered');
             const d = new Date(ts);
-            document.getElementById('ts-display').innerText = ts ? `最終更新：${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : "";
+            // 「結縁の刻」として、マッチした時刻を表示
+            document.getElementById('ts-display').innerText = ts ? `結縁の刻：${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : "";
+            
             document.getElementById('match-content').innerHTML = isReturn ? 
                 `<div class="kumihimo-area"><svg viewBox="0 0 100 60"><path class="oma-thread" stroke="#B02A26" d="M10 30 C30 10, 30 50, 50 30 C70 10, 70 50, 90 30"/><path class="oma-thread" stroke="#243354" d="M10 30 C30 50, 30 10, 50 30 C70 50, 70 10, 90 30" style="animation-delay:0.5s;"/></svg></div><p style="font-weight:bold; color:var(--oma-red); margin-bottom:10px;">ご縁が結ばれています</p>` :
                 `<div style="font-size:3rem; margin-bottom:15px;">✨</div><p style="font-weight:bold; color:var(--oma-red); margin-bottom:10px;">ご縁が結ばれました</p>`;
@@ -175,6 +173,7 @@
         room = [myN, partnerN].sort().join('_');
         localStorage.setItem('en_me', myN); localStorage.setItem('en_partner', partnerN);
         await update(ref(db, `matching/${room}/${myN}`), { active: true, color: myColor });
+        // マッチング開始時にタイムスタンプをセット
         await update(ref(db, `matching/${room}`), { lastAt: serverTimestamp() });
         startSync();
     };
@@ -218,7 +217,7 @@
     window.sendMsg = async () => {
         const i = document.getElementById('chatInput'); if(!i.value.trim()) return;
         await push(ref(db, 'chats/' + room), { s: myN, t: i.value });
-        await update(ref(db, `matching/${room}`), { lastAt: serverTimestamp() });
+        // メッセージ送信時はlastAtを更新しない（結縁の時間を保持するため）
         i.value = "";
     };
 

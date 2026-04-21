@@ -4,16 +4,15 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SECRET OMAMORI</title>
+    <title>縁結び SECRET</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&family=Shippori+Mincho:wght@700&display=swap');
         
         :root { 
-            --oma-white: #F4F2ED;  /* 画像のベース色 */
-            --oma-red: #B02A26;    /* 紐の赤 */
-            --oma-navy: #243354;   /* 紐の紺 */
-            --oma-gold: #B8A078;   /* SECRETの文字色 */
-            --oma-shadow: rgba(0,0,0,0.08);
+            --oma-white: #F4F2ED; 
+            --oma-red: #B02A26; 
+            --oma-navy: #243354;
+            --oma-gold: #B8A078;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -22,11 +21,8 @@
             height: 100dvh; 
             background: var(--oma-white); 
             font-family: 'Zen Maru Gothic', sans-serif; 
-            overflow: hidden; 
-            position: fixed; 
-            width: 100%; 
-            /* 麻の葉文様の背景シミュレーション */
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSIzNC42NCIgdmlld0JveD0iMCAwIDYwIDM0LjY0Ij48cGF0aCBkPSJNMzAgMEwwIDM0LjY0aDYwek0wIDBoMzBMMTUgMjUuOTh6bTMwIDBoMzBMNDUgMjUuOTh6IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZWUiIHN0cm9rZS13aWR0aD0iMC41Ii8+PC9zdmc+');
+            overflow: hidden; position: fixed; width: 100%; 
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSIzNC42NCIgdmlld0JveD0iMCAwIDYwIDM0LjY0Ij48cGF0aCBkPSJNMzAgMEwwIDM0LjY0aDYwek0wIDBoMzBMMTUgMjUuOTh6bTMwIDBoMzBMNDUgMjUuOTh6IiBmaWxsPSJub25lIiBzdHJva2U9IiNlZWUiIHN0cm9rZS13aWR0aD0iMC44Ii8+PC9zdmc+');
         }
 
         .app-container { 
@@ -35,116 +31,99 @@
             align-items: center;
         }
 
-        /* 上部の結び目セクション */
-        .knot-area {
-            padding: 40px 0 20px;
-            text-align: center;
-        }
-        .knot-svg {
-            width: 120px; height: auto;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        /* 縁結びのシンボル：インフィニティ結び */
+        .knot-area { padding: 30px 0 10px; text-align: center; position: relative; }
+        .knot-svg { width: 100px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); }
+        
+        /* 画面中央を縦に貫く「赤い糸」 */
+        .red-thread {
+            position: absolute; top: 100px; bottom: -50px; left: 50%;
+            width: 1.5px; background: var(--oma-red); opacity: 0.3;
+            transform: translateX(-50%); z-index: 0;
         }
 
         .secret-title {
             font-family: 'Shippori Mincho', serif;
-            font-size: 1.4rem;
-            color: var(--oma-gold);
-            letter-spacing: 0.3em;
-            margin: 10px 0 30px;
-            text-transform: uppercase;
+            font-size: 1.2rem; color: var(--oma-gold);
+            letter-spacing: 0.5em; margin: 15px 0; text-transform: uppercase;
         }
 
-        /* 入力エリア：お守りの布地に沈み込むようなデザイン */
-        .input-group {
-            width: 85%; max-width: 300px;
-            display: flex; flex-direction: column; gap: 20px;
-        }
-
+        /* 入力欄：より「記帳」に近い質感に */
+        .input-group { width: 85%; max-width: 280px; display: flex; flex-direction: column; gap: 15px; z-index: 10; }
         input[type="text"] {
-            width: 100%; padding: 18px;
-            background: var(--oma-white);
-            border: none;
-            border-radius: 12px;
-            box-shadow: inset 3px 3px 6px #e0ded9, inset -3px -3px 6px #ffffff; /* エンボス加工 */
+            width: 100%; padding: 15px; background: rgba(255,255,255,0.7);
+            border: 1px solid #e0ded9; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             text-align: center; font-size: 16px; outline: none;
             color: var(--oma-navy); font-family: 'Shippori Mincho', serif;
         }
 
-        /* 紺と赤のボタン（画像のボタンイメージ） */
-        .btn-wrap { display: flex; gap: 15px; width: 100%; justify-content: center; margin-top: 10px; }
-        .oma-btn {
-            flex: 1; padding: 18px; border: none; border-radius: 12px;
-            font-weight: bold; font-size: 0.85rem; color: #fff;
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.15);
-            cursor: pointer; transition: 0.2s;
+        /* 結びボタン */
+        .btn-join {
+            width: 80px; height: 80px; background: var(--oma-navy);
+            border-radius: 50%; color: var(--oma-gold); border: 2px solid var(--oma-gold);
+            font-family: 'Shippori Mincho', serif; font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            margin: 20px auto; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .oma-btn.navy { background: var(--oma-navy); }
-        .oma-btn.red { background: var(--oma-red); }
-        .oma-btn:active { transform: scale(0.97); }
 
-        /* チャット画面 */
-        #chat-view { padding: 0; background: transparent; width: 100%; flex: 1; display: none; flex-direction: column; }
+        /* チャット：結ばれていくメッセージ */
+        #chat-view { width: 100%; flex: 1; display: none; flex-direction: column; background: rgba(255,255,255,0.5); }
         #chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
         .msg { 
-            max-width: 80%; padding: 12px 18px; border-radius: 15px; margin-bottom: 10px;
-            font-size: 0.95rem; line-height: 1.5;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.03);
+            max-width: 75%; padding: 12px 18px; border-radius: 20px; margin-bottom: 8px;
+            font-size: 0.95rem; line-height: 1.5; position: relative;
         }
-        .me { align-self: flex-end; background: var(--oma-navy); color: white; border-bottom-right-radius: 2px; }
-        .you { align-self: flex-start; background: white; color: var(--oma-navy); border-bottom-left-radius: 2px; }
+        .me { align-self: flex-end; background: var(--oma-navy); color: white; border-bottom-right-radius: 4px; }
+        .you { align-self: flex-start; background: var(--oma-red); color: white; border-bottom-left-radius: 4px; }
 
         .chat-input-wrap {
             padding: 15px; background: var(--oma-white); border-top: 1px solid #e0ded9;
-            display: flex; gap: 10px;
+            display: flex; gap: 10px; align-items: center;
         }
-
-        .settings-trigger { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); cursor: pointer; }
-        .exit-btn { position: absolute; top: 15px; left: 15px; color: #ccc; font-size: 0.8rem; cursor: pointer; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--oma-white); padding: 30px; border-radius: 20px; width: 85%; text-align: center; }
+        #chatInput { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        
+        .settings-trigger { position: absolute; top: 15px; right: 15px; color: var(--oma-gold); font-size: 1.2rem; cursor: pointer; z-index: 100; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="exit" class="exit-btn" style="display:none;" onclick="handleExit()">✕ CLOSE</div>
-    <div id="gear" class="settings-trigger" style="display:none;" onclick="openModal()">⚙</div>
+    <div id="gear" class="settings-trigger" style="display:none;" onclick="location.reload()">✕</div>
+    <div class="red-thread" id="thread-line"></div>
 
-    <div class="knot-area" id="knot-header">
+    <div class="knot-area">
         <svg class="knot-svg" viewBox="0 0 100 60">
             <path d="M20 30 Q 20 10 35 15 L 65 45 Q 80 50 80 30 Q 80 10 65 15 L 35 45 Q 20 50 20 30" 
-                  fill="none" stroke="#B02A26" stroke-width="6" />
+                  fill="none" stroke="#B02A26" stroke-width="5" />
             <path d="M20 30 Q 20 10 35 15 L 65 45 Q 80 50 80 30 Q 80 10 65 15 L 35 45 Q 20 50 20 30" 
-                  fill="none" stroke="#243354" stroke-width="6" stroke-dasharray="8 4" />
-            <circle cx="50" cy="30" r="4" fill="#B8A078" />
+                  fill="none" stroke="#243354" stroke-width="5" stroke-dasharray="10 5" />
+            <circle cx="50" cy="30" r="5" fill="#B8A078" />
         </svg>
-        <div class="secret-title">Secret</div>
+        <div class="secret-title">結び</div>
     </div>
 
-    <div id="setup-view" class="view" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    <div id="setup-view" class="view" style="display: flex; flex-direction: column; align-items: center;">
         <div class="input-group">
-            <input type="text" id="myName" placeholder="御名前" onchange="cleanInput(this)">
-            <input type="text" id="crushName" placeholder="御相手" onchange="cleanInput(this)">
-            <div class="btn-wrap">
-                <button class="oma-btn navy" onclick="startMatching()">願いを</button>
-                <button class="oma-btn red" onclick="startMatching()">記す</button>
-            </div>
+            <input type="text" id="myName" placeholder="御自身の名" onchange="cleanInput(this)">
+            <input type="text" id="crushName" placeholder="御相手の名" onchange="cleanInput(this)">
         </div>
+        <div class="btn-join" onclick="startMatching()">結</div>
+        <p style="font-size: 0.7rem; color: var(--oma-gold); letter-spacing: 0.1em; margin-top: 10px;">二人の想いを一つに</p>
     </div>
 
     <div id="chat-view">
         <div id="chat-area"></div>
         <div class="chat-input-wrap">
-            <input type="text" id="chatInput" placeholder="筆を執る..." autocomplete="off">
-            <button class="oma-btn red" style="flex:none; width:50px; padding:0;" onclick="sendMsg()">▶</button>
+            <input type="text" id="chatInput" placeholder="想いを綴る..." autocomplete="off">
+            <button onclick="sendMsg()" style="background:var(--oma-navy); color:white; border:none; padding:10px 15px; border-radius:15px;">送信</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyDSLwUVNPR63ez6gbWpimnaR_0p4NTfdG8", authDomain: "coupleapp-30f82.firebaseapp.com", databaseURL: "https://coupleapp-30f82-default-rtdb.firebaseio.com", projectId: "coupleapp-30f82", appId: "1:205261235219:web:38b93dde060e520cdecbe6" };
     const app = initializeApp(firebaseConfig);
@@ -153,19 +132,16 @@
     let myN = localStorage.getItem('en_me'), partnerN = localStorage.getItem('en_partner'), room = "";
 
     window.cleanInput = (el) => {
-        let val = el.value;
-        if (!val) return;
+        let val = el.value; if (!val) return;
         val = val.replace(/[ぁ-ん]/g, (s) => String.fromCharCode(s.charCodeAt(0) + 0x60));
-        val = val.replace(/[^ァ-ンヴー]/g, '');
-        el.value = val.trim();
+        val = val.replace(/[^ァ-ンヴー]/g, ''); el.value = val.trim();
     };
 
     function showView(isChat) {
         document.getElementById('setup-view').style.display = isChat ? 'none' : 'flex';
         document.getElementById('chat-view').style.display = isChat ? 'flex' : 'none';
-        document.getElementById('exit').style.display = isChat ? 'block' : 'none';
         document.getElementById('gear').style.display = isChat ? 'block' : 'none';
-        if(isChat) document.getElementById('knot-header').style.padding = '10px 0';
+        document.getElementById('thread-line').style.opacity = isChat ? '0.1' : '0.3';
     }
 
     window.onload = () => { if (myN && partnerN) startSync(); else showView(false); };
@@ -186,8 +162,6 @@
             const data = snap.val() || {};
             if (data[myN]?.active && data[partnerN]?.active) {
                 showView(true); initChat();
-            } else {
-                // 片方待ち状態などの処理（今回はシンプルに表示切り替え）
             }
         });
     }
@@ -210,10 +184,6 @@
     window.sendMsg = () => {
         const i = document.getElementById('chatInput'); if (!i.value.trim()) return;
         push(ref(db, 'chats/' + room), { s: myN, t: i.value }); i.value = "";
-    };
-
-    window.handleExit = () => {
-        localStorage.clear(); location.reload();
     };
 </script>
 </body>
